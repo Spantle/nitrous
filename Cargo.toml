@@ -1,0 +1,11 @@
+[package]
+name = "idea"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+eframe = "0.23.0"
+egui = "0.23.0"
+egui_extras = "0.23.0"
+env_logger = "0.10.0"
+log = "0.4.20"
