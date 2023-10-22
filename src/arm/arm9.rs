@@ -1,7 +1,8 @@
 use core::mem::swap;
 
-use super::PSR;
+use super::{ProcessorMode, PSR};
 
+#[derive(Debug)]
 pub struct Arm9 {
     // R13: Stack Pointer
     // R14: Link Register
@@ -28,16 +29,16 @@ impl Arm9 {
         }
     }
 
-    fn switch_mode(&mut self, mode: PSR, is_error_or_interrupt: bool) {
-        if mode.get_mode() == self.cpsr.get_mode() {
+    fn switch_mode(&mut self, mode: ProcessorMode, is_error_or_interrupt: bool) {
+        if self.cpsr.mode() == mode {
             return;
         }
 
         match mode {
-            PSR::MODE_USR => {
+            ProcessorMode::USR => {
                 todo!("switch to user mode");
             }
-            PSR::MODE_FIQ => {
+            ProcessorMode::FIQ => {
                 swap(&mut self.r[8], &mut self.r_fiq[0]);
                 swap(&mut self.r[9], &mut self.r_fiq[1]);
                 swap(&mut self.r[10], &mut self.r_fiq[2]);
@@ -51,10 +52,10 @@ impl Arm9 {
             }
             _ => {
                 let r_to_swap = &mut match mode {
-                    PSR::MODE_IRQ => self.r_irq,
-                    PSR::MODE_SVC => self.r_svc,
-                    PSR::MODE_UND => self.r_und,
-                    PSR::MODE_ABT => self.r_abt,
+                    ProcessorMode::IRQ => self.r_irq,
+                    ProcessorMode::SVC => self.r_svc,
+                    ProcessorMode::UND => self.r_und,
+                    ProcessorMode::ABT => self.r_abt,
                     _ => return,
                 };
 
