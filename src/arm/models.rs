@@ -32,7 +32,7 @@ impl PSR {
     const THUMB_OFFSET: u32 = 5;
     const FIQ_INTERRUPT_OFFSET: u32 = 6;
     const IRQ_INTERRUPT_OFFSET: u32 = 7;
-    const STICKY_OFFSET: u32 = 27;
+    const SATURATION_OFFSET: u32 = 27;
     const OVERFLOW_OFFSET: u32 = 28;
     const CARRY_OFFSET: u32 = 29;
     const ZERO_OFFSET: u32 = 30;
@@ -90,12 +90,12 @@ impl PSR {
         self.set_bit(Self::IRQ_INTERRUPT_OFFSET, irq_interrupt)
     }
 
-    pub fn sticky(&self) -> bool {
-        self.get_bit(Self::STICKY_OFFSET)
+    pub fn saturation(&self) -> bool {
+        self.get_bit(Self::SATURATION_OFFSET)
     }
 
-    pub fn set_sticky(&mut self, sticky: bool) {
-        self.set_bit(Self::STICKY_OFFSET, sticky)
+    pub fn set_saturation(&mut self, saturation: bool) {
+        self.set_bit(Self::SATURATION_OFFSET, saturation)
     }
 
     pub fn overflow(&self) -> bool {
