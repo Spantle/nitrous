@@ -1,4 +1,6 @@
-pub fn init() -> Result<(), eframe::Error> {
+use crate::emulator::Emulator;
+
+pub fn init(emulator: Emulator) -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         min_window_size: Some(egui::vec2(272.0, 427.0)),
         ..Default::default()
@@ -6,13 +8,24 @@ pub fn init() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Nitrous",
         options,
-        Box::new(|_cc| Box::<NitrousGUI>::default()),
+        Box::new(|_cc| Box::<NitrousGUI>::new(NitrousGUI::new(emulator))),
     )
 }
 
-#[derive(Default)]
 pub struct NitrousGUI {
+    pub emulator: Emulator,
+
     pub test_window: bool,
+}
+
+impl NitrousGUI {
+    pub fn new(emulator: Emulator) -> NitrousGUI {
+        NitrousGUI {
+            emulator,
+
+            test_window: false,
+        }
+    }
 }
 
 impl eframe::App for NitrousGUI {

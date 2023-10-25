@@ -3,6 +3,7 @@ extern crate env_logger;
 extern crate log;
 
 mod arm;
+mod emulator;
 mod ui;
 
 fn main() {
@@ -16,8 +17,10 @@ fn main() {
     logger.parse_default_env();
     logger.init();
 
+    let emulator = emulator::Emulator::new();
+
     info!("Initializing UI");
-    let ui_result = ui::init();
+    let ui_result = ui::init(emulator);
     if ui_result.is_err() {
         error!("Error initializing UI: {}", ui_result.err().unwrap());
     }

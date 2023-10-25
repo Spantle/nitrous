@@ -29,14 +29,14 @@ bitflags! {
 }
 
 impl PSR {
-    const THUMB_OFFSET: u32 = 5;
-    const FIQ_INTERRUPT_OFFSET: u32 = 6;
-    const IRQ_INTERRUPT_OFFSET: u32 = 7;
-    const SATURATION_OFFSET: u32 = 27;
-    const OVERFLOW_OFFSET: u32 = 28;
-    const CARRY_OFFSET: u32 = 29;
-    const ZERO_OFFSET: u32 = 30;
-    const NEGATIVE_OFFSET: u32 = 31;
+    const THUMB_OFFSET: u32 = 5; // T
+    const FIQ_INTERRUPT_OFFSET: u32 = 6; // F
+    const IRQ_INTERRUPT_OFFSET: u32 = 7; // I
+    const SATURATION_OFFSET: u32 = 27; // Q
+    const OVERFLOW_OFFSET: u32 = 28; // V
+    const CARRY_OFFSET: u32 = 29; // C
+    const ZERO_OFFSET: u32 = 30; // Z
+    const NEGATIVE_OFFSET: u32 = 31; // N
 
     pub fn default() -> PSR {
         PSR(ProcessorMode::SVC.bits())
