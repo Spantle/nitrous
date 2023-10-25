@@ -11,7 +11,7 @@ enum Exception {
     Riq,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct PSR(u32);
 
 bitflags! {
@@ -28,6 +28,18 @@ bitflags! {
     }
 }
 
+impl Default for PSR {
+    fn default() -> PSR {
+        PSR(ProcessorMode::SVC.bits())
+    }
+}
+
+impl Into<PSR> for u32 {
+    fn into(self) -> PSR {
+        PSR(self)
+    }
+}
+
 impl PSR {
     const THUMB_OFFSET: u32 = 5; // T
     const FIQ_INTERRUPT_OFFSET: u32 = 6; // F
@@ -37,10 +49,6 @@ impl PSR {
     const CARRY_OFFSET: u32 = 29; // C
     const ZERO_OFFSET: u32 = 30; // Z
     const NEGATIVE_OFFSET: u32 = 31; // N
-
-    pub fn default() -> PSR {
-        PSR(ProcessorMode::SVC.bits())
-    }
 
     pub fn value(&self) -> u32 {
         self.0

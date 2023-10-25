@@ -10,7 +10,7 @@ impl NitrousGUI {
 
                 ui.menu_button("Debug", |ui| {
                     let close = Self::debug_menu(self, ui);
-                    debug!("Debug menu result: {:?}", close);
+
                     if close {
                         debug!("Closing debug menu");
                         ui.close_menu();
@@ -21,6 +21,7 @@ impl NitrousGUI {
     }
 
     fn debug_menu(&mut self, ui: &mut egui::Ui) -> bool {
+        ui.checkbox(&mut self.arm9_info, "ARM9 Info");
         ui.checkbox(&mut self.test_window, "Test Window");
 
         if ui.button("Test button").clicked() {

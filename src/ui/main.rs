@@ -16,6 +16,7 @@ pub fn init(emulator: Emulator) -> Result<(), eframe::Error> {
 pub struct NitrousGUI {
     pub emulator: Emulator,
 
+    pub arm9_info: bool,
     pub test_window: bool,
 }
 
@@ -75,6 +76,7 @@ impl eframe::App for NitrousGUI {
                 });
         });
 
+        self.show_arm9_info(ctx);
         self.show_test_window(ctx);
     }
 }
