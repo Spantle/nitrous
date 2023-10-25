@@ -12,6 +12,7 @@ pub fn init(emulator: Emulator) -> Result<(), eframe::Error> {
     )
 }
 
+#[derive(Default)]
 pub struct NitrousGUI {
     pub emulator: Emulator,
 
@@ -23,7 +24,7 @@ impl NitrousGUI {
         NitrousGUI {
             emulator,
 
-            test_window: false,
+            ..Default::default()
         }
     }
 }

@@ -17,7 +17,7 @@ fn main() {
     logger.parse_default_env();
     logger.init();
 
-    let emulator = emulator::Emulator::new();
+    let emulator = emulator::Emulator::default();
 
     info!("Initializing UI");
     let ui_result = ui::init(emulator);

@@ -11,7 +11,7 @@ enum Exception {
     Riq,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct PSR(u32);
 
 bitflags! {

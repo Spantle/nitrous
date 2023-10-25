@@ -2,7 +2,7 @@ use core::mem::swap;
 
 use super::{ProcessorMode, PSR};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Arm9 {
     // R13: Stack Pointer
     // R14: Link Register
