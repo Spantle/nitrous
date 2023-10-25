@@ -2,7 +2,7 @@ use core::mem::swap;
 
 use super::{ProcessorMode, PSR};
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct Arm9 {
     // R13: Stack Pointer
     // R14: Link Register
@@ -16,8 +16,8 @@ pub struct Arm9 {
     pub cpsr: PSR,       // Current Program Status Register, technically a u32
 }
 
-impl Arm9 {
-    pub fn new() -> Arm9 {
+impl Default for Arm9 {
+    fn default() -> Arm9 {
         Arm9 {
             r: [0; 16],
             r_fiq: [0; 8],
@@ -28,7 +28,9 @@ impl Arm9 {
             cpsr: PSR::default(),
         }
     }
+}
 
+impl Arm9 {
     fn switch_mode(&mut self, mode: ProcessorMode, is_error_or_interrupt: bool) {
         if self.cpsr.mode() == mode {
             return;
