@@ -1,8 +1,11 @@
-use crate::{arm, ui::NitrousGUI};
+use crate::{
+    arm,
+    ui::{NitrousGUI, NitrousWindow},
+};
 
 impl NitrousGUI {
     pub fn show_arm9_info(&mut self, ctx: &egui::Context) {
-        egui::Window::new("ARM9 Info")
+        egui::Window::new_nitrous("ARM9 Info", ctx)
             .open(&mut self.arm9_info)
             .show(ctx, |ui| {
                 egui::CollapsingHeader::new("Register Values (Hexadecimal)")
