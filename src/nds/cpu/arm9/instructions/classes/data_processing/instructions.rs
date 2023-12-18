@@ -3,10 +3,10 @@ use crate::nds::cpu::arm9::Arm9;
 use super::DataProcessingInstruction;
 
 // MOV, MOVS
-pub fn mov(arm9: &mut Arm9, inst: DataProcessingInstruction) -> u32 {
+pub fn mov<const S: bool>(arm9: &mut Arm9, inst: DataProcessingInstruction) -> u32 {
     arm9.r[inst.destination_register] = inst.second_source_operand;
 
-    if inst.set_condition_codes {
+    if S {
         if inst.destination_register == 15 {
             arm9.cpsr = arm9.get_spsr();
         } else {

@@ -7,8 +7,6 @@ mod shifter_operand;
 pub use lookup::lookup;
 
 struct DataProcessingInstruction {
-    is_immediate: bool,
-    set_condition_codes: bool,
     first_source_register: u8,
     destination_register: u8,
     second_source_operand: u32,
@@ -16,12 +14,14 @@ struct DataProcessingInstruction {
 }
 
 impl DataProcessingInstruction {
-    fn new(arm9: &mut Arm9, inst: Instruction) -> Self {
-        let shifter_operand = shifter_operand::parse(arm9, &inst);
+    fn new<const IS_IMMEDIATE: bool>(arm9: &mut Arm9, inst: Instruction) -> Self {
+        let shifter_operand = if IS_IMMEDIATE {
+            shifter_operand::parse_immediate(arm9, &inst)
+        } else {
+            shifter_operand::parse_register(arm9, &inst)
+        };
 
         DataProcessingInstruction {
-            is_immediate: shifter_operand.is_immediate,
-            set_condition_codes: inst.get_bit(20),
             first_source_register: inst.get_bits(16, 19),
             destination_register: inst.get_bits(12, 15),
             second_source_operand: shifter_operand.second_source_operand,
