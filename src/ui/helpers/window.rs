@@ -9,12 +9,12 @@ impl NitrousWindow for egui::Window<'_> {
     }
 
     fn make_resizable(self, ctx: &egui::Context) -> Self {
+        let size = ctx.available_rect().size();
+
         self.hscroll(true)
             .vscroll(true)
             .resizable(true)
-            .resize(|resize| {
-                let size = ctx.available_rect().size();
-                resize.default_size(size).max_size(size)
-            })
+            .default_size(size)
+            .max_size(size)
     }
 }

@@ -5,8 +5,8 @@ edition = "2021"
 
 [dependencies]
 bitflags = "2.4.1"
-eframe = "0.23.0"
-egui = "0.23.0"
-egui_extras = "0.23.0"
+eframe = "0.24.1"
+egui = "0.24.1"
+egui_extras = "0.24.2"
 env_logger = "0.10.0"
 log = "0.4.20"

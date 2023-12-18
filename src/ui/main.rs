@@ -2,7 +2,7 @@ use crate::nds::Emulator;
 
 pub fn init(emulator: Emulator) -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
-        min_window_size: Some(egui::vec2(272.0, 427.0)),
+        viewport: egui::ViewportBuilder::default().with_min_inner_size(egui::vec2(272.0, 427.0)),
         ..Default::default()
     };
     eframe::run_native(
