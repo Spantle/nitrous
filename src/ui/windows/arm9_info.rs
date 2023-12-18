@@ -1,7 +1,5 @@
-use crate::{
-    arm,
-    ui::{NitrousGUI, NitrousWindow},
-};
+use crate::nds::cpu::arm9;
+use crate::ui::{NitrousGUI, NitrousWindow};
 
 impl NitrousGUI {
     pub fn show_arm9_info(&mut self, ctx: &egui::Context) {
@@ -124,37 +122,37 @@ impl NitrousGUI {
                                 });
                             })
                             .body(|mut body| {
-                                let mut display_psr = |name: &str, psr: &arm::PSR| {
+                                let mut display_psr = |name: &str, psr: &arm9::PSR| {
                                     body.row(20.0, |mut row| {
                                         row.col(|ui| {
                                             ui.strong(name);
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{:?}", psr.mode()));
+                                            ui.label(format!("{:?}", psr.get_mode()));
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.thumb()));
+                                            ui.label(format!("{}", psr.get_thumb()));
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.fiq_interrupt()));
+                                            ui.label(format!("{}", psr.get_fiq_interrupt()));
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.irq_interrupt()));
+                                            ui.label(format!("{}", psr.get_irq_interrupt()));
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.saturation()));
+                                            ui.label(format!("{}", psr.get_saturation()));
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.overflow()));
+                                            ui.label(format!("{}", psr.get_overflow()));
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.carry()));
+                                            ui.label(format!("{}", psr.get_carry()));
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.zero()));
+                                            ui.label(format!("{}", psr.get_zero()));
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.negative()));
+                                            ui.label(format!("{}", psr.get_negative()));
                                         });
                                         row.col(|ui| {
                                             ui.label(format!("{:032b}", psr.value()));

@@ -2,8 +2,7 @@ extern crate env_logger;
 #[macro_use]
 extern crate log;
 
-mod arm;
-mod emulator;
+mod nds;
 mod ui;
 
 fn main() {
@@ -17,7 +16,7 @@ fn main() {
     logger.parse_default_env();
     logger.init();
 
-    let emulator = emulator::Emulator::default();
+    let emulator = nds::Emulator::default();
 
     info!("Initializing UI");
     let ui_result = ui::init(emulator);

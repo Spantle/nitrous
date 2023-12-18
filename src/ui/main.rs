@@ -1,4 +1,4 @@
-use crate::emulator::Emulator;
+use crate::nds::Emulator;
 
 pub fn init(emulator: Emulator) -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
@@ -32,6 +32,8 @@ impl NitrousGUI {
 
 impl eframe::App for NitrousGUI {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        self.emulator.clock();
+
         ctx.set_visuals(egui::Visuals {
             window_shadow: egui::epaint::Shadow {
                 extrusion: 0.0,
@@ -78,5 +80,7 @@ impl eframe::App for NitrousGUI {
 
         self.show_arm9_info(ctx);
         self.show_test_window(ctx);
+
+        ctx.request_repaint();
     }
 }

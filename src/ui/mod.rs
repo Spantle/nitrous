@@ -1,7 +1,7 @@
+mod helpers;
 mod main;
 mod navbar;
-mod window;
 mod windows;
 
+pub use helpers::*;
 pub use main::*;
-pub use window::*;

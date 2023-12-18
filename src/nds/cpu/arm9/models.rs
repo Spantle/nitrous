@@ -1,5 +1,45 @@
 use bitflags::bitflags;
 
+#[derive(Clone, Copy, Debug)]
+pub struct Registers(pub [u32; 16]);
+
+impl std::ops::Index<u8> for Registers {
+    type Output = u32;
+
+    fn index(&self, index: u8) -> &Self::Output {
+        &self.0[index as usize]
+    }
+}
+
+impl std::ops::Deref for Registers {
+    type Target = [u32; 16]; // Specify the target type to dereference to
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl std::ops::DerefMut for Registers {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+impl IntoIterator for Registers {
+    type Item = u32;
+    type IntoIter = std::array::IntoIter<Self::Item, 16>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+impl std::ops::IndexMut<u8> for Registers {
+    fn index_mut(&mut self, index: u8) -> &mut Self::Output {
+        &mut self.0[index as usize]
+    }
+}
+
 // P30
 enum Exception {
     Reset,
@@ -34,9 +74,9 @@ impl Default for PSR {
     }
 }
 
-impl Into<PSR> for u32 {
-    fn into(self) -> PSR {
-        PSR(self)
+impl From<u32> for PSR {
+    fn from(val: u32) -> Self {
+        PSR(val)
     }
 }
 
@@ -66,7 +106,7 @@ impl PSR {
         self.0 = (self.0 & !(1 << offset)) | ((value as u32) << offset);
     }
 
-    pub fn mode(&self) -> ProcessorMode {
+    pub fn get_mode(&self) -> ProcessorMode {
         ProcessorMode::from_bits_truncate(self.0 & ProcessorMode::MASK.bits())
     }
 
@@ -74,7 +114,7 @@ impl PSR {
         self.0 = (self.0 & !ProcessorMode::MASK.bits()) | mode.bits();
     }
 
-    pub fn thumb(&self) -> bool {
+    pub fn get_thumb(&self) -> bool {
         self.get_bit(Self::THUMB_OFFSET)
     }
 
@@ -82,7 +122,7 @@ impl PSR {
         self.set_bit(Self::THUMB_OFFSET, thumb);
     }
 
-    pub fn fiq_interrupt(&self) -> bool {
+    pub fn get_fiq_interrupt(&self) -> bool {
         self.get_bit(Self::FIQ_INTERRUPT_OFFSET)
     }
 
@@ -90,7 +130,7 @@ impl PSR {
         self.set_bit(Self::FIQ_INTERRUPT_OFFSET, fiq_interrupt)
     }
 
-    pub fn irq_interrupt(&self) -> bool {
+    pub fn get_irq_interrupt(&self) -> bool {
         self.get_bit(Self::IRQ_INTERRUPT_OFFSET)
     }
 
@@ -98,7 +138,7 @@ impl PSR {
         self.set_bit(Self::IRQ_INTERRUPT_OFFSET, irq_interrupt)
     }
 
-    pub fn saturation(&self) -> bool {
+    pub fn get_saturation(&self) -> bool {
         self.get_bit(Self::SATURATION_OFFSET)
     }
 
@@ -106,7 +146,7 @@ impl PSR {
         self.set_bit(Self::SATURATION_OFFSET, saturation)
     }
 
-    pub fn overflow(&self) -> bool {
+    pub fn get_overflow(&self) -> bool {
         self.get_bit(Self::OVERFLOW_OFFSET)
     }
 
@@ -114,7 +154,7 @@ impl PSR {
         self.set_bit(Self::OVERFLOW_OFFSET, overflow)
     }
 
-    pub fn carry(&self) -> bool {
+    pub fn get_carry(&self) -> bool {
         self.get_bit(Self::CARRY_OFFSET)
     }
 
@@ -122,7 +162,7 @@ impl PSR {
         self.set_bit(Self::CARRY_OFFSET, carry)
     }
 
-    pub fn zero(&self) -> bool {
+    pub fn get_zero(&self) -> bool {
         self.get_bit(Self::ZERO_OFFSET)
     }
 
@@ -130,7 +170,7 @@ impl PSR {
         self.set_bit(Self::ZERO_OFFSET, zero)
     }
 
-    pub fn negative(&self) -> bool {
+    pub fn get_negative(&self) -> bool {
         self.get_bit(Self::NEGATIVE_OFFSET)
     }
 
