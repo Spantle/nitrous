@@ -6,7 +6,7 @@ mod shifter_operand;
 
 pub use lookup::lookup;
 
-struct DataProcessingInstruction {
+pub struct DataProcessingInstruction {
     first_source_register: u8,
     destination_register: u8,
     second_source_operand: u32,

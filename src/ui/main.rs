@@ -86,6 +86,6 @@ impl eframe::App for NitrousGUI {
         self.show_memory_viewer(ctx);
         self.show_test_window(ctx);
 
-        // ctx.request_repaint();
+        ctx.request_repaint();
     }
 }
