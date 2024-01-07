@@ -1,6 +1,6 @@
 use core::mem::swap;
 
-use crate::nds::{cpu::arm9::instructions::lookup_instruction_set, memory::Memory};
+use crate::nds::{cpu::arm9::instructions::lookup_instruction_set, logger, memory::Memory};
 
 use self::models::Registers;
 pub use self::models::{ProcessorMode, PSR};
@@ -47,7 +47,7 @@ impl Arm9 {
             // get 4 bytes
             let inst = mem.read_u32(self.r[15]);
             // print as binary
-            println!("{:032b}", inst);
+            logger::debug(format!("{:032b}", inst));
 
             let cycles = lookup_instruction_set(inst.into(), self);
         }

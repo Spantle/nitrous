@@ -1,4 +1,7 @@
-use crate::nds::cpu::arm9::{instructions::models::Instruction, Arm9};
+use crate::nds::{
+    cpu::arm9::{instructions::models::Instruction, Arm9},
+    logger,
+};
 
 use super::{instructions, DataProcessingInstruction};
 
@@ -15,7 +18,7 @@ pub fn lookup<const INST_SET: u16, const IS_IMMEDIATE: bool>(
         (0b1101, false) => instructions::mov::<false>(arm9, inst),
         (0b1101, true) => instructions::mov::<true>(arm9, inst),
         _ => {
-            println!("unknown opcode");
+            logger::warn(format!("unknown opcode"));
             1
         }
     }
