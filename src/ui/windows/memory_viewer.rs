@@ -145,36 +145,25 @@ impl NitrousGUI {
                                     self.memory_viewer_selected = Some(selected + 1);
                                 }
                             }
-                            // egui::Event::Key {
-                            //     key,
-                            //     pressed,
-                            //     repeat,
-                            //     modifiers,
-                            // } => {
-                            //     if *pressed && !*repeat {
-                            //         if let Some(selected) = self.memory_viewer_selected {
-                            //             if let Some(c) = key.to_char(*modifiers) {
-                            //                 let mut b = mem[selected];
-                            //                 b = match c {
-                            //                     '0'..='9' => {
-                            //                         let n = c.to_digit(10).unwrap() as u8;
-                            //                         (b & 0xF0) | n
-                            //                     }
-                            //                     'a'..='f' => {
-                            //                         let n = c as u8 - b'a' + 10;
-                            //                         (b & 0xF0) | n
-                            //                     }
-                            //                     'A'..='F' => {
-                            //                         let n = c as u8 - b'A' + 10;
-                            //                         (b & 0xF0) | n
-                            //                     }
-                            //                     _ => b,
-                            //                 };
-                            //                 mem[selected] = b;
-                            //             }
-                            //         }
-                            //     }
-                            // }
+                            egui::Event::Key {
+                                key: egui::Key::Backspace,
+                                pressed: true,
+                                ..
+                            }
+                            | egui::Event::Key {
+                                key: egui::Key::Delete,
+                                pressed: true,
+                                ..
+                            }
+                            | egui::Event::Key {
+                                key: egui::Key::Escape,
+                                pressed: true,
+                                ..
+                            } => {
+                                if self.memory_viewer_selected_pending_value.is_some() {
+                                    self.memory_viewer_selected_pending_value = None;
+                                }
+                            }
                             egui::Event::Text(t) => {
                                 let b = match t.chars().next().unwrap() {
                                     '0'..='9' => {
