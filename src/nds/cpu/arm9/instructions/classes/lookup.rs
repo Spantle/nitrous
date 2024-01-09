@@ -1,4 +1,7 @@
-use crate::nds::cpu::arm9::{instructions::models::Instruction, Arm9};
+use crate::nds::{
+    cpu::arm9::{instructions::models::Instruction, Arm9},
+    logger,
+};
 
 use super::data_processing;
 
@@ -16,7 +19,7 @@ pub fn lookup_instruction_class<const INST_SET: u16>(arm9: &mut Arm9, inst: Inst
             data_processing::lookup::<INST_SET, false>(arm9, inst)
         }
         _ => {
-            println!("unknown instruction class {:03b}", class);
+            logger::warn(format!("unknown instruction class {:03b}", class));
             1
         }
     }

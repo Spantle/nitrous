@@ -1,4 +1,7 @@
-use crate::nds::cpu::arm9::{instructions::models::Instruction, Arm9};
+use crate::nds::{
+    cpu::arm9::{instructions::models::Instruction, Arm9},
+    logger,
+};
 
 pub struct ShifterOperand {
     pub carry_out: bool,
@@ -155,7 +158,7 @@ pub fn parse_immediate(arm9: &mut Arm9, inst: &Instruction) -> ShifterOperand {
             }
         }
         _ => {
-            println!("unknown data-processing operand");
+            logger::warn(format!("unknown data-processing operand"));
             0
         }
     };

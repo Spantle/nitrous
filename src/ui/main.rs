@@ -17,6 +17,7 @@ pub struct NitrousGUI {
     pub emulator: Emulator,
 
     pub arm9_info: bool,
+    pub emulation_log: bool,
     pub memory_viewer: bool,
     pub test_window: bool,
 
@@ -83,9 +84,10 @@ impl eframe::App for NitrousGUI {
         });
 
         self.show_arm9_info(ctx);
+        self.show_emulation_log(ctx);
         self.show_memory_viewer(ctx);
         self.show_test_window(ctx);
 
-        // ctx.request_repaint();
+        ctx.request_repaint();
     }
 }
