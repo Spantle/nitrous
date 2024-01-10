@@ -1,5 +1,5 @@
 use crate::nds::cpu::arm9;
-use crate::ui::{NitrousGUI, NitrousWindow};
+use crate::ui::{NitrousGUI, NitrousUI, NitrousWindow};
 
 impl NitrousGUI {
     pub fn show_arm9_info(&mut self, ctx: &egui::Context) {
@@ -9,15 +9,15 @@ impl NitrousGUI {
                 egui::CollapsingHeader::new("Register Values (Hexadecimal)")
                     .default_open(true)
                     .show(ui, |ui| {
+                        ui.make_monospace();
+
                         let r = self.emulator.arm9.r;
                         egui_extras::TableBuilder::new(ui)
                             .striped(true)
                             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
                             .columns(egui_extras::Column::exact(60.0), r.len() + 1)
                             .header(20.0, |mut header| {
-                                header.col(|ui| {
-                                    ui.strong("Type");
-                                });
+                                header.col(|_| ());
                                 for i in 0..r.len() {
                                     header.col(|ui| {
                                         match i {
@@ -79,6 +79,8 @@ impl NitrousGUI {
                 egui::CollapsingHeader::new("Program Status Registers")
                     .default_open(true)
                     .show(ui, |ui| {
+                        ui.make_monospace();
+
                         egui_extras::TableBuilder::new(ui)
                             .striped(true)
                             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
@@ -87,9 +89,7 @@ impl NitrousGUI {
                             .columns(egui_extras::Column::exact(60.0), 8)
                             .column(egui_extras::Column::exact(256.0))
                             .header(20.0, |mut header| {
-                                header.col(|ui| {
-                                    ui.strong("Type");
-                                });
+                                header.col(|_| ());
                                 header.col(|ui| {
                                     ui.strong("Mode");
                                 });
