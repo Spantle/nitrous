@@ -18,7 +18,7 @@ pub fn lookup<const INST_SET: u16, const IS_IMMEDIATE: bool>(
         (0b1101, false) => instructions::mov::<false>(arm9, inst),
         (0b1101, true) => instructions::mov::<true>(arm9, inst),
         _ => {
-            logger::warn(format!("unknown opcode"));
+            logger::warn(format!("unknown opcode {:04b}", opcode));
             1
         }
     }

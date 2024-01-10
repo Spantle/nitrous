@@ -8,7 +8,14 @@ pub fn init(emulator: Emulator) -> Result<(), eframe::Error> {
     eframe::run_native(
         "Nitrous",
         options,
-        Box::new(|_cc| Box::<NitrousGUI>::new(NitrousGUI::new(emulator))),
+        Box::new(|cc| {
+            let mut fonts = egui::FontDefinitions::default();
+            egui_phosphor::add_to_fonts(&mut fonts, egui_phosphor::Variant::Regular);
+
+            cc.egui_ctx.set_fonts(fonts);
+
+            Box::<NitrousGUI>::new(NitrousGUI::new(emulator))
+        }),
     )
 }
 

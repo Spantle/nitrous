@@ -47,7 +47,7 @@ impl Arm9 {
             // get 4 bytes
             let inst = mem.read_u32(self.r[15]);
             // print as binary
-            logger::debug(format!("{:032b}", inst));
+            logger::debug(format!("processing instruction: {:032b}", inst));
 
             let cycles = lookup_instruction_set(inst.into(), self);
         }

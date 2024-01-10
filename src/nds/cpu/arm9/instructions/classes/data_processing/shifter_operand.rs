@@ -158,7 +158,7 @@ pub fn parse_immediate(arm9: &mut Arm9, inst: &Instruction) -> ShifterOperand {
             }
         }
         _ => {
-            logger::warn(format!("unknown data-processing operand"));
+            logger::warn(format!("unknown data-processing operand {:03b}", operand));
             0
         }
     };

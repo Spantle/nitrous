@@ -1,52 +1,52 @@
-use std::sync::Mutex;
+use std::{fmt::Display, sync::Mutex};
 
 use once_cell::sync::Lazy;
 
-pub static LOGS: Lazy<Mutex<Vec<LogEntry>>> = Lazy::new(|| Mutex::new(Vec::new()));
+pub static LOGS: Lazy<Mutex<Vec<Log>>> = Lazy::new(|| Mutex::new(Vec::new()));
 
 #[derive(Debug)]
-pub struct LogEntry {
-    pub kind: LogEntryKind,
+pub struct Log {
+    pub kind: LogKind,
     pub content: String,
 }
 
 #[derive(Debug)]
-pub enum LogEntryKind {
+pub enum LogKind {
     Debug,
     Info,
     Warn,
     Error,
 }
 
-pub fn debug(content: String) {
+pub fn debug<T: Into<String> + Display>(content: T) {
     debug!("{}", &content);
     let mut logs = LOGS.lock().unwrap();
-    logs.push(LogEntry {
-        kind: LogEntryKind::Debug,
-        content,
+    logs.push(Log {
+        kind: LogKind::Debug,
+        content: content.to_string(),
     });
 }
 
-pub fn info(content: String) {
+pub fn info<T: Into<String> + Display>(content: T) {
     info!("{}", &content);
-    LOGS.lock().unwrap().push(LogEntry {
-        kind: LogEntryKind::Info,
-        content,
+    LOGS.lock().unwrap().push(Log {
+        kind: LogKind::Info,
+        content: content.to_string(),
     });
 }
 
-pub fn warn(content: String) {
+pub fn warn<T: Into<String> + Display>(content: T) {
     warn!("{}", &content);
-    LOGS.lock().unwrap().push(LogEntry {
-        kind: LogEntryKind::Warn,
-        content,
+    LOGS.lock().unwrap().push(Log {
+        kind: LogKind::Warn,
+        content: content.to_string(),
     });
 }
 
-pub fn error(content: String) {
+pub fn error<T: Into<String> + Display>(content: T) {
     error!("{}", &content);
-    LOGS.lock().unwrap().push(LogEntry {
-        kind: LogEntryKind::Error,
-        content,
+    LOGS.lock().unwrap().push(Log {
+        kind: LogKind::Error,
+        content: content.to_string(),
     })
 }
