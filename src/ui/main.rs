@@ -28,11 +28,13 @@ fn creator(cc: &eframe::CreationContext, emulator: Emulator) -> Box<dyn eframe::
 
     cc.egui_ctx.set_fonts(fonts);
 
-    Box::<NitrousGUI>::new(NitrousGUI::new(emulator))
+    Box::new(NitrousGUI::new(cc, emulator))
 }
 
-#[derive(Default)]
+#[derive(serde::Deserialize, serde::Serialize, Default)]
+#[serde(default)]
 pub struct NitrousGUI {
+    #[serde(skip)]
     pub emulator: Emulator,
 
     pub arm9_info: bool,
@@ -45,7 +47,11 @@ pub struct NitrousGUI {
 }
 
 impl NitrousGUI {
-    pub fn new(emulator: Emulator) -> NitrousGUI {
+    pub fn new(cc: &eframe::CreationContext<'_>, emulator: Emulator) -> Self {
+        if let Some(storage) = cc.storage {
+            return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
+        }
+
         NitrousGUI {
             emulator,
 
@@ -55,6 +61,10 @@ impl NitrousGUI {
 }
 
 impl eframe::App for NitrousGUI {
+    fn save(&mut self, storage: &mut dyn eframe::Storage) {
+        eframe::set_value(storage, eframe::APP_KEY, self);
+    }
+
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         self.emulator.clock();
 
