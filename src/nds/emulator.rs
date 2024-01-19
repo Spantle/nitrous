@@ -40,4 +40,8 @@ impl Emulator {
 
         self.arm9.clock(&mut self.mem);
     }
+
+    pub fn step(&mut self) {
+        self.arm9.step(&mut self.mem);
+    }
 }

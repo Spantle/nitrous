@@ -22,7 +22,6 @@ pub struct Arm9 {
     pub cpsr: PSR,       // Current Program Status Register, technically a u32
 
     // emulator variables
-    pub cycles: u32,
     pub pipeline_state: PipelineState,
 }
 
@@ -37,40 +36,47 @@ impl Default for Arm9 {
             r_und: [0; 3],
             cpsr: PSR::default(),
 
-            cycles: 0,
             pipeline_state: PipelineState::Fetch, // TODO: implement resetting
         }
     }
 }
 
 impl Arm9 {
-    pub fn clock(&mut self, mem: &mut Vec<u8>) {
-        if self.cycles == 0 {
-            match self.pipeline_state {
-                PipelineState::Fetch => {
-                    logger::debug("fetching instruction");
-                    self.pipeline_state = PipelineState::Decode;
-                }
-                PipelineState::Decode => {
-                    logger::debug("decoding instruction");
-                    self.pipeline_state = PipelineState::Execute;
-                }
-                PipelineState::Execute => {
-                    // get 4 bytes
-                    let inst = mem.read_u32(self.r[15]);
-                    // print as binary
-                    logger::debug(format!(
-                        "executing instruction: {:#08x} ({:032b})",
-                        inst, inst
-                    ));
+    pub fn clock(&mut self, mem: &mut Vec<u8>) -> bool {
+        match self.pipeline_state {
+            PipelineState::Fetch => {
+                logger::debug("fetching instruction");
+                self.pipeline_state = PipelineState::Decode;
+                false
+            }
+            PipelineState::Decode => {
+                logger::debug("decoding instruction");
+                self.pipeline_state = PipelineState::Execute;
+                false
+            }
+            PipelineState::Execute => {
+                // get 4 bytes
+                let inst = mem.read_u32(self.r[15]);
+                // print as binary
+                logger::debug(format!(
+                    "executing instruction: {:#08x} ({:032b})",
+                    inst, inst
+                ));
 
-                    let cycles = lookup_instruction_set(inst.into(), self);
-                    self.r[15] += 4;
-                }
+                let cycles = lookup_instruction_set(inst.into(), self);
+                self.r[15] += 4;
+
+                true
             }
         }
+    }
 
-        // self.cycles -= 1;
+    pub fn step(&mut self, mem: &mut Vec<u8>) {
+        loop {
+            if self.clock(mem) {
+                break;
+            }
+        }
     }
 
     pub fn get_spsr(&self) -> PSR {

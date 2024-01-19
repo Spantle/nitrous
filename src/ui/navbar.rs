@@ -32,6 +32,9 @@ impl NitrousGUI {
         let running = self.emulator.is_running();
         let started = ui.enabled_button(!running, "Start emulation", || self.emulator.start());
         let paused = ui.enabled_button(running, "Pause emulation", || self.emulator.pause());
+        if ui.button("Step emulation").clicked() {
+            self.emulator.step();
+        }
 
         started || paused
     }
