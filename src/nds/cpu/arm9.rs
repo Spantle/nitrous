@@ -36,7 +36,7 @@ impl Default for Arm9 {
             r_und: [0; 3],
             cpsr: PSR::default(),
 
-            pipeline_state: PipelineState::Fetch, // TODO: implement resetting
+            pipeline_state: PipelineState::Fetch,
         }
     }
 }
@@ -63,8 +63,13 @@ impl Arm9 {
                     inst, inst
                 ));
 
+                let r15 = self.r[15];
                 let cycles = lookup_instruction_set(inst.into(), self);
-                self.r[15] += 4;
+                if r15 == self.r[15] {
+                    self.r[15] += 4;
+                } else {
+                    self.pipeline_state = PipelineState::Fetch;
+                }
 
                 true
             }
