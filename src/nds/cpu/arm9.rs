@@ -2,7 +2,7 @@ use core::mem::swap;
 
 use crate::nds::{cpu::arm9::instructions::lookup_instruction_set, logger, memory::Memory};
 
-use self::models::Registers;
+use self::models::{PipelineState, Registers};
 pub use self::models::{ProcessorMode, PSR};
 
 mod instructions;
@@ -23,6 +23,7 @@ pub struct Arm9 {
 
     // emulator variables
     pub cycles: u32,
+    pub pipeline_state: PipelineState,
 }
 
 impl Default for Arm9 {
@@ -37,6 +38,7 @@ impl Default for Arm9 {
             cpsr: PSR::default(),
 
             cycles: 0,
+            pipeline_state: PipelineState::Fetch, // TODO: implement resetting
         }
     }
 }
@@ -44,12 +46,28 @@ impl Default for Arm9 {
 impl Arm9 {
     pub fn clock(&mut self, mem: &mut Vec<u8>) {
         if self.cycles == 0 {
-            // get 4 bytes
-            let inst = mem.read_u32(self.r[15]);
-            // print as binary
-            logger::debug(format!("processing instruction: {:032b}", inst));
+            match self.pipeline_state {
+                PipelineState::Fetch => {
+                    logger::debug("fetching instruction");
+                    self.pipeline_state = PipelineState::Decode;
+                }
+                PipelineState::Decode => {
+                    logger::debug("decoding instruction");
+                    self.pipeline_state = PipelineState::Execute;
+                }
+                PipelineState::Execute => {
+                    // get 4 bytes
+                    let inst = mem.read_u32(self.r[15]);
+                    // print as binary
+                    logger::debug(format!(
+                        "executing instruction: {:#08x} ({:032b})",
+                        inst, inst
+                    ));
 
-            let cycles = lookup_instruction_set(inst.into(), self);
+                    let cycles = lookup_instruction_set(inst.into(), self);
+                    self.r[15] += 4;
+                }
+            }
         }
 
         // self.cycles -= 1;
@@ -63,6 +81,15 @@ impl Arm9 {
             ProcessorMode::ABT => PSR::from(self.r_abt[2]),
             ProcessorMode::UND => PSR::from(self.r_und[2]),
             _ => PSR::default(),
+        }
+    }
+
+    // this stands for "get execute register"
+    // when executing instructions, the PC is 8 bytes ahead of the current instruction
+    pub fn er(&self, r: u8) -> u32 {
+        match r {
+            15 => self.r[15] + 8,
+            _ => self.r[r],
         }
     }
 

@@ -186,3 +186,10 @@ struct Word(i32);
 struct UByte(u8);
 struct UHalfWord(u16);
 struct UWord(u32);
+
+#[derive(Debug)]
+pub enum PipelineState {
+    Fetch,
+    Decode,
+    Execute,
+}
