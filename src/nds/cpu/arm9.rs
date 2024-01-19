@@ -27,13 +27,15 @@ pub struct Arm9 {
 
 impl Default for Arm9 {
     fn default() -> Arm9 {
+        // TODO: figure out what the default PSR value is for SPSRs
+        let psr = PSR::default().value();
         Arm9 {
             r: Registers([0; 16]),
-            r_fiq: [0; 8],
-            r_irq: [0; 3],
-            r_svc: [0; 3],
-            r_abt: [0; 3],
-            r_und: [0; 3],
+            r_fiq: [0, 0, 0, 0, 0, 0, 0, psr],
+            r_irq: [0, 0, psr],
+            r_svc: [0, 0, psr],
+            r_abt: [0, 0, psr],
+            r_und: [0, 0, psr],
             cpsr: PSR::default(),
 
             pipeline_state: PipelineState::Fetch,
