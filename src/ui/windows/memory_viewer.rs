@@ -154,19 +154,27 @@ impl NitrousGUI {
                                 let mut i = selected;
                                 while let Some(char) = chars.next() {
                                     let char = validate_char(char);
-                                    if let Some(char) = char {
-                                        if let Some(char2) = chars.next() {
-                                            let char2 = validate_char(char2);
-                                            if let Some(char2) = char2 {
-                                                let b = (char << 4) | char2;
-                                                mem[i] = b;
-                                                i += 1;
-                                                continue;
+                                    match char {
+                                        ValidateCharResult::Valid(char) => {
+                                            if let Some(char2) = chars.next() {
+                                                let char2 = validate_char(char2);
+                                                match char2 {
+                                                    ValidateCharResult::Valid(char2) => {
+                                                        let b = (char << 4) | char2;
+                                                        mem[i] = b;
+                                                        i += 1;
+                                                        continue;
+                                                    }
+                                                    ValidateCharResult::Invalid => {}
+                                                    ValidateCharResult::Skip => continue,
+                                                }
                                             }
-                                        }
 
-                                        self.memory_viewer_selected_pending_value = Some(char);
-                                    }
+                                            self.memory_viewer_selected_pending_value = Some(char);
+                                        }
+                                        ValidateCharResult::Invalid => break,
+                                        ValidateCharResult::Skip => continue,
+                                    };
 
                                     break;
                                 }
@@ -176,7 +184,7 @@ impl NitrousGUI {
                             egui::Event::Text(text) => {
                                 let char = validate_char(text.chars().next().unwrap());
 
-                                if let Some(char) = char {
+                                if let ValidateCharResult::Valid(char) = char {
                                     if let Some(value) = self.memory_viewer_selected_pending_value {
                                         let b = (value << 4) | char;
                                         self.memory_viewer_selected_pending_value = None;
@@ -198,11 +206,18 @@ impl NitrousGUI {
     }
 }
 
-fn validate_char(char: char) -> Option<u8> {
+fn validate_char(char: char) -> ValidateCharResult {
     match char {
-        '0'..='9' => Some(char.to_digit(10).unwrap() as u8),
-        'a'..='f' => Some(char as u8 - b'a' + 10),
-        'A'..='F' => Some(char as u8 - b'A' + 10),
-        _ => None,
+        '0'..='9' => ValidateCharResult::Valid(char.to_digit(10).unwrap() as u8),
+        'a'..='f' => ValidateCharResult::Valid(char as u8 - b'a' + 10),
+        'A'..='F' => ValidateCharResult::Valid(char as u8 - b'A' + 10),
+        ' ' | '\t' | '\n' | '\r' => ValidateCharResult::Skip,
+        _ => ValidateCharResult::Invalid,
     }
+}
+
+enum ValidateCharResult {
+    Valid(u8),
+    Invalid,
+    Skip,
 }
