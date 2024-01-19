@@ -20,47 +20,42 @@ impl NitrousGUI {
                 let log = logger::LOGS.lock().unwrap();
                 let text_style = egui::TextStyle::Monospace;
                 let height = ui.text_style_height(&text_style);
-                let total_rows = log.len() / 16;
-                egui::ScrollArea::vertical().show_rows(ui, height, total_rows, |ui, row_range| {
+                egui::ScrollArea::vertical().show_rows(ui, height, log.len(), |ui, row_range| {
                     ui.make_monospace();
 
                     for row in row_range {
-                        let start = row * 16;
-                        let end = start + 16;
-                        let lines = &log[start..end];
-                        for line in lines {
-                            ui.horizontal(|ui| {
-                                // it's actually vertically centered but egui has these the wrong way around??????????
-                                ui.horizontal_centered(|ui| {
-                                    let color = match line.kind {
-                                        logger::LogKind::Debug => {
-                                            let color = egui::Color32::LIGHT_BLUE;
-                                            ui.icon(color, egui_phosphor::regular::BUG);
-                                            color
-                                        }
-                                        logger::LogKind::Info => {
-                                            let color = egui::Color32::LIGHT_GREEN;
-                                            ui.icon(color, egui_phosphor::regular::INFO);
-                                            color
-                                        }
-                                        logger::LogKind::Warn => {
-                                            let color = egui::Color32::YELLOW;
-                                            ui.icon(color, egui_phosphor::regular::WARNING);
-                                            color
-                                        }
-                                        logger::LogKind::Error => {
-                                            let color = egui::Color32::LIGHT_RED;
-                                            ui.icon(color, egui_phosphor::regular::X_CIRCLE);
-                                            color
-                                        }
-                                    };
+                        let line = &log[row];
+                        ui.horizontal(|ui| {
+                            // it's actually vertically centered but egui has these the wrong way around??????????
+                            ui.horizontal_centered(|ui| {
+                                let color = match line.kind {
+                                    logger::LogKind::Debug => {
+                                        let color = egui::Color32::LIGHT_BLUE;
+                                        ui.icon(color, egui_phosphor::regular::BUG);
+                                        color
+                                    }
+                                    logger::LogKind::Info => {
+                                        let color = egui::Color32::LIGHT_GREEN;
+                                        ui.icon(color, egui_phosphor::regular::INFO);
+                                        color
+                                    }
+                                    logger::LogKind::Warn => {
+                                        let color = egui::Color32::YELLOW;
+                                        ui.icon(color, egui_phosphor::regular::WARNING);
+                                        color
+                                    }
+                                    logger::LogKind::Error => {
+                                        let color = egui::Color32::LIGHT_RED;
+                                        ui.icon(color, egui_phosphor::regular::X_CIRCLE);
+                                        color
+                                    }
+                                };
 
-                                    ui.colored_label(color, &line.content);
-                                });
+                                ui.colored_label(color, &line.content);
                             });
+                        });
 
-                            ui.separator();
-                        }
+                        ui.separator();
                     }
                 })
             });
