@@ -9,12 +9,7 @@ pub struct Emulator {
 
 impl Default for Emulator {
     fn default() -> Emulator {
-        let mut mem = vec![0; 1024 * 1024 * 4];
-        // poor example to fill memory
-        mem[0] = 0b00001010;
-        mem[1] = 0b00010000;
-        mem[2] = 0b10100000;
-        mem[3] = 0b11100011;
+        let mem = vec![0; 1024 * 1024 * 4];
 
         Emulator {
             arm9: Arm9::default(),
