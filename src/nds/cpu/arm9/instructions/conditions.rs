@@ -1,4 +1,4 @@
-use crate::nds::cpu::arm9::Arm9;
+use crate::nds::{cpu::arm9::Arm9, logger};
 
 #[inline(always)]
 pub fn calculate_cond<const INST_SET: u16>(arm9: &mut Arm9) -> bool {
@@ -20,7 +20,11 @@ pub fn calculate_cond<const INST_SET: u16>(arm9: &mut Arm9) -> bool {
         0b1100 => !s.get_zero() && s.get_negative() == s.get_overflow(),
         0b1101 => s.get_zero() || s.get_negative() != s.get_overflow(),
         0b1110 => true,
-        0b1111 => true, // TODO: UNPREDICTABLE?
+        0b1111 => {
+            // TODO: UNPREDICTABLE?
+            logger::warn("UNPREDICTABLE: condition 0b1111");
+            true
+        }
         _ => panic!("Invalid condition: {}", cond),
     }
 }

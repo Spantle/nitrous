@@ -91,7 +91,10 @@ impl Arm9 {
             ProcessorMode::SVC => PSR::from(self.r_svc[2]),
             ProcessorMode::ABT => PSR::from(self.r_abt[2]),
             ProcessorMode::UND => PSR::from(self.r_und[2]),
-            _ => PSR::default(),
+            _ => {
+                logger::warn("UNPREDICTABLE: attempt to get SPSR in non-exception mode.");
+                PSR::default()
+            }
         }
     }
 
