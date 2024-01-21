@@ -3,6 +3,7 @@ use crate::nds::{
     logger,
 };
 
+// AKA the addressing mode
 pub struct ShifterOperand {
     pub carry_out: bool,
     pub second_source_operand: u32,

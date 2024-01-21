@@ -7,10 +7,10 @@ mod shifter_operand;
 pub use lookup::lookup;
 
 pub struct DataProcessingInstruction {
-    first_source_register: u8,
-    destination_register: u8,
-    second_source_operand: u32,
-    carry_out: bool,
+    first_source_register: u8,  // Rn
+    destination_register: u8,   // Rd
+    second_source_operand: u32, // bits[11:0] result
+    carry_out: bool,            // C flag
 }
 
 impl DataProcessingInstruction {
