@@ -19,11 +19,11 @@ pub fn lookup_instruction_class<const INST_SET: u16>(
     match class {
         0b000 => {
             // Data Processing (immediate shift / register shift)
-            data_processing::lookup::<INST_SET, true>(inst, arm9)
+            data_processing::lookup::<INST_SET, false>(inst, arm9)
         }
         0b001 => {
             // Data Processing (immediate)
-            data_processing::lookup::<INST_SET, false>(inst, arm9)
+            data_processing::lookup::<INST_SET, true>(inst, arm9)
         }
         _ => {
             logger::warn(format!("unknown instruction class {:03b}", class));

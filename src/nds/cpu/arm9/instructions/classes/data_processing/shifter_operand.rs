@@ -8,7 +8,7 @@ pub struct ShifterOperand {
     pub second_source_operand: u32,
 }
 
-pub fn parse_register(arm9: &mut Arm9, inst: &Instruction) -> ShifterOperand {
+pub fn parse_immediate(arm9: &mut Arm9, inst: &Instruction) -> ShifterOperand {
     let mut carry_out = arm9.cpsr.get_carry();
 
     let immed_8 = inst.get_bits(0, 7) as u32;
@@ -25,7 +25,7 @@ pub fn parse_register(arm9: &mut Arm9, inst: &Instruction) -> ShifterOperand {
     }
 }
 
-pub fn parse_immediate(arm9: &mut Arm9, inst: &Instruction) -> ShifterOperand {
+pub fn parse_register(arm9: &mut Arm9, inst: &Instruction) -> ShifterOperand {
     let mut carry_out = arm9.cpsr.get_carry();
 
     let operand = inst.get_bits(4, 6);
