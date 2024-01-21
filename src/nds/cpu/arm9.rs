@@ -1,6 +1,6 @@
 use core::mem::swap;
 
-use crate::nds::{cpu::arm9::instructions::lookup_instruction_set, logger, memory::Memory};
+use crate::nds::{cpu::arm9::instructions::lookup_instruction_set, cpu::bus::Bus, logger};
 
 use self::models::{PipelineState, Registers};
 pub use self::models::{ProcessorMode, PSR};
@@ -44,7 +44,7 @@ impl Default for Arm9 {
 }
 
 impl Arm9 {
-    pub fn clock(&mut self, mem: &mut Vec<u8>) -> bool {
+    pub fn clock(&mut self, bus: &mut Bus) -> bool {
         match self.pipeline_state {
             PipelineState::Fetch => {
                 logger::debug("fetching instruction");
@@ -58,7 +58,7 @@ impl Arm9 {
             }
             PipelineState::Execute => {
                 // get 4 bytes
-                let inst = mem.read_u32(self.r[15]);
+                let inst = bus.read_word(self.r[15]);
                 // print as binary
                 logger::debug(format!(
                     "executing instruction: {:#08x} ({:032b})",
@@ -66,7 +66,7 @@ impl Arm9 {
                 ));
 
                 let r15 = self.r[15];
-                let cycles = lookup_instruction_set(inst.into(), self);
+                let cycles = lookup_instruction_set(inst.into(), self, bus);
                 if r15 == self.r[15] {
                     self.r[15] += 4;
                 } else {
@@ -78,9 +78,9 @@ impl Arm9 {
         }
     }
 
-    pub fn step(&mut self, mem: &mut Vec<u8>) {
+    pub fn step(&mut self, bus: &mut Bus) {
         loop {
-            if self.clock(mem) {
+            if self.clock(bus) {
                 break;
             }
         }

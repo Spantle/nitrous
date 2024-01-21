@@ -5,7 +5,7 @@ impl NitrousGUI {
         egui::Window::new_nitrous("Memory Viewer", ctx)
             .open(&mut self.memory_viewer)
             .show(ctx, |ui| {
-                let mem = &mut self.emulator.mem;
+                let mem = &mut self.emulator.bus.mem;
                 let text_style = egui::TextStyle::Monospace;
                 let height = ui.text_style_height(&text_style);
                 let total_rows = mem.len() / 16;

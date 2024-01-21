@@ -1,19 +1,17 @@
-use super::cpu::arm9::Arm9;
+use super::cpu::{arm9::Arm9, bus::Bus};
 
 pub struct Emulator {
     pub arm9: Arm9,
-    pub mem: Vec<u8>,
+    pub bus: Bus,
 
     running: bool,
 }
 
 impl Default for Emulator {
     fn default() -> Emulator {
-        let mem = vec![0; 1024 * 1024 * 4];
-
         Emulator {
             arm9: Arm9::default(),
-            mem,
+            bus: Bus::default(),
 
             running: false,
         }
@@ -38,10 +36,10 @@ impl Emulator {
             return;
         }
 
-        self.arm9.clock(&mut self.mem);
+        self.arm9.clock(&mut self.bus);
     }
 
     pub fn step(&mut self) {
-        self.arm9.step(&mut self.mem);
+        self.arm9.step(&mut self.bus);
     }
 }
