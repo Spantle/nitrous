@@ -6,7 +6,7 @@ use crate::nds::{
     logger,
 };
 
-use super::data_processing;
+use super::{data_processing, load_store};
 
 #[inline(always)]
 pub fn lookup_instruction_class<const INST_SET: u16>(
@@ -24,6 +24,14 @@ pub fn lookup_instruction_class<const INST_SET: u16>(
         0b001 => {
             // Data Processing (immediate)
             data_processing::lookup::<INST_SET, true>(inst, arm9)
+        }
+        0b010 => {
+            // Load/Store word or unsigned byte (immediate offset/index)
+            load_store::lookup::<INST_SET, false>(inst, arm9, bus)
+        }
+        0b011 => {
+            // Load/Store word or unsigned byte ("register offset/index" / "scaled register offset/index")
+            load_store::lookup::<INST_SET, true>(inst, arm9, bus)
         }
         _ => {
             logger::warn(format!("unknown instruction class {:03b}", class));

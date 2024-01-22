@@ -109,6 +109,18 @@ impl Arm9 {
         }
     }
 
+    // this stands for "get execute register unpredictable"
+    // when executing instructions, the PC is unpredictable
+    pub fn eru(&self, r: u8) -> u32 {
+        match r {
+            15 => {
+                logger::warn("UNPREDICTABLE: r15 was specified in an invalid context");
+                self.r[15]
+            }
+            _ => self.r[r],
+        }
+    }
+
     fn switch_mode(&mut self, mode: ProcessorMode, is_error_or_interrupt: bool) {
         if self.cpsr.get_mode() == mode {
             return;
