@@ -40,17 +40,6 @@ impl std::ops::IndexMut<u8> for Registers {
     }
 }
 
-// P30
-enum Exception {
-    Reset,
-    UndefinedInstruction,
-    SoftwareInterrupt, // SWI
-    PrefetchAbort,
-    DataAbort,
-    Irq,
-    Riq,
-}
-
 #[derive(Debug)]
 pub struct PSR(u32);
 
@@ -178,14 +167,6 @@ impl PSR {
         self.set_bit(Self::NEGATIVE_OFFSET, negative)
     }
 }
-
-// P40
-struct Byte(i8);
-struct HalfWord(i16);
-struct Word(i32);
-struct UByte(u8);
-struct UHalfWord(u16);
-struct UWord(u32);
 
 #[derive(Debug)]
 pub enum PipelineState {
