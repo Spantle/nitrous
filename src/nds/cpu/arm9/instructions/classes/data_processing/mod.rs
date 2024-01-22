@@ -14,7 +14,7 @@ pub struct DataProcessingInstruction {
 }
 
 impl DataProcessingInstruction {
-    fn new<const IS_IMMEDIATE: bool>(arm9: &mut Arm9, inst: Instruction) -> Self {
+    fn new<const IS_IMMEDIATE: bool>(arm9: &Arm9, inst: Instruction) -> Self {
         let shifter_operand = if IS_IMMEDIATE {
             shifter_operand::parse_immediate(arm9, &inst)
         } else {
