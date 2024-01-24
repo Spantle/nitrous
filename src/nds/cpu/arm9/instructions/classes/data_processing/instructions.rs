@@ -3,7 +3,7 @@ use crate::nds::cpu::arm9::Arm9;
 use super::DataProcessingInstruction;
 
 // MOV, MOVS
-pub fn mov<const S: bool>(inst: DataProcessingInstruction, arm9: &mut Arm9) -> u32 {
+pub fn mov<const S: bool>(inst: DataProcessingInstruction, arm9: &mut Arm9) {
     arm9.r[inst.destination_register] = inst.second_source_operand;
 
     if S {
@@ -16,6 +16,4 @@ pub fn mov<const S: bool>(inst: DataProcessingInstruction, arm9: &mut Arm9) -> u
             arm9.cpsr.set_carry(inst.carry_out);
         }
     }
-
-    1 // TODO: figure out how many cycles MOV is
 }

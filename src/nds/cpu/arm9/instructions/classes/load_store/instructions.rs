@@ -5,6 +5,7 @@ use super::LoadStoreInstruction;
 // LDR
 pub fn ldr(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut Bus) -> u32 {
     let bits = address & 0b11; // i have no idea what to call this
+    let mut cycles = 1 + (bits != 0) as u32;
 
     // If register 15 is specified for <Rd>, address[1:0] must be 0b00. If not, the result is UNPREDICTABLE.
     // let value = match bits {
@@ -20,9 +21,10 @@ pub fn ldr(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut 
         // note: this is for armv5
         arm9.r[15] = value & 0xFFFFFFFE;
         arm9.cpsr.set_thumb(value & 1 != 0);
+        cycles += 4;
     } else {
         arm9.r[inst.destination_register] = value;
     }
 
-    1 // TODO: figure out how many cycles LDR is
+    cycles
 }

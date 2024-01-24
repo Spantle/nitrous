@@ -26,6 +26,7 @@
 - [ARM946E-S Technical Reference Manual (latest)](https://datasheetspdf.com/pdf-file/547341/ARM/ARM946E-S/1)
 - [ARM946E-S Technical Reference Manual (older)](https://documentation-service.arm.com/static/5f032835cafe527e86f5b8ad)
 - [ARM9E-S Technical Reference Manual](https://documentation-service.arm.com/static/5e8e2f18fd977155116a77fb) - Timing info for all ARM9*E-S processors.
+- [ARM9E-S Technical Reference Manual (OUTDATED)](https://www.cs.cornell.edu/courses/cs414/2001FA/arm.pdf) - DO NOT USE. Just for fun.
 
 ## ARM7
 - [ARM7TDMI-S Instruction Set](https://vision.gel.ulaval.ca/~jflalonde/cours/1001/h17/docs/arm-instructionset.pdf) - The full document is [allegedly](https://emudev.org/system_resources#arm) missing.
