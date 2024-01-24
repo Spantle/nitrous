@@ -168,6 +168,14 @@ impl NitrousGUI {
                             .body(|mut body| {
                                 let mut display_psr = |name: &str, psr: &arm9::PSR| {
                                     body.row(20.0, |mut row| {
+                                        let flag = |ui: &mut egui::Ui, flag: bool| {
+                                            let v = format!("{}", flag);
+                                            if flag {
+                                                ui.label(egui::RichText::new(v).color(ui.visuals().widgets.inactive.text_color()))
+                                            } else {
+                                                ui.label(egui::RichText::new(v))
+                                            }
+                                        };
                                         row.col(|ui| {
                                             ui.strong(name);
                                         });
@@ -175,28 +183,28 @@ impl NitrousGUI {
                                             ui.label(format!("{:?}", psr.get_mode()));
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.get_thumb()));
+                                            flag(ui, psr.get_thumb());
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.get_fiq_interrupt()));
+                                            flag(ui, psr.get_fiq_interrupt());
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.get_irq_interrupt()));
+                                            flag(ui, psr.get_irq_interrupt());
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.get_saturation()));
+                                            flag(ui, psr.get_saturation());
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.get_overflow()));
+                                            flag(ui, psr.get_overflow());
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.get_carry()));
+                                            flag(ui, psr.get_carry());
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.get_zero()));
+                                            flag(ui, psr.get_zero());
                                         });
                                         row.col(|ui| {
-                                            ui.label(format!("{}", psr.get_negative()));
+                                            flag(ui, psr.get_negative());
                                         });
                                         row.col(|ui| {
                                             ui.label(format!("{:032b}", psr.value()));
