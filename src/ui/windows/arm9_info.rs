@@ -1,6 +1,7 @@
 use crate::nds::cpu::arm9;
 use crate::ui::{NitrousGUI, NitrousUI, NitrousWindow};
 
+// this code is absolutely horrendous and i'm sorry (i just wanna write the emulator not this important useful crap i'm gonna be using 24/7 lol)
 impl NitrousGUI {
     pub fn show_arm9_info(&mut self, ctx: &egui::Context) {
         egui::Window::new_nitrous("ARM9 Info", ctx)
@@ -40,15 +41,37 @@ impl NitrousGUI {
                                     row.col(|ui| {
                                         ui.strong("Base");
                                     });
-                                    for v in r {
+                                    for i in 0..r.len() {
+                                        let ii = i as u8;
                                         row.col(|ui| {
-                                            ui.label(format!("{:08X}", v));
+                                            let mut flag = true;
+                                            if let Some(selected) = &self.arm9_info_selected {
+                                                if selected.0 == "Base" && selected.1 == i {
+                                                    let text_edit = egui::TextEdit::singleline(&mut self.arm9_info_selected_pending_value).char_limit(8).frame(false).margin(egui::Vec2::new(0.0, 0.0));
+                                                    if ui.add(text_edit).lost_focus() {
+                                                        let value = u32::from_str_radix(&self.arm9_info_selected_pending_value, 16);
+                                                        if let Ok(value) = value {
+                                                            self.emulator.arm9.r[ii] = value;
+                                                        }
+                                                        self.arm9_info_selected = None;
+                                                    } else {
+                                                        flag = false;
+                                                    }
+                                                }
+                                            }
+
+                                            let value = format!("{:08X}", self.emulator.arm9.r[ii]);
+                                            if flag && ui.add(egui::Label::new(&value).sense(egui::Sense::click())).clicked()
+                                            {
+                                                self.arm9_info_selected_pending_value = value;
+                                                self.arm9_info_selected = Some(("Base".to_string(), i));
+                                            };
                                         });
                                     }
                                 });
 
                                 let mut display_range =
-                                    |name: &str, min: usize, max: usize, registers: &[u32]| {
+                                    |name: &str, min: usize, max: usize, registers: &mut [u32]| {
                                         body.row(20.0, |mut row| {
                                             row.col(|ui| {
                                                 ui.strong(name);
@@ -56,23 +79,44 @@ impl NitrousGUI {
                                             for i in 0..r.len() {
                                                 if i < min || i > max {
                                                     row.col(|_ui| {});
-                                                } else {
-                                                    row.col(|ui| {
-                                                        ui.label(format!(
-                                                            "{:08X}",
-                                                            registers[i - min]
-                                                        ));
-                                                    });
+                                                    continue;
                                                 }
+
+
+                                                // cargo fmt has given up and so have i
+                                                row.col(|ui| {
+                                                    let mut flag = true;
+                                                    if let Some(selected) = &self.arm9_info_selected {
+                                                        if selected.0 == *name && selected.1 == i - min {
+                                                            let text_edit = egui::TextEdit::singleline(&mut self.arm9_info_selected_pending_value).char_limit(8).frame(false).margin(egui::Vec2::new(0.0, 0.0));
+                                                            if ui.add(text_edit).lost_focus() {
+                                                                let value = u32::from_str_radix(&self.arm9_info_selected_pending_value, 16);
+                                                                if let Ok(value) = value {
+                                                                    registers[i - min] = value;
+                                                                }
+                                                                self.arm9_info_selected = None;
+                                                            } else {
+                                                                flag = false;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    let value = format!("{:08X}", registers[i - min]);
+                                                    if flag && ui.add(egui::Label::new(&value).sense(egui::Sense::click())).clicked()
+                                                    {
+                                                        self.arm9_info_selected_pending_value = value;
+                                                        self.arm9_info_selected = Some((name.to_string(), i - min));
+                                                    };
+                                                });
                                             }
                                         });
                                     };
 
-                                display_range("FIQ", 8, 14, &self.emulator.arm9.r_fiq);
-                                display_range("IRQ", 13, 14, &self.emulator.arm9.r_irq);
-                                display_range("SVC", 13, 14, &self.emulator.arm9.r_svc);
-                                display_range("ABT", 13, 14, &self.emulator.arm9.r_abt);
-                                display_range("UND", 13, 14, &self.emulator.arm9.r_und);
+                                display_range("FIQ", 8, 14, &mut self.emulator.arm9.r_fiq);
+                                display_range("IRQ", 13, 14, &mut self.emulator.arm9.r_irq);
+                                display_range("SVC", 13, 14, &mut self.emulator.arm9.r_svc);
+                                display_range("ABT", 13, 14, &mut self.emulator.arm9.r_abt);
+                                display_range("UND", 13, 14, &mut self.emulator.arm9.r_und);
                             });
                     });
 

@@ -43,6 +43,11 @@ pub struct NitrousGUI {
     pub test_window: bool,
 
     #[serde(skip)]
+    pub arm9_info_selected: Option<(String, usize)>,
+    #[serde(skip)]
+    pub arm9_info_selected_pending_value: String,
+
+    #[serde(skip)]
     pub memory_viewer_selected: Option<usize>,
     #[serde(skip)]
     pub memory_viewer_selected_pending_value: Option<u8>,
