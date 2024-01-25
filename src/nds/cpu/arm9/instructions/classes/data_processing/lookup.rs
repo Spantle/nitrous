@@ -12,7 +12,7 @@ pub fn lookup<const INST_SET: u16, const IS_IMMEDIATE: bool>(
 ) -> u32 {
     let inst = DataProcessingInstruction::new::<IS_IMMEDIATE>(&*arm9, inst);
     // cycles are the same for all data-processing instructions
-    let cycles = 1 + (!IS_IMMEDIATE) as u32 + (inst.destination_register == 15) as u32;
+    let cycles = 1 + (!IS_IMMEDIATE) as u32 + ((inst.destination_register == 15) as u32 * 2);
 
     let opcode = (INST_SET >> 1) & 0b1111;
     let s = INST_SET & 1 != 0;
