@@ -27,4 +27,16 @@ impl Bus {
 
         u32::from_le_bytes(bytes)
     }
+
+    pub fn write_word(&mut self, addr: u32, value: u32) {
+        let addr = addr as usize;
+        match addr {
+            0x00000000..=0x00400000 => {
+                self.mem[addr..addr + 4].copy_from_slice(&value.to_le_bytes());
+            }
+            _ => {
+                logger::error(format!("Invalid write address: {:#010X}", addr));
+            }
+        }
+    }
 }

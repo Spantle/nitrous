@@ -28,3 +28,10 @@ pub fn ldr(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut 
 
     cycles
 }
+
+// STR
+pub fn str(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut Bus) -> u32 {
+    bus.write_word(address, arm9.r[inst.destination_register]);
+
+    1
+}

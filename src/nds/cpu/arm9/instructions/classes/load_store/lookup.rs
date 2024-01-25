@@ -39,6 +39,8 @@ pub fn lookup<const INST_SET: u16, const IS_REGISTER: bool>(
     if !inst.is_unsigned_byte {
         if inst.is_load {
             return instructions::ldr(inst, address, arm9, bus);
+        } else {
+            return instructions::str(inst, address, arm9, bus);
         }
     }
 
