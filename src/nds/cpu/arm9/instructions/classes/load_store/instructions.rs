@@ -10,12 +10,12 @@ pub fn ldr(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut 
     // If register 15 is specified for <Rd>, address[1:0] must be 0b00. If not, the result is UNPREDICTABLE.
     // let value = match bits {
     //     0b00 => bus.read_word(address),
-    //     0b01 => bus.read_word(address) >> 8,
-    //     0b10 => bus.read_word(address) >> 16,
-    //     0b11 => bus.read_word(address) >> 24,
+    //     0b01 => bus.read_word(address).rotate_right(8),
+    //     0b10 => bus.read_word(address).rotate_right(16),
+    //     0b11 => bus.read_word(address).rotate_right(24),
     //     _ => unreachable!(),
     // };
-    let value = bus.read_word(address) >> (bits * 8);
+    let value = bus.read_word(address).rotate_right(bits * 8);
 
     if inst.destination_register == 15 {
         // note: this is for armv5
