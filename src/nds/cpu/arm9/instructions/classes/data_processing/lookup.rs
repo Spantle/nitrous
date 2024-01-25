@@ -17,6 +17,12 @@ pub fn lookup<const INST_SET: u16, const IS_IMMEDIATE: bool>(
     let opcode = (INST_SET >> 1) & 0b1111;
     let s = INST_SET & 1 != 0;
     match (opcode, s) {
+        (0b0100, false) => {
+            instructions::add::<false>(inst, arm9);
+        }
+        (0b0100, true) => {
+            instructions::add::<true>(inst, arm9);
+        }
         (0b1101, false) => {
             instructions::mov::<false>(inst, arm9);
         }
