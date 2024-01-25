@@ -2,7 +2,7 @@ use crate::ui::{NitrousGUI, NitrousUI, NitrousWindow};
 
 impl NitrousGUI {
     pub fn show_memory_viewer(&mut self, ctx: &egui::Context) {
-        egui::Window::new_nitrous("Memory Viewer", ctx)
+        let window = egui::Window::new_nitrous("Memory Viewer", ctx)
             .open(&mut self.memory_viewer)
             .show(ctx, |ui| {
                 let mem = &mut self.emulator.bus.mem;
@@ -203,6 +203,15 @@ impl NitrousGUI {
                     });
                 })
             });
+
+        if let Some(window) = window {
+            // for some reason the focus methods aren't working
+            // thanks egui
+            if window.response.clicked_elsewhere() {
+                self.memory_viewer_selected = None;
+                self.memory_viewer_selected_pending_value = None;
+            }
+        }
     }
 }
 
