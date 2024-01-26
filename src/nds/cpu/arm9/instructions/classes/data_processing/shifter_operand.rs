@@ -156,10 +156,7 @@ pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
                 rm.rotate_right(least_significant_bits)
             }
         }
-        _ => {
-            logger::warn(format!("unknown data-processing operand {:03b}", operand));
-            0
-        }
+        _ => unreachable!(),
     };
 
     ShifterOperand {

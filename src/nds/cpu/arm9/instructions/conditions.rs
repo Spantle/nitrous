@@ -25,6 +25,6 @@ pub fn calculate_cond<const INST_SET: u16>(arm9: &mut Arm9) -> bool {
             logger::warn("UNPREDICTABLE: condition 0b1111");
             true
         }
-        _ => panic!("Invalid condition: {}", cond),
+        _ => unreachable!(),
     }
 }

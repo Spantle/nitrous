@@ -4101,6 +4101,6 @@ pub fn lookup_instruction_set(inst: Instruction, arm9: &mut Arm9, bus: &mut Bus)
         0b111111111101 => run_instruction_set::<0b111111111101>(inst, arm9, bus),
         0b111111111110 => run_instruction_set::<0b111111111110>(inst, arm9, bus),
         0b111111111111 => run_instruction_set::<0b111111111111>(inst, arm9, bus),
-        _ => panic!("Unknown instruction: {:b}", inst),
+        _ => unreachable!(),
     }
 }
