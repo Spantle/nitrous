@@ -1,3 +1,5 @@
+use egui::load::SizedTexture;
+
 use crate::nds::Emulator;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -95,11 +97,15 @@ impl eframe::App for NitrousGUI {
                             .size(egui_extras::Size::exact(256.0))
                             .horizontal(|mut strip| {
                                 strip.cell(|ui| {
-                                    ui.painter().rect_filled(
-                                        ui.available_rect_before_wrap(),
-                                        0.0,
-                                        egui::Color32::from_rgb(100, 0, 0),
+                                    let image = self.emulator.bus.gpu2d_a.render();
+                                    let texture = ui.ctx().load_texture(
+                                        "top_screen",
+                                        image,
+                                        Default::default(),
                                     );
+                                    ui.add(egui::Image::from_texture(SizedTexture::from_handle(
+                                        &texture,
+                                    )));
                                 });
                             });
                     });

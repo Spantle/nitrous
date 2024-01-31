@@ -5,6 +5,7 @@ impl NitrousGUI {
         let window = egui::Window::new_nitrous("Memory Viewer", ctx)
             .open(&mut self.memory_viewer)
             .show(ctx, |ui| {
+                let visual_offset = 0x02000000;
                 let mem = &mut self.emulator.bus.mem;
                 let text_style = egui::TextStyle::Monospace;
                 let height = ui.text_style_height(&text_style);
@@ -18,7 +19,7 @@ impl NitrousGUI {
                         ui.horizontal(|ui| {
                             ui.make_monospace();
 
-                            ui.strong(format!("{:08X}", row_start));
+                            ui.strong(format!("{:08X}", row_start + visual_offset));
 
                             ui.add_space(height / 2.0);
                             for (i, b) in row_mem.iter().enumerate() {
