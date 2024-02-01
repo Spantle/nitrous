@@ -11,10 +11,12 @@ egui-phosphor = "0.3.2"
 egui_extras = "0.25.0"
 log = "0.4.20"
 once_cell = "1.19.0"
+rfd = "0.13.0"
 serde = { version = "1.0.195", features = ["derive"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 env_logger = "0.10.0"
+futures = "0.3.30"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4.39"

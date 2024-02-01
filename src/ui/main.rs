@@ -1,3 +1,8 @@
+use std::{
+    sync::mpsc::Receiver,
+    sync::mpsc::{channel, Sender},
+};
+
 use egui::load::SizedTexture;
 
 use crate::nds::Emulator;
@@ -33,11 +38,14 @@ fn creator(cc: &eframe::CreationContext, emulator: Emulator) -> Box<dyn eframe::
     Box::new(NitrousGUI::new(cc, emulator))
 }
 
-#[derive(serde::Deserialize, serde::Serialize, Default)]
+#[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct NitrousGUI {
     #[serde(skip)]
     pub emulator: Emulator,
+
+    #[serde(skip)]
+    pub load_rom_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
 
     pub arm9_info: bool,
     pub emulation_log: bool,
@@ -53,6 +61,27 @@ pub struct NitrousGUI {
     pub memory_viewer_selected: Option<usize>,
     #[serde(skip)]
     pub memory_viewer_selected_pending_value: Option<u8>,
+}
+
+impl Default for NitrousGUI {
+    fn default() -> Self {
+        NitrousGUI {
+            emulator: Emulator::default(),
+
+            load_rom_channel: channel(),
+
+            arm9_info: false,
+            emulation_log: false,
+            memory_viewer: false,
+            test_window: false,
+
+            arm9_info_selected: None,
+            arm9_info_selected_pending_value: String::new(),
+
+            memory_viewer_selected: None,
+            memory_viewer_selected_pending_value: None,
+        }
+    }
 }
 
 impl NitrousGUI {
@@ -129,6 +158,10 @@ impl eframe::App for NitrousGUI {
         self.show_emulation_log(ctx);
         self.show_memory_viewer(ctx);
         self.show_test_window(ctx);
+
+        if let Ok(bytes) = self.load_rom_channel.1.try_recv() {
+            self.emulator.load_rom(bytes);
+        }
 
         ctx.request_repaint();
     }

@@ -8,6 +8,14 @@ impl NitrousGUI {
                     ui.ctx().memory_mut(|mem| mem.reset_areas());
                 }
 
+                ui.menu_button("File", |ui| {
+                    let close = Self::file_menu(self, ui);
+
+                    if close {
+                        ui.close_menu();
+                    }
+                });
+
                 ui.menu_button("Emulation", |ui| {
                     let close = Self::emulation_menu(self, ui);
 
@@ -26,6 +34,27 @@ impl NitrousGUI {
                 });
             });
         });
+    }
+
+    fn file_menu(&mut self, ui: &mut egui::Ui) -> bool {
+        if ui.button("Open ROM").clicked() {
+            let sender = self.load_rom_channel.0.clone();
+
+            let task = rfd::AsyncFileDialog::new()
+                .add_filter("NDS ROM", &["nds"])
+                .pick_file();
+
+            execute(async move {
+                let file = task.await;
+                if let Some(file) = file {
+                    let bytes = file.read().await;
+                    let _result = sender.send(bytes);
+                }
+            });
+            return true;
+        }
+
+        false
     }
 
     fn emulation_menu(&mut self, ui: &mut egui::Ui) -> bool {
@@ -52,4 +81,14 @@ impl NitrousGUI {
 
         false
     }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn execute<F: core::future::Future<Output = ()> + Send + 'static>(f: F) {
+    std::thread::spawn(move || futures::executor::block_on(f));
+}
+
+#[cfg(target_arch = "wasm32")]
+fn execute<F: Future<Output = ()> + 'static>(f: F) {
+    wasm_bindgen_futures::spawn_local(f);
 }

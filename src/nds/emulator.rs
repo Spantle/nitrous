@@ -19,6 +19,26 @@ impl Default for Emulator {
 }
 
 impl Emulator {
+    pub fn load_rom(&mut self, rom: Vec<u8>) {
+        // TODO: do some other resetting/initializing stuff here in the future
+        let success = self.bus.cart.load(rom);
+        if !success {
+            return;
+        }
+
+        self.bus.mem = vec![0; 1024 * 1024 * 4];
+
+        self.bus.write_bulk(
+            self.bus.cart.arm9_load_address,
+            self.bus.cart.rom[self.bus.cart.arm9_rom_offset as usize
+                ..(self.bus.cart.arm9_rom_offset + self.bus.cart.arm9_size) as usize]
+                .to_vec(),
+        );
+
+        self.arm9 = Arm9::default();
+        self.arm9.r[15] = self.bus.cart.arm9_entry_address;
+    }
+
     pub fn start(&mut self) {
         self.running = true;
     }

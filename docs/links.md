@@ -40,7 +40,7 @@
 
 # Carts/Roms
 - [DS Cartridge NitroROM and NitroARC File Systems](http://problemkaputt.de/gbatek-ds-cartridge-nitrorom-and-nitroarc-file-systems.htm)
-- [Nintendo DS File Formats](https://www.romhacking.net/documents/[469]nds_formats.htm)
+- [Nintendo DS File Formats](https://www.romhacking.net/documents/469) ([Direct Link](https://s3-external-1.amazonaws.com/romhacking-hacks/documents/%5B469%5Dnds_formats.htm))
 - [Cartridge Headers](http://dsibrew.org/wiki/DSi_cartridge_header)
 - [NDS Header Format](https://web.archive.org/web/20120404151617/http://www.bottledlight.com/ds/index.php/FileFormats/NDSFormat)
 - [The Smallest NDS File](https://imrannazar.com/The-Smallest-NDS-File)

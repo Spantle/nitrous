@@ -1,3 +1,4 @@
+mod cartridge;
 pub mod cpu;
 mod emulator;
 pub mod gpu;
