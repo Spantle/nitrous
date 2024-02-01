@@ -61,7 +61,7 @@ impl Arm9 {
                 let inst = bus.read_word(self.r[15]);
                 // print as binary
                 logger::debug(format!(
-                    "executing instruction: {:#08x} ({:032b})",
+                    "executing instruction: {:#08X} ({:032b})",
                     inst, inst
                 ));
 
