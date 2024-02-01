@@ -18,6 +18,10 @@ env_logger = "0.10.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen-futures = "0.4.39"
+
+[features]
+epic = []
+
 # TODO: experiment with this later on
 # normally it's set to 3 but 2 results in a smaller binary (at least in wasm)
 # see which is faster

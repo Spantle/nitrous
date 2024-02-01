@@ -2,9 +2,16 @@ use crate::nds::cpu::{arm9::Arm9, bus::Bus};
 
 use super::{models::Instruction, run::run_instruction_set};
 
+#[cfg(not(feature = "epic"))]
 pub fn lookup_instruction_set(inst: Instruction, arm9: &mut Arm9, bus: &mut Bus) -> u32 {
-    let set = (inst.bits() >> 20 & 0b111111111111) as u16;
-    match set {
+    run_instruction_set(inst, arm9, bus)
+}
+
+// this is one of the functions of all time
+#[cfg(feature = "epic")]
+pub fn lookup_instruction_set(inst: Instruction, arm9: &mut Arm9, bus: &mut Bus) -> u32 {
+    let inst_set = (inst.bits() >> 20 & 0b111111111111) as u16;
+    match inst_set {
         0b000000000000 => run_instruction_set::<0b000000000000>(inst, arm9, bus),
         0b000000000001 => run_instruction_set::<0b000000000001>(inst, arm9, bus),
         0b000000000010 => run_instruction_set::<0b000000000010>(inst, arm9, bus),

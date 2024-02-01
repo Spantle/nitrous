@@ -1,8 +1,8 @@
 use crate::nds::{cpu::arm9::Arm9, logger};
 
 #[inline(always)]
-pub fn calculate_cond<const INST_SET: u16>(arm9: &mut Arm9) -> bool {
-    let cond = (INST_SET >> 8 & 0b1111) as u8;
+pub fn calculate_cond(arm9: &mut Arm9, inst_set: u16) -> bool {
+    let cond = (inst_set >> 8 & 0b1111) as u8;
     let s = &arm9.cpsr;
     match cond {
         0b0000 => s.get_zero(),
