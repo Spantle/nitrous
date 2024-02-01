@@ -3,6 +3,7 @@ use crate::nds::cpu::{arm9::Arm9, bus::Bus};
 use super::LoadStoreInstruction;
 
 // LDR
+#[inline(always)]
 pub fn ldr(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut Bus) -> u32 {
     let bits = address & 0b11; // i have no idea what to call this
     let mut cycles = 1 + (bits != 0) as u32;
@@ -30,6 +31,7 @@ pub fn ldr(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut 
 }
 
 // STR
+#[inline(always)]
 pub fn str(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut Bus) -> u32 {
     bus.write_word(address, arm9.r[inst.destination_register]);
 
