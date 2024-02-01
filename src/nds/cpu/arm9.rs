@@ -115,7 +115,7 @@ impl Arm9 {
         match r {
             15 => {
                 logger::warn("UNPREDICTABLE: r15 was specified in an invalid context");
-                self.r[15]
+                self.r[15] // NOTE: this might need to be + 8?
             }
             _ => self.r[r],
         }
