@@ -21,8 +21,8 @@ impl LoadStoreInstruction {
         };
 
         LoadStoreInstruction {
-            first_source_register: inst.get_bits(16, 19),
-            destination_register: inst.get_bits(12, 15),
+            first_source_register: inst.get_byte(16, 19),
+            destination_register: inst.get_byte(12, 15),
             addressing_mode,
         }
     }

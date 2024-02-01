@@ -4,15 +4,15 @@ use crate::nds::{
 };
 
 pub fn parse_immediate(_arm9: &Arm9, inst: &Instruction) -> u32 {
-    inst.get_bits(0, 12) as u32
+    inst.get_word(0, 12)
 }
 
 pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> u32 {
-    let rm = inst.get_bits(0, 3);
+    let rm = inst.get_byte(0, 3);
     let rm = arm9.eru(rm);
 
-    let shift = inst.get_bits(5, 6);
-    let shift_imm = inst.get_bits(7, 11) as u32;
+    let shift = inst.get_byte(5, 6);
+    let shift_imm = inst.get_word(7, 11);
     match shift {
         0b00 => {
             // LSL

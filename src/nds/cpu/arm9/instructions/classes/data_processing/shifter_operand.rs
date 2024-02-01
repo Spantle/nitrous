@@ -1,7 +1,4 @@
-use crate::nds::{
-    cpu::arm9::{instructions::models::Instruction, Arm9},
-    logger,
-};
+use crate::nds::cpu::arm9::{instructions::models::Instruction, Arm9};
 
 // AKA the addressing mode
 pub struct ShifterOperand {
@@ -12,8 +9,8 @@ pub struct ShifterOperand {
 pub fn parse_immediate(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
     let mut carry_out = arm9.cpsr.get_carry();
 
-    let immed_8 = inst.get_bits(0, 7) as u32;
-    let rotate_imm = inst.get_bits(8, 11) as u32; // NOTE: rotate_imm must be even to be "legitimate"
+    let immed_8 = inst.get_word(0, 7);
+    let rotate_imm = inst.get_word(8, 11); // NOTE: rotate_imm must be even to be "legitimate"
 
     let rotated = immed_8.rotate_right(rotate_imm * 2);
     if rotate_imm != 0 {
@@ -29,12 +26,12 @@ pub fn parse_immediate(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
 pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
     let mut carry_out = arm9.cpsr.get_carry();
 
-    let operand = inst.get_bits(4, 6);
+    let operand = inst.get_byte(4, 6);
     let second_source_operand = match operand {
         0b000 => {
             // LSL immediate
-            let rm = arm9.er(inst.get_bits(0, 3));
-            let shift_imm = inst.get_bits(7, 11) as u32;
+            let rm = arm9.er(inst.get_byte(0, 3));
+            let shift_imm = inst.get_word(7, 11);
             if shift_imm == 0 {
                 rm
             } else {
@@ -44,8 +41,8 @@ pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
         }
         0b001 => {
             // LSL register
-            let rm = arm9.er(inst.get_bits(0, 3));
-            let rs = arm9.er(inst.get_bits(8, 11));
+            let rm = arm9.er(inst.get_byte(0, 3));
+            let rs = arm9.er(inst.get_byte(8, 11));
             let least_significant_byte = rs & 0b11111111;
             if least_significant_byte == 0 {
                 rm
@@ -62,8 +59,8 @@ pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
         }
         0b010 => {
             // LSR immediate
-            let rm = arm9.er(inst.get_bits(0, 3));
-            let shift_imm = inst.get_bits(7, 11) as u32;
+            let rm = arm9.er(inst.get_byte(0, 3));
+            let shift_imm = inst.get_word(7, 11);
             if shift_imm == 0 {
                 carry_out = rm & (1 << 31) != 0;
                 0
@@ -74,8 +71,8 @@ pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
         }
         0b011 => {
             // LSR register
-            let rm = arm9.er(inst.get_bits(0, 3));
-            let rs = arm9.er(inst.get_bits(8, 11));
+            let rm = arm9.er(inst.get_byte(0, 3));
+            let rs = arm9.er(inst.get_byte(8, 11));
             let least_significant_byte = rs & 0b11111111;
             if least_significant_byte == 0 {
                 rm
@@ -92,8 +89,8 @@ pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
         }
         0b100 => {
             // ASR immediate
-            let rm = arm9.er(inst.get_bits(0, 3));
-            let shift_imm = inst.get_bits(7, 11) as u32;
+            let rm = arm9.er(inst.get_byte(0, 3));
+            let shift_imm = inst.get_word(7, 11);
             if shift_imm == 0 {
                 let sign_bit = rm & (1 << 31) != 0;
                 carry_out = sign_bit;
@@ -109,8 +106,8 @@ pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
         }
         0b101 => {
             // ASR register
-            let rm = arm9.er(inst.get_bits(0, 3));
-            let rs = arm9.er(inst.get_bits(8, 11));
+            let rm = arm9.er(inst.get_byte(0, 3));
+            let rs = arm9.er(inst.get_byte(8, 11));
             let least_significant_byte = rs & 0b11111111;
             if least_significant_byte == 0 {
                 rm
@@ -129,8 +126,8 @@ pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
         }
         0b110 => {
             // ROR immediate
-            let rm = arm9.er(inst.get_bits(0, 3));
-            let shift_imm = inst.get_bits(7, 11) as u32;
+            let rm = arm9.er(inst.get_byte(0, 3));
+            let shift_imm = inst.get_word(7, 11);
             if shift_imm == 0 {
                 // RRX
                 carry_out = rm & 1 != 0;
@@ -142,8 +139,8 @@ pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
         }
         0b111 => {
             // ROR register
-            let rm = arm9.er(inst.get_bits(0, 3));
-            let rs = arm9.er(inst.get_bits(8, 11));
+            let rm = arm9.er(inst.get_byte(0, 3));
+            let rs = arm9.er(inst.get_byte(8, 11));
             let least_significant_byte = rs & 0b11111111;
             let least_significant_bits = rs & 0b1111; // this is not explained lol
             if least_significant_byte == 0 {

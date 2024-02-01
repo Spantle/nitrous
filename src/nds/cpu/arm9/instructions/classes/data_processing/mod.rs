@@ -22,8 +22,8 @@ impl DataProcessingInstruction {
         };
 
         DataProcessingInstruction {
-            first_source_register: inst.get_bits(16, 19),
-            destination_register: inst.get_bits(12, 15),
+            first_source_register: inst.get_byte(16, 19),
+            destination_register: inst.get_byte(12, 15),
             second_source_operand: shifter_operand.second_source_operand,
             carry_out: shifter_operand.carry_out,
         }

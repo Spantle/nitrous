@@ -24,7 +24,15 @@ impl Instruction {
         (self.0 >> offset) & 1 == 1
     }
 
-    pub fn get_bits(&self, offset: u32, to: u32) -> u8 {
-        ((self.0 >> offset) & ((1 << (to - offset + 1)) - 1) & 0b11111111) as u8
+    pub fn get_word(&self, offset: u32, to: u32) -> u32 {
+        (self.0 >> offset) & ((1 << (to - offset + 1)) - 1)
+    }
+
+    pub fn get_halfword(&self, offset: u32, to: u32) -> u16 {
+        self.get_word(offset, to) as u16
+    }
+
+    pub fn get_byte(&self, offset: u32, to: u32) -> u8 {
+        self.get_word(offset, to) as u8
     }
 }
