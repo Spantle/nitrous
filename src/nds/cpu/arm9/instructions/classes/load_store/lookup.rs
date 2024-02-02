@@ -22,7 +22,7 @@ pub fn lookup<const IS_REGISTER: bool>(
     let w = inst_set >> 1 & 1 == 1; // W
     let is_load = inst_set & 1 == 1; // L
 
-    let address = if IS_REGISTER && post_indexing {
+    let address = if post_indexing {
         let address = arm9.er(inst.first_source_register);
         if is_add {
             arm9.r[inst.first_source_register] += inst.addressing_mode;
