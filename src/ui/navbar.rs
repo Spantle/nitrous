@@ -89,6 +89,6 @@ fn execute<F: core::future::Future<Output = ()> + Send + 'static>(f: F) {
 }
 
 #[cfg(target_arch = "wasm32")]
-fn execute<F: Future<Output = ()> + 'static>(f: F) {
+fn execute<F: core::future::Future<Output = ()> + 'static>(f: F) {
     wasm_bindgen_futures::spawn_local(f);
 }
