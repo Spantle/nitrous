@@ -1,9 +1,13 @@
 use crate::nds::{cartridge::Cartridge, gpu::gpu2d::Gpu2d, logger};
 
+use super::arm9::POWCNT1;
+
 pub struct Bus {
     pub cart: Cartridge,
     pub mem: Vec<u8>,
     pub gpu2d_a: Gpu2d,
+
+    pub powcnt1: POWCNT1, // 0x04000304
 }
 
 impl Default for Bus {
@@ -12,6 +16,8 @@ impl Default for Bus {
             cart: Cartridge::default(),
             mem: vec![0; 1024 * 1024 * 4],
             gpu2d_a: Gpu2d::default(),
+
+            powcnt1: POWCNT1::default(),
         }
     }
 }
@@ -43,7 +49,7 @@ impl Bus {
                 u32::from_le_bytes(bytes)
             }
             0x04000000 => self.gpu2d_a.dispcnt.value(),
-            0x04000304 => self.gpu2d_a.powcnt1.value(),
+            0x04000304 => self.powcnt1.value(),
             _ => {
                 logger::error(
                     logger::LogSource::Bus9,
@@ -62,7 +68,7 @@ impl Bus {
                 self.mem[addr..addr + 4].copy_from_slice(&value.to_le_bytes());
             }
             0x04000000 => self.gpu2d_a.dispcnt = value.into(),
-            0x04000304 => self.gpu2d_a.powcnt1 = value.into(),
+            0x04000304 => self.powcnt1 = value.into(),
             _ => {
                 logger::error(
                     logger::LogSource::Bus9,

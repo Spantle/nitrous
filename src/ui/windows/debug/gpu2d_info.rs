@@ -41,15 +41,6 @@ impl NitrousGUI {
                         ui.label(format!("{:08X}", self.emulator.bus.gpu2d_a.dispcnt.value()));
                     });
                 });
-
-                body.row(row_height, |mut row| {
-                    row.col(|ui| {
-                        ui.strong("POWCNT1");
-                    });
-                    row.col(|ui| {
-                        ui.label(format!("{:08X}", self.emulator.bus.gpu2d_a.powcnt1.value()));
-                    });
-                });
             })
     }
 }

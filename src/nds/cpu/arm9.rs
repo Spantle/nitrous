@@ -3,7 +3,7 @@ use core::mem::swap;
 use crate::nds::{cpu::arm9::instructions::lookup_instruction_set, cpu::bus::Bus, logger};
 
 use self::models::{PipelineState, Registers};
-pub use self::models::{ProcessorMode, PSR};
+pub use self::models::{ProcessorMode, POWCNT1, PSR};
 
 mod instructions;
 mod models;
