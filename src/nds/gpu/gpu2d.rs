@@ -1,10 +1,11 @@
-use self::models::DISPCNT;
+use self::models::{DISPCNT, POWCNT1};
 
 mod models;
 
 #[derive(Default)]
 pub struct Gpu2d {
-    pub dispcnt: DISPCNT,
+    pub dispcnt: DISPCNT, // 0x04000000
+    pub powcnt1: POWCNT1, // 0x04000304
 }
 
 impl Gpu2d {

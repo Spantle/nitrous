@@ -27,6 +27,7 @@ impl Bus {
                 u32::from_le_bytes(bytes)
             }
             0x04000000 => self.gpu2d_a.dispcnt.value(),
+            0x04000304 => self.gpu2d_a.powcnt1.value(),
             _ => {
                 logger::error(
                     logger::LogSource::Bus9,
@@ -45,6 +46,7 @@ impl Bus {
                 self.mem[addr..addr + 4].copy_from_slice(&value.to_le_bytes());
             }
             0x04000000 => self.gpu2d_a.dispcnt = value.into(),
+            0x04000304 => self.gpu2d_a.powcnt1 = value.into(),
             _ => {
                 logger::error(
                     logger::LogSource::Bus9,
