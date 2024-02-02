@@ -66,6 +66,12 @@ pub fn lookup<const IS_REGISTER: bool>(
         } else {
             return instructions::str(inst, address, arm9, bus);
         }
+    } else {
+        if is_load {
+            // return instructions::ldrb(inst, address, arm9, bus);
+        } else {
+            return instructions::strb(inst, address, arm9, bus);
+        }
     }
 
     logger::warn(

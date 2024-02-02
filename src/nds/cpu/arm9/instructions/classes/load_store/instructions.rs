@@ -37,3 +37,11 @@ pub fn str(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut 
 
     1
 }
+
+// STRB
+#[inline(always)]
+pub fn strb(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut Bus) -> u32 {
+    bus.write_byte(address, arm9.eru(inst.destination_register) as u8);
+
+    1
+}

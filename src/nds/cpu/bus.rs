@@ -17,6 +17,22 @@ impl Default for Bus {
 }
 
 impl Bus {
+    pub fn write_byte(&mut self, addr: u32, value: u8) {
+        let addr = addr as usize;
+        match addr {
+            0x02000000..=0x023FFFFF => {
+                let addr = addr % 0x02000000;
+                self.mem[addr] = value;
+            }
+            _ => {
+                logger::error(
+                    logger::LogSource::Bus9,
+                    format!("Invalid write byte address: {:#010X}", addr),
+                );
+            }
+        }
+    }
+
     pub fn read_word(&self, addr: u32) -> u32 {
         let addr = addr as usize;
         match addr {
