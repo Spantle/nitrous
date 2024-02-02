@@ -50,9 +50,12 @@ pub fn lookup<const IS_REGISTER: bool>(
         }
     }
 
-    logger::warn(format!(
-        "unknown load/store inst {} {} {} {} {}",
-        post_indexing, is_add, is_unsigned_byte, w, is_load
-    ));
+    logger::warn(
+        logger::LogSource::Arm9,
+        format!(
+            "unknown load/store inst {} {} {} {} {}",
+            post_indexing, is_add, is_unsigned_byte, w, is_load
+        ),
+    );
     1
 }

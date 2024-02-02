@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 bitflags = "2.4.1"
+chrono = "0.4.33"
 eframe = { version = "0.25.0", features = ["persistence"] }
 egui = { version = "0.25.0", features = ["log", "persistence"] }
 egui-phosphor = "0.3.2"

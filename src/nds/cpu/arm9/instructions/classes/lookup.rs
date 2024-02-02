@@ -35,7 +35,10 @@ pub fn lookup_instruction_class(
             load_store::lookup::<true>(inst_set, inst, arm9, bus)
         }
         _ => {
-            logger::warn(format!("unknown instruction class {:03b}", class));
+            logger::warn(
+                logger::LogSource::Arm9,
+                format!("unknown instruction class {:03b}", class),
+            );
             1
         }
     }

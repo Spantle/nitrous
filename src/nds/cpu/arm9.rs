@@ -47,12 +47,12 @@ impl Arm9 {
     pub fn clock(&mut self, bus: &mut Bus) -> bool {
         match self.pipeline_state {
             PipelineState::Fetch => {
-                logger::debug("fetching instruction");
+                logger::debug(logger::LogSource::Arm9, "fetching instruction");
                 self.pipeline_state = PipelineState::Decode;
                 false
             }
             PipelineState::Decode => {
-                logger::debug("decoding instruction");
+                logger::debug(logger::LogSource::Arm9, "decoding instruction");
                 self.pipeline_state = PipelineState::Execute;
                 false
             }
@@ -60,10 +60,10 @@ impl Arm9 {
                 // get 4 bytes
                 let inst = bus.read_word(self.r[15]);
                 // print as binary
-                logger::debug(format!(
-                    "executing instruction: {:#08X} ({:032b})",
-                    inst, inst
-                ));
+                logger::debug(
+                    logger::LogSource::Arm9,
+                    format!("executing instruction: {:#08X} ({:032b})", inst, inst),
+                );
 
                 let r15 = self.r[15];
                 let cycles = lookup_instruction_set(inst.into(), self, bus);
@@ -94,7 +94,10 @@ impl Arm9 {
             ProcessorMode::ABT => PSR::from(self.r_abt[2]),
             ProcessorMode::UND => PSR::from(self.r_und[2]),
             _ => {
-                logger::warn("UNPREDICTABLE: attempt to get SPSR in non-exception mode.");
+                logger::warn(
+                    logger::LogSource::Arm9,
+                    "UNPREDICTABLE: attempt to get SPSR in non-exception mode.",
+                );
                 PSR::default()
             }
         }
@@ -114,7 +117,10 @@ impl Arm9 {
     pub fn eru(&self, r: u8) -> u32 {
         match r {
             15 => {
-                logger::warn("UNPREDICTABLE: r15 was specified in an invalid context");
+                logger::warn(
+                    logger::LogSource::Arm9,
+                    "UNPREDICTABLE: r15 was specified in an invalid context",
+                );
                 self.r[15] // NOTE: this might need to be + 8?
             }
             _ => self.r[r],

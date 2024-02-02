@@ -28,7 +28,10 @@ impl Bus {
             }
             0x04000000 => self.gpu2d_a.dispcnt.value(),
             _ => {
-                logger::error(format!("Invalid read address: {:#010X}", addr));
+                logger::error(
+                    logger::LogSource::Bus9,
+                    format!("Invalid read address: {:#010X}", addr),
+                );
                 0
             }
         }
@@ -43,7 +46,10 @@ impl Bus {
             }
             0x04000000 => self.gpu2d_a.dispcnt = value.into(),
             _ => {
-                logger::error(format!("Invalid write address: {:#010X}", addr));
+                logger::error(
+                    logger::LogSource::Bus9,
+                    format!("Invalid write address: {:#010X}", addr),
+                );
             }
         }
     }
@@ -57,7 +63,10 @@ impl Bus {
                 self.mem[addr..addr + data.len()].copy_from_slice(&data);
             }
             _ => {
-                logger::error(format!("Invalid write bulk address: {:#010X}", addr));
+                logger::error(
+                    logger::LogSource::Bus9,
+                    format!("Invalid write bulk address: {:#010X}", addr),
+                );
             }
         }
     }

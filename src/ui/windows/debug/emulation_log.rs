@@ -28,28 +28,31 @@ impl NitrousGUI {
                         ui.horizontal(|ui| {
                             // it's actually vertically centered but egui has these the wrong way around??????????
                             ui.horizontal_centered(|ui| {
-                                let color = match line.kind {
+                                let (color, icon) = match line.kind {
                                     logger::LogKind::Debug => {
                                         let color = egui::Color32::LIGHT_BLUE;
-                                        ui.icon(color, egui_phosphor::regular::BUG);
-                                        color
+                                        (color, ui.icon(color, egui_phosphor::regular::BUG))
                                     }
                                     logger::LogKind::Info => {
                                         let color = egui::Color32::LIGHT_GREEN;
-                                        ui.icon(color, egui_phosphor::regular::INFO);
-                                        color
+                                        (color, ui.icon(color, egui_phosphor::regular::INFO))
                                     }
                                     logger::LogKind::Warn => {
                                         let color = egui::Color32::YELLOW;
-                                        ui.icon(color, egui_phosphor::regular::WARNING);
-                                        color
+                                        (color, ui.icon(color, egui_phosphor::regular::WARNING))
                                     }
                                     logger::LogKind::Error => {
                                         let color = egui::Color32::LIGHT_RED;
-                                        ui.icon(color, egui_phosphor::regular::X_CIRCLE);
-                                        color
+                                        (color, ui.icon(color, egui_phosphor::regular::X_CIRCLE))
                                     }
                                 };
+
+                                icon.on_hover_text(format!(
+                                    "({:?}) {}",
+                                    &line.kind, &line.timestamp
+                                ));
+
+                                ui.colored_label(color, format!("[{:?}]", &line.source));
 
                                 ui.colored_label(color, &line.content);
                             });
@@ -63,15 +66,15 @@ impl NitrousGUI {
 }
 
 trait EmulationLogUi {
-    fn icon(&mut self, color: egui::Color32, icon: &str);
+    fn icon(&mut self, color: egui::Color32, icon: &str) -> egui::Response;
 }
 
 impl EmulationLogUi for egui::Ui {
-    fn icon(&mut self, color: egui::Color32, icon: &str) {
+    fn icon(&mut self, color: egui::Color32, icon: &str) -> egui::Response {
         self.add(egui::widgets::Label::new(
             egui::RichText::new(icon)
                 .color(color)
                 .font(egui::FontId::default()),
-        ));
+        ))
     }
 }

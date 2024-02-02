@@ -44,7 +44,7 @@ pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> u32 {
         0b11 => {
             if shift_imm == 0 {
                 // RRX
-                logger::debug("the funny actually happened"); // TODO: remove
+                logger::debug(logger::LogSource::Arm9, "the funny actually happened"); // TODO: remove
                 (arm9.cpsr.get_carry() as u32) << 31 | rm >> 1
             } else {
                 // ROR

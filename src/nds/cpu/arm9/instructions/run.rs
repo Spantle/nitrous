@@ -10,7 +10,7 @@ pub fn run_instruction_set(inst: Instruction, arm9: &mut Arm9, bus: &mut Bus) ->
     let inst_set = (inst.bits() >> 20 & 0b111111111111) as u16;
     let cond_result = calculate_cond(arm9, inst_set);
     if !cond_result {
-        logger::debug("condition failed");
+        logger::debug(logger::LogSource::Arm9, "condition failed");
         return 0;
     }
 
@@ -26,7 +26,7 @@ pub fn run_instruction_set<const INST_SET: u16>(
 ) -> u32 {
     let cond_result = calculate_cond(arm9, INST_SET);
     if !cond_result {
-        logger::debug("condition failed");
+        logger::debug(logger::LogSource::Arm9, "condition failed");
         return 0;
     }
 

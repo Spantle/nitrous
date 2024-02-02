@@ -10,9 +10,9 @@ fn main() {
     init();
 
     if cfg!(feature = "epic") {
-        logger::info("Running in EPIC mode");
+        logger::info(logger::LogSource::Emu, "Running in EPIC mode");
     } else {
-        logger::info("Not running in epic mode");
+        logger::info(logger::LogSource::Emu, "Not running in epic mode");
     }
 
     let emulator = nds::Emulator::default();

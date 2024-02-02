@@ -27,7 +27,10 @@ pub fn lookup<const IS_IMMEDIATE: bool>(inst_set: u16, inst: Instruction, arm9: 
             instructions::mov::<true>(inst, arm9);
         }
         _ => {
-            logger::warn(format!("unknown data-processing opcode {:04b}", opcode));
+            logger::warn(
+                logger::LogSource::Arm9,
+                format!("unknown data-processing opcode {:04b}", opcode),
+            );
         }
     };
 
