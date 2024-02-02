@@ -4,7 +4,7 @@ use crate::nds::{
 };
 
 pub fn parse_immediate(_arm9: &Arm9, inst: &Instruction) -> u32 {
-    inst.get_word(0, 12)
+    inst.get_word(0, 11)
 }
 
 pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> u32 {

@@ -36,6 +36,24 @@ pub fn lookup<const IS_REGISTER: bool>(
         arm9.er(inst.first_source_register) - inst.addressing_mode
     };
 
+    // logger::debug(
+    //     logger::LogSource::Arm9,
+    //     format!(
+    //         "load/store address: {:#010X} ({}) ({}) {:#010X}",
+    //         address,
+    //         inst.first_source_register,
+    //         arm9.er(inst.first_source_register),
+    //         inst.addressing_mode
+    //     ),
+    // );
+    // logger::debug(
+    //     logger::LogSource::Arm9,
+    //     format!(
+    //         "addressing mode: {} {} {} {} {} {}",
+    //         IS_REGISTER, post_indexing, is_add, is_unsigned_byte, w, is_load
+    //     ),
+    // );
+
     if w {
         arm9.r[inst.first_source_register] = address;
     };
@@ -53,8 +71,8 @@ pub fn lookup<const IS_REGISTER: bool>(
     logger::warn(
         logger::LogSource::Arm9,
         format!(
-            "unknown load/store inst {} {} {} {} {}",
-            post_indexing, is_add, is_unsigned_byte, w, is_load
+            "unknown load/store inst {} {} {} {} {} {}",
+            IS_REGISTER, post_indexing, is_add, is_unsigned_byte, w, is_load
         ),
     );
     1
