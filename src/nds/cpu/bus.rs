@@ -7,7 +7,8 @@ pub struct Bus {
     pub mem: Vec<u8>,
     pub gpu2d_a: Gpu2d,
 
-    pub powcnt1: POWCNT1, // 0x04000304
+    pub vramcnt: [u8; 10], // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
+    pub powcnt1: POWCNT1,  // 0x04000304
 }
 
 impl Default for Bus {
@@ -17,6 +18,7 @@ impl Default for Bus {
             mem: vec![0; 1024 * 1024 * 4],
             gpu2d_a: Gpu2d::default(),
 
+            vramcnt: [0; 10],
             powcnt1: POWCNT1::default(),
         }
     }
@@ -27,9 +29,10 @@ impl Bus {
         let addr = addr as usize;
         match addr {
             0x02000000..=0x023FFFFF => {
-                let addr = addr % 0x02000000;
+                let addr = addr - 0x02000000;
                 self.mem[addr] = value;
             }
+            0x04000240..=0x04000249 => self.vramcnt[addr - 0x04000240] = value,
             _ => {
                 logger::error(
                     logger::LogSource::Bus9,
@@ -43,7 +46,7 @@ impl Bus {
         let addr = addr as usize;
         match addr {
             0x02000000..=0x023FFFFF => {
-                let addr = addr % 0x02000000;
+                let addr = addr - 0x02000000;
                 let mut bytes = [0; 4];
                 bytes.copy_from_slice(&self.mem[addr..addr + 4]);
                 u32::from_le_bytes(bytes)
@@ -64,7 +67,7 @@ impl Bus {
         let addr = addr as usize;
         match addr {
             0x02000000..=0x023FFFFF => {
-                let addr = addr % 0x02000000;
+                let addr = addr - 0x02000000;
                 self.mem[addr..addr + 4].copy_from_slice(&value.to_le_bytes());
             }
             0x04000000 => self.gpu2d_a.dispcnt = value.into(),
@@ -83,7 +86,7 @@ impl Bus {
         let addr = addr as usize;
         match addr {
             0x02000000..=0x023FFFFF => {
-                let addr = addr % 0x02000000;
+                let addr = addr - 0x02000000;
                 self.mem[addr..addr + data.len()].copy_from_slice(&data);
             }
             _ => {
