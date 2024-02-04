@@ -21,8 +21,7 @@ pub fn calculate_cond(arm9: &mut Arm9, inst_set: u16) -> bool {
         0b1101 => s.get_zero() || s.get_negative() != s.get_overflow(),
         0b1110 => true,
         0b1111 => {
-            // TODO: UNPREDICTABLE?
-            logger::warn(logger::LogSource::Arm9, "UNPREDICTABLE: condition 0b1111");
+            // NOTE: this is different for armv4
             true
         }
         _ => unreachable!(),
