@@ -49,8 +49,8 @@ pub struct NitrousGUI {
 
     pub arm9_info: bool,
     pub emulation_log: bool,
-    pub gpu2d_info: bool,
     pub memory_viewer: bool,
+    pub register_viewer: bool,
     pub test_window: bool,
 
     #[serde(skip)]
@@ -73,8 +73,8 @@ impl Default for NitrousGUI {
 
             arm9_info: false,
             emulation_log: false,
-            gpu2d_info: false,
             memory_viewer: false,
+            register_viewer: false,
             test_window: false,
 
             arm9_info_selected: None,
@@ -158,8 +158,8 @@ impl eframe::App for NitrousGUI {
 
         self.show_arm9_info(ctx);
         self.show_emulation_log(ctx);
-        self.show_gpu2d_info(ctx);
         self.show_memory_viewer(ctx);
+        self.show_register_viewer(ctx);
         self.show_test_window(ctx);
 
         if let Ok(bytes) = self.load_rom_channel.1.try_recv() {

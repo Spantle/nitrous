@@ -71,8 +71,8 @@ impl NitrousGUI {
     fn debug_menu(&mut self, ui: &mut egui::Ui) -> bool {
         ui.checkbox(&mut self.arm9_info, "ARM9 Info");
         ui.checkbox(&mut self.emulation_log, "Emulation Log");
-        ui.checkbox(&mut self.gpu2d_info, "2D GPU Info");
         ui.checkbox(&mut self.memory_viewer, "Memory Viewer");
+        ui.checkbox(&mut self.register_viewer, "Register Viewer");
         ui.checkbox(&mut self.test_window, "Test Window");
 
         if ui.button("Test button").clicked() {
