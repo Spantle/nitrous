@@ -2,7 +2,7 @@ use core::mem::swap;
 
 use crate::nds::{cpu::arm9::instructions::lookup_instruction_set, cpu::bus::Bus, logger};
 
-use super::models::{PipelineState, ProcessorMode, Registers, PSR};
+use super::models::{Context, PipelineState, ProcessorMode, Registers, PSR};
 
 #[derive(Debug)]
 pub struct Arm9 {
@@ -62,7 +62,11 @@ impl Arm9 {
                 );
 
                 let r15 = self.r[15];
-                let cycles = lookup_instruction_set(inst.into(), self, bus);
+                let cycles = lookup_instruction_set(Context {
+                    inst: inst.into(),
+                    arm9: self,
+                    bus,
+                });
                 if r15 == self.r[15] {
                     self.r[15] += 4;
                 } else {

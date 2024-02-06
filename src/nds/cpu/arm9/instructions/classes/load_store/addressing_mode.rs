@@ -1,18 +1,15 @@
-use crate::nds::{
-    cpu::arm9::{models::Instruction, Arm9},
-    logger,
-};
+use crate::nds::{cpu::arm9::models::Context, logger};
 
-pub fn parse_immediate(_arm9: &Arm9, inst: &Instruction) -> u32 {
-    inst.get_word(0, 11)
+pub fn parse_immediate(ctx: &Context) -> u32 {
+    ctx.inst.get_word(0, 11)
 }
 
-pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> u32 {
-    let rm = inst.get_byte(0, 3);
-    let rm = arm9.eru(rm);
+pub fn parse_register(ctx: &Context) -> u32 {
+    let rm = ctx.inst.get_byte(0, 3);
+    let rm = ctx.arm9.eru(rm);
 
-    let shift = inst.get_byte(5, 6);
-    let shift_imm = inst.get_word(7, 11);
+    let shift = ctx.inst.get_byte(5, 6);
+    let shift_imm = ctx.inst.get_word(7, 11);
     match shift {
         0b00 => {
             // LSL
@@ -45,7 +42,7 @@ pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> u32 {
             if shift_imm == 0 {
                 // RRX
                 logger::debug(logger::LogSource::Arm9, "the funny actually happened"); // TODO: remove
-                (arm9.cpsr.get_carry() as u32) << 31 | rm >> 1
+                (ctx.arm9.cpsr.get_carry() as u32) << 31 | rm >> 1
             } else {
                 // ROR
                 rm.rotate_right(shift_imm)

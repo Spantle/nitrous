@@ -4,7 +4,7 @@ mod lookup;
 
 pub use lookup::lookup;
 
-use crate::nds::cpu::arm9::{models::Instruction, Arm9};
+use crate::nds::cpu::arm9::models::Context;
 
 pub struct LoadStoreInstruction {
     pub first_source_register: u8, // Rn
@@ -13,16 +13,16 @@ pub struct LoadStoreInstruction {
 }
 
 impl LoadStoreInstruction {
-    fn new<const IS_REGISTER: bool>(arm9: &Arm9, inst: Instruction) -> Self {
+    fn new<const IS_REGISTER: bool>(ctx: &Context) -> Self {
         let addressing_mode = if IS_REGISTER {
-            addressing_mode::parse_register(arm9, &inst)
+            addressing_mode::parse_register(ctx)
         } else {
-            addressing_mode::parse_immediate(arm9, &inst)
+            addressing_mode::parse_immediate(ctx)
         };
 
         LoadStoreInstruction {
-            first_source_register: inst.get_byte(16, 19),
-            destination_register: inst.get_byte(12, 15),
+            first_source_register: ctx.inst.get_byte(16, 19),
+            destination_register: ctx.inst.get_byte(12, 15),
             addressing_mode,
         }
     }

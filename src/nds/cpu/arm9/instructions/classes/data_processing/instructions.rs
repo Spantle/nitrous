@@ -1,9 +1,10 @@
-use crate::nds::cpu::arm9::Arm9;
+use crate::nds::cpu::arm9::models::Context;
 
 use super::DataProcessingInstruction;
 
 // MOV, MOVS
-pub fn mov<const S: bool>(inst: DataProcessingInstruction, arm9: &mut Arm9) {
+pub fn mov<const S: bool>(ctx: Context<DataProcessingInstruction>) {
+    let (inst, arm9) = (ctx.inst, ctx.arm9);
     let result = inst.second_source_operand;
     arm9.r[inst.destination_register] = result;
 
@@ -19,7 +20,8 @@ pub fn mov<const S: bool>(inst: DataProcessingInstruction, arm9: &mut Arm9) {
 }
 
 // ADD, ADDS
-pub fn add<const S: bool>(inst: DataProcessingInstruction, arm9: &mut Arm9) {
+pub fn add<const S: bool>(ctx: Context<DataProcessingInstruction>) {
+    let (inst, arm9) = (ctx.inst, ctx.arm9);
     if S {
         let first_source_register = arm9.er(inst.first_source_register);
         let (result, overflow) = first_source_register.overflowing_add(inst.second_source_operand);

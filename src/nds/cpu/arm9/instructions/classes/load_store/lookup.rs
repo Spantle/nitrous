@@ -1,21 +1,16 @@
-use crate::nds::{
-    cpu::{
-        arm9::{models::Instruction, Arm9},
-        bus::Bus,
-    },
-    logger,
-};
+use crate::nds::{cpu::arm9::models::Context, logger};
 
 use super::{instructions, LoadStoreInstruction};
 
 #[inline(always)]
-pub fn lookup<const IS_REGISTER: bool>(
-    inst_set: u16,
-    inst: Instruction,
-    arm9: &mut Arm9,
-    bus: &mut Bus,
-) -> u32 {
-    let inst = LoadStoreInstruction::new::<IS_REGISTER>(&*arm9, inst);
+pub fn lookup<const IS_REGISTER: bool>(inst_set: u16, ctx: Context) -> u32 {
+    let mut ctx = Context {
+        inst: LoadStoreInstruction::new::<IS_REGISTER>(&ctx),
+        arm9: ctx.arm9,
+        bus: ctx.bus,
+    };
+    let (arm9, inst) = (&mut ctx.arm9, &ctx.inst);
+
     let post_indexing = inst_set >> 4 & 1 == 0; // P: technically 0 but we've flipped it since 1 is "offset"/"pre-indexed" addressing
     let is_add = inst_set >> 3 & 1 == 1; // U
     let is_unsigned_byte = inst_set >> 2 & 1 == 1; // B
@@ -62,15 +57,15 @@ pub fn lookup<const IS_REGISTER: bool>(
     // i'm sure it's fine
     if !is_unsigned_byte {
         if is_load {
-            return instructions::ldr(inst, address, arm9, bus);
+            return instructions::ldr(ctx, address);
         } else {
-            return instructions::str(inst, address, arm9, bus);
+            return instructions::str(ctx, address);
         }
     } else {
         if is_load {
-            // return instructions::ldrb(inst, address, arm9, bus);
+            // return instructions::ldrb(ctx, address);
         } else {
-            return instructions::strb(inst, address, arm9, bus);
+            return instructions::strb(ctx, address);
         }
     }
 

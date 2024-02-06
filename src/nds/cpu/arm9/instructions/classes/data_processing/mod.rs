@@ -1,4 +1,4 @@
-use crate::nds::cpu::arm9::{models::Instruction, Arm9};
+use crate::nds::cpu::arm9::models::Context;
 
 mod instructions;
 mod lookup;
@@ -14,16 +14,16 @@ pub struct DataProcessingInstruction {
 }
 
 impl DataProcessingInstruction {
-    fn new<const IS_IMMEDIATE: bool>(arm9: &Arm9, inst: Instruction) -> Self {
+    fn new<const IS_IMMEDIATE: bool>(ctx: &Context) -> Self {
         let shifter_operand = if IS_IMMEDIATE {
-            shifter_operand::parse_immediate(arm9, &inst)
+            shifter_operand::parse_immediate(ctx)
         } else {
-            shifter_operand::parse_register(arm9, &inst)
+            shifter_operand::parse_register(ctx)
         };
 
         DataProcessingInstruction {
-            first_source_register: inst.get_byte(16, 19),
-            destination_register: inst.get_byte(12, 15),
+            first_source_register: ctx.inst.get_byte(16, 19),
+            destination_register: ctx.inst.get_byte(12, 15),
             second_source_operand: shifter_operand.second_source_operand,
             carry_out: shifter_operand.carry_out,
         }

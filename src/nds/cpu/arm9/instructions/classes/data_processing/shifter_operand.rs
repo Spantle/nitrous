@@ -1,4 +1,4 @@
-use crate::nds::cpu::arm9::{models::Instruction, Arm9};
+use crate::nds::cpu::arm9::models::Context;
 
 // AKA the addressing mode
 pub struct ShifterOperand {
@@ -6,11 +6,11 @@ pub struct ShifterOperand {
     pub second_source_operand: u32,
 }
 
-pub fn parse_immediate(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
-    let mut carry_out = arm9.cpsr.get_carry();
+pub fn parse_immediate(ctx: &Context) -> ShifterOperand {
+    let mut carry_out = ctx.arm9.cpsr.get_carry();
 
-    let immed_8 = inst.get_word(0, 7);
-    let rotate_imm = inst.get_word(8, 11); // NOTE: rotate_imm must be even to be "legitimate"
+    let immed_8 = ctx.inst.get_word(0, 7);
+    let rotate_imm = ctx.inst.get_word(8, 11); // NOTE: rotate_imm must be even to be "legitimate"
 
     let rotated = immed_8.rotate_right(rotate_imm * 2);
     if rotate_imm != 0 {
@@ -23,7 +23,9 @@ pub fn parse_immediate(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
     }
 }
 
-pub fn parse_register(arm9: &Arm9, inst: &Instruction) -> ShifterOperand {
+pub fn parse_register(ctx: &Context) -> ShifterOperand {
+    let (arm9, inst) = (&ctx.arm9, &ctx.inst);
+
     let mut carry_out = arm9.cpsr.get_carry();
 
     let operand = inst.get_byte(4, 6);

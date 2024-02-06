@@ -1,9 +1,10 @@
-use crate::nds::cpu::arm9::{models::Instruction, Arm9};
+use crate::nds::cpu::arm9::models::Context;
 
 use super::sign_extend_24_to_32;
 
 // B, BL
-pub fn b<const L: bool>(inst: Instruction, arm9: &mut Arm9) -> u32 {
+pub fn b<const L: bool>(ctx: Context) -> u32 {
+    let (arm9, inst) = (ctx.arm9, ctx.inst);
     if L {
         arm9.r[14] = arm9.r[15].wrapping_add(4);
     }

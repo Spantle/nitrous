@@ -1,10 +1,11 @@
-use crate::nds::cpu::{arm9::Arm9, bus::Bus};
+use crate::nds::cpu::arm9::models::Context;
 
 use super::LoadStoreInstruction;
 
 // LDR
 #[inline(always)]
-pub fn ldr(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut Bus) -> u32 {
+pub fn ldr(ctx: Context<LoadStoreInstruction>, address: u32) -> u32 {
+    let (arm9, bus, inst) = (ctx.arm9, ctx.bus, ctx.inst);
     let bits = address & 0b11; // i have no idea what to call this
     let mut cycles = 1 + (bits != 0) as u32;
 
@@ -32,16 +33,18 @@ pub fn ldr(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut 
 
 // STR
 #[inline(always)]
-pub fn str(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut Bus) -> u32 {
-    bus.write_word(address, arm9.r[inst.destination_register]);
+pub fn str(ctx: Context<LoadStoreInstruction>, address: u32) -> u32 {
+    ctx.bus
+        .write_word(address, ctx.arm9.r[ctx.inst.destination_register]);
 
     1
 }
 
 // STRB
 #[inline(always)]
-pub fn strb(inst: LoadStoreInstruction, address: u32, arm9: &mut Arm9, bus: &mut Bus) -> u32 {
-    bus.write_byte(address, arm9.eru(inst.destination_register) as u8);
+pub fn strb(ctx: Context<LoadStoreInstruction>, address: u32) -> u32 {
+    ctx.bus
+        .write_byte(address, ctx.arm9.eru(ctx.inst.destination_register) as u8);
 
     1
 }
