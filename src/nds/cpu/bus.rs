@@ -1,6 +1,6 @@
 use crate::nds::{cartridge::Cartridge, gpu::gpu2d::Gpu2d, logger};
 
-use super::arm9::POWCNT1;
+use super::arm9::models::POWCNT1;
 
 pub struct Bus {
     pub cart: Cartridge,

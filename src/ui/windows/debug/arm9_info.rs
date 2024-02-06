@@ -166,7 +166,7 @@ impl NitrousGUI {
                                 });
                             })
                             .body(|mut body| {
-                                let mut display_psr = |name: &str, psr: &arm9::PSR| {
+                                let mut display_psr = |name: &str, psr: &arm9::models::PSR| {
                                     body.row(20.0, |mut row| {
                                         let flag = |ui: &mut egui::Ui, flag: bool| {
                                             let v = format!("{}", flag);

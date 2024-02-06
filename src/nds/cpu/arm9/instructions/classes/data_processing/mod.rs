@@ -1,4 +1,4 @@
-use crate::nds::cpu::arm9::{instructions::models::Instruction, Arm9};
+use crate::nds::cpu::arm9::{models::Instruction, Arm9};
 
 mod instructions;
 mod lookup;

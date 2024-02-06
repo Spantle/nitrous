@@ -1,5 +1,5 @@
 use crate::nds::{
-    cpu::arm9::{instructions::models::Instruction, Arm9},
+    cpu::arm9::{models::Instruction, Arm9},
     logger,
 };
 

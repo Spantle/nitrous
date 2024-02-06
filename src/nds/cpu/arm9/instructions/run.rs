@@ -1,9 +1,12 @@
 use crate::nds::{
-    cpu::{arm9::Arm9, bus::Bus},
+    cpu::{
+        arm9::{models::Instruction, Arm9},
+        bus::Bus,
+    },
     logger,
 };
 
-use super::{classes::lookup_instruction_class, conditions::calculate_cond, models::Instruction};
+use super::{classes::lookup_instruction_class, conditions::calculate_cond};
 
 #[cfg(not(feature = "epic"))]
 pub fn run_instruction_set(inst: Instruction, arm9: &mut Arm9, bus: &mut Bus) -> u32 {

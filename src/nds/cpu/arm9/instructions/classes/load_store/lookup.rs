@@ -1,6 +1,6 @@
 use crate::nds::{
     cpu::{
-        arm9::{instructions::models::Instruction, Arm9},
+        arm9::{models::Instruction, Arm9},
         bus::Bus,
     },
     logger,
