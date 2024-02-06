@@ -9,8 +9,12 @@ use crate::nds::{
 use super::{classes::lookup_instruction_class, conditions::calculate_cond};
 
 #[cfg(not(feature = "epic"))]
-pub fn run_instruction_set(inst: Instruction, arm9: &mut Arm9, bus: &mut Bus) -> u32 {
-    let inst_set = (inst.bits() >> 20 & 0b111111111111) as u16;
+pub fn run_instruction_set(
+    inst_set: u16,
+    inst: Instruction,
+    arm9: &mut Arm9,
+    bus: &mut Bus,
+) -> u32 {
     let cond_result = calculate_cond(arm9, inst_set);
     if !cond_result {
         logger::debug(logger::LogSource::Arm9, "condition failed");

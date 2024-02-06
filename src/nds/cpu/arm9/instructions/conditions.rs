@@ -1,4 +1,4 @@
-use crate::nds::{cpu::arm9::Arm9, logger};
+use crate::nds::cpu::arm9::Arm9;
 
 #[inline(always)]
 pub fn calculate_cond(arm9: &mut Arm9, inst_set: u16) -> bool {

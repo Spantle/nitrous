@@ -7,7 +7,8 @@ use super::run::run_instruction_set;
 
 #[cfg(not(feature = "epic"))]
 pub fn lookup_instruction_set(inst: Instruction, arm9: &mut Arm9, bus: &mut Bus) -> u32 {
-    run_instruction_set(inst, arm9, bus)
+    let inst_set = inst.get_halfword(20, 31);
+    run_instruction_set(inst_set, inst, arm9, bus)
 }
 
 // this is one of the functions of all time
