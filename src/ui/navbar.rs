@@ -44,11 +44,13 @@ impl NitrousGUI {
                 .add_filter("NDS ROM", &["nds"])
                 .pick_file();
 
+            let ctx = ui.ctx().clone();
             execute(async move {
                 let file = task.await;
                 if let Some(file) = file {
                     let bytes = file.read().await;
                     let _result = sender.send(bytes);
+                    ctx.request_repaint();
                 }
             });
             return true;

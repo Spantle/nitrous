@@ -166,6 +166,8 @@ impl eframe::App for NitrousGUI {
             self.emulator.load_rom(bytes);
         }
 
-        ctx.request_repaint();
+        if self.emulator.is_running() {
+            ctx.request_repaint();
+        }
     }
 }
