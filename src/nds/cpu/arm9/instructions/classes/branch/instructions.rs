@@ -1,17 +1,12 @@
-use crate::nds::cpu::{
-    arm9::{
-        arm9::Arm9Trait,
-        models::{Context, DisassemblyTrait, Instruction},
-    },
-    bus::BusTrait,
+use crate::nds::cpu::arm9::{
+    arm9::Arm9Trait,
+    models::{Context, ContextTrait, DisassemblyTrait, Instruction},
 };
 
 use super::sign_extend_24_to_32;
 
 // B, BL
-pub fn b<const L: bool>(
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
-) -> u32 {
+pub fn b<const L: bool>(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let (arm9, inst) = (&mut ctx.arm9, &ctx.inst);
     if L {
         arm9.r()[14] = arm9.r()[15].wrapping_add(4);

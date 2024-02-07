@@ -1,17 +1,12 @@
 use crate::nds::{
-    cpu::{
-        arm9::{
-            arm9::Arm9Trait,
-            models::{Context, DisassemblyTrait, Instruction},
-        },
-        bus::BusTrait,
+    cpu::arm9::{
+        arm9::Arm9Trait,
+        models::{Context, ContextTrait, DisassemblyTrait, Instruction},
     },
     logger,
 };
 
-pub fn parse_immediate(
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
-) -> u32 {
+pub fn parse_immediate(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let result = ctx.inst.get_word(0, 11);
     ctx.dis.push_word_end_arg(result, ", ");
     ctx.dis.push_str_end_arg("]", "");
@@ -19,9 +14,7 @@ pub fn parse_immediate(
     result
 }
 
-pub fn parse_register(
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
-) -> u32 {
+pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let rm = ctx.inst.get_byte(0, 3);
     ctx.dis.push_reg_end_arg(rm, ", ");
     let rm = ctx.arm9.eru(rm);

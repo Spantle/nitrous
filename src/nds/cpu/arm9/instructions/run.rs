@@ -1,11 +1,5 @@
 use crate::nds::{
-    cpu::{
-        arm9::{
-            arm9::Arm9Trait,
-            models::{Context, DisassemblyTrait, Instruction},
-        },
-        bus::BusTrait,
-    },
+    cpu::arm9::models::{Context, ContextTrait, Instruction},
     logger,
 };
 
@@ -14,7 +8,7 @@ use super::{classes::lookup_instruction_class, conditions::calculate_cond};
 #[cfg(not(feature = "epic"))]
 pub fn run_instruction_set(
     inst_set: u16,
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
+    ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {
     let cond_result = calculate_cond(inst_set, ctx);
     if !cond_result {
@@ -28,7 +22,7 @@ pub fn run_instruction_set(
 
 #[cfg(feature = "epic")]
 pub fn run_instruction_set<const INST_SET: u16>(
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
+    ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {
     let cond_result = calculate_cond(INST_SET, ctx);
     if !cond_result {

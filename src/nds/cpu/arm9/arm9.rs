@@ -78,13 +78,12 @@ impl Arm9 {
                 );
 
                 let r15 = self.r[15];
-                let cycles = lookup_instruction_set(&mut Context {
-                    inst: inst.into(),
-                    arm9: self,
+                let cycles = lookup_instruction_set(&mut Context::new(
+                    inst.into(),
+                    self,
                     bus,
-
-                    dis: &mut FakeDisassembly,
-                });
+                    &mut FakeDisassembly,
+                ));
                 if r15 == self.r[15] {
                     self.r[15] += 4;
                 } else {

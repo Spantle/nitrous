@@ -1,26 +1,19 @@
 use crate::nds::{
-    cpu::{
-        arm9::{
-            arm9::Arm9Trait,
-            models::{Context, DisassemblyTrait, Instruction},
-        },
-        bus::BusTrait,
-    },
+    cpu::arm9::models::{Context, ContextTrait, DisassemblyTrait, Instruction},
     logger,
 };
 
 use super::{instructions, DataProcessingInstruction};
 
 #[inline(always)]
-pub fn lookup<const IS_IMMEDIATE: bool>(
+pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
     inst_set: u16,
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
+    ctx: &mut Context<Instruction, Ctx>,
 ) -> u32 {
-    let mut ctx = Context {
+    let mut ctx = Context::<_, Ctx> {
         inst: DataProcessingInstruction::new::<IS_IMMEDIATE>(ctx),
         arm9: ctx.arm9,
         bus: ctx.bus,
-
         dis: ctx.dis,
     };
 

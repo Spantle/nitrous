@@ -1,10 +1,4 @@
-use crate::nds::cpu::{
-    arm9::{
-        arm9::Arm9Trait,
-        models::{Context, DisassemblyTrait, Instruction},
-    },
-    bus::BusTrait,
-};
+use crate::nds::cpu::arm9::models::{Context, ContextTrait, Instruction};
 
 mod instructions;
 mod lookup;
@@ -20,9 +14,7 @@ pub struct DataProcessingInstruction {
 }
 
 impl DataProcessingInstruction {
-    fn new<const IS_IMMEDIATE: bool>(
-        ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
-    ) -> Self {
+    fn new<const IS_IMMEDIATE: bool>(ctx: &mut Context<Instruction, impl ContextTrait>) -> Self {
         let shifter_operand = if IS_IMMEDIATE {
             shifter_operand::parse_immediate(ctx)
         } else {

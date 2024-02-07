@@ -1,22 +1,12 @@
-use crate::nds::cpu::{
-    arm9::{
-        arm9::Arm9Trait,
-        models::{Context, DisassemblyTrait},
-    },
-    bus::BusTrait,
+use crate::nds::cpu::arm9::{
+    arm9::Arm9Trait,
+    models::{Context, ContextTrait, DisassemblyTrait},
 };
 
 use super::DataProcessingInstruction;
 
 // MOV, MOVS
-pub fn mov<const S: bool>(
-    ctx: &mut Context<
-        DataProcessingInstruction,
-        impl Arm9Trait,
-        impl BusTrait,
-        impl DisassemblyTrait,
-    >,
-) {
+pub fn mov<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl ContextTrait>) {
     ctx.dis.push_reg_arg(ctx.inst.destination_register);
 
     let (inst, arm9) = (&mut ctx.inst, &mut ctx.arm9);
@@ -35,14 +25,7 @@ pub fn mov<const S: bool>(
 }
 
 // ADD, ADDS
-pub fn add<const S: bool>(
-    ctx: &mut Context<
-        DataProcessingInstruction,
-        impl Arm9Trait,
-        impl BusTrait,
-        impl DisassemblyTrait,
-    >,
-) {
+pub fn add<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl ContextTrait>) {
     ctx.dis.push_reg_arg(ctx.inst.destination_register);
     ctx.dis.push_reg_arg(ctx.inst.first_source_register);
 

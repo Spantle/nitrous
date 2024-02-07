@@ -1,10 +1,7 @@
 use crate::nds::{
-    cpu::{
-        arm9::{
-            arm9::Arm9Trait,
-            models::{Context, DisassemblyTrait, Instruction},
-        },
-        bus::BusTrait,
+    cpu::arm9::{
+        arm9::Arm9Trait,
+        models::{Context, ContextTrait, DisassemblyTrait, Instruction},
     },
     logger,
 };
@@ -12,15 +9,14 @@ use crate::nds::{
 use super::{instructions, LoadStoreInstruction};
 
 #[inline(always)]
-pub fn lookup<const IS_REGISTER: bool>(
+pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
     inst_set: u16,
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
+    ctx: &mut Context<Instruction, Ctx>,
 ) -> u32 {
-    let mut ctx = Context {
+    let mut ctx = Context::<_, Ctx> {
         inst: LoadStoreInstruction::new::<IS_REGISTER>(ctx),
         arm9: ctx.arm9,
         bus: ctx.bus,
-
         dis: ctx.dis,
     };
     let (arm9, inst) = (&mut ctx.arm9, &ctx.inst);

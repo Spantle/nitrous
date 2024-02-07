@@ -1,26 +1,16 @@
-use crate::nds::cpu::{
-    arm9::{
-        arm9::Arm9Trait,
-        models::{Context, DisassemblyTrait, Instruction},
-    },
-    bus::BusTrait,
-};
+use crate::nds::cpu::arm9::models::{Context, ContextTrait, Instruction};
 
 use super::run::run_instruction_set;
 
 #[cfg(not(feature = "epic"))]
-pub fn lookup_instruction_set(
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
-) -> u32 {
+pub fn lookup_instruction_set(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let inst_set = ctx.inst.get_halfword(20, 31);
     run_instruction_set(inst_set, ctx)
 }
 
 // this is one of the functions of all time
 #[cfg(feature = "epic")]
-pub fn lookup_instruction_set(
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
-) -> u32 {
+pub fn lookup_instruction_set(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let inst_set = ctx.inst.get_halfword(20, 31);
     match inst_set {
         0b000000000000 => run_instruction_set::<0b000000000000>(ctx),

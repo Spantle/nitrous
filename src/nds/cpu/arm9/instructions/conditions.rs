@@ -1,16 +1,10 @@
-use crate::nds::cpu::{
-    arm9::{
-        arm9::Arm9Trait,
-        models::{Context, DisassemblyTrait, Instruction},
-    },
-    bus::BusTrait,
+use crate::nds::cpu::arm9::{
+    arm9::Arm9Trait,
+    models::{Context, ContextTrait, DisassemblyTrait, Instruction},
 };
 
 #[inline(always)]
-pub fn calculate_cond(
-    inst_set: u16,
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
-) -> bool {
+pub fn calculate_cond(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> bool {
     let cond = (inst_set >> 8 & 0b1111) as u8;
     let s = &ctx.arm9.cpsr();
     match cond {

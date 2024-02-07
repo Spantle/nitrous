@@ -4,13 +4,7 @@ mod lookup;
 
 pub use lookup::lookup;
 
-use crate::nds::cpu::{
-    arm9::{
-        arm9::Arm9Trait,
-        models::{Context, DisassemblyTrait, Instruction},
-    },
-    bus::BusTrait,
-};
+use crate::nds::cpu::arm9::models::{Context, ContextTrait, DisassemblyTrait, Instruction};
 
 pub struct LoadStoreInstruction {
     pub first_source_register: u8, // Rn
@@ -19,9 +13,7 @@ pub struct LoadStoreInstruction {
 }
 
 impl LoadStoreInstruction {
-    fn new<const IS_REGISTER: bool>(
-        ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
-    ) -> Self {
+    fn new<const IS_REGISTER: bool>(ctx: &mut Context<Instruction, impl ContextTrait>) -> Self {
         let first_source_register = ctx.inst.get_byte(16, 19);
         ctx.dis.push_reg_end_arg(first_source_register, "[");
 

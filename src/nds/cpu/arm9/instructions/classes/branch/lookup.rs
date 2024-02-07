@@ -1,18 +1,9 @@
-use crate::nds::cpu::{
-    arm9::{
-        arm9::Arm9Trait,
-        models::{Context, DisassemblyTrait, Instruction},
-    },
-    bus::BusTrait,
-};
+use crate::nds::cpu::arm9::models::{Context, ContextTrait, DisassemblyTrait, Instruction};
 
 use super::instructions;
 
 #[inline(always)]
-pub fn lookup(
-    inst_set: u16,
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
-) -> u32 {
+pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let l = ((inst_set >> 4) & 1) != 0; // L bit
 
     if l {

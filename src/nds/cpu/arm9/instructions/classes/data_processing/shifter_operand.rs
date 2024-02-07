@@ -1,9 +1,6 @@
-use crate::nds::cpu::{
-    arm9::{
-        arm9::Arm9Trait,
-        models::{Context, DisassemblyTrait, Instruction},
-    },
-    bus::BusTrait,
+use crate::nds::cpu::arm9::{
+    arm9::Arm9Trait,
+    models::{Context, ContextTrait, DisassemblyTrait, Instruction},
 };
 
 // AKA the addressing mode
@@ -12,9 +9,7 @@ pub struct ShifterOperand {
     pub second_source_operand: u32,
 }
 
-pub fn parse_immediate(
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
-) -> ShifterOperand {
+pub fn parse_immediate(ctx: &mut Context<Instruction, impl ContextTrait>) -> ShifterOperand {
     let mut carry_out = ctx.arm9.cpsr().get_carry();
 
     let immed_8 = ctx.inst.get_word(0, 7);
@@ -33,9 +28,7 @@ pub fn parse_immediate(
     }
 }
 
-pub fn parse_register(
-    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
-) -> ShifterOperand {
+pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> ShifterOperand {
     let (arm9, inst) = (&mut ctx.arm9, &ctx.inst);
 
     let mut carry_out = arm9.cpsr().get_carry();
