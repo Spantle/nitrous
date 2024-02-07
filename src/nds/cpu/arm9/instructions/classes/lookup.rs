@@ -1,9 +1,21 @@
-use crate::nds::{cpu::arm9::models::Context, logger};
+use crate::nds::{
+    cpu::{
+        arm9::{
+            arm9::Arm9Trait,
+            models::{Context, DisassemblyTrait, Instruction},
+        },
+        bus::BusTrait,
+    },
+    logger,
+};
 
 use super::{branch, data_processing, load_store};
 
 #[inline(always)]
-pub fn lookup_instruction_class(inst_set: u16, ctx: Context) -> u32 {
+pub fn lookup_instruction_class(
+    inst_set: u16,
+    ctx: &mut Context<Instruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
+) -> u32 {
     let class = (inst_set >> 5) & 0b111;
 
     match class {

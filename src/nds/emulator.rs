@@ -1,4 +1,7 @@
-use super::cpu::{arm9::Arm9, bus::Bus};
+use super::cpu::{
+    arm9::Arm9,
+    bus::{Bus, BusTrait},
+};
 
 pub struct Emulator {
     pub arm9: Arm9,

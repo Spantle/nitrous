@@ -1,4 +1,4 @@
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct Registers(pub [u32; 16]);
 
 impl std::ops::Index<u8> for Registers {

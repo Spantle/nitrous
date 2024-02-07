@@ -11,6 +11,14 @@ pub struct Bus {
     pub powcnt1: POWCNT1,  // 0x04000304
 }
 
+pub trait BusTrait {
+    fn write_byte(&mut self, addr: u32, value: u8);
+    fn read_word(&self, addr: u32) -> u32;
+    fn write_word(&mut self, addr: u32, value: u32);
+    fn read_bulk(&self, addr: u32, len: u32) -> Vec<u8>;
+    fn write_bulk(&mut self, addr: u32, data: Vec<u8>);
+}
+
 impl Default for Bus {
     fn default() -> Self {
         Bus {
@@ -24,8 +32,8 @@ impl Default for Bus {
     }
 }
 
-impl Bus {
-    pub fn write_byte(&mut self, addr: u32, value: u8) {
+impl BusTrait for Bus {
+    fn write_byte(&mut self, addr: u32, value: u8) {
         let addr = addr as usize;
         match addr {
             0x02000000..=0x023FFFFF => {
@@ -42,7 +50,7 @@ impl Bus {
         }
     }
 
-    pub fn read_word(&self, addr: u32) -> u32 {
+    fn read_word(&self, addr: u32) -> u32 {
         let addr = addr as usize;
         match addr {
             0x02000000..=0x023FFFFF => {
@@ -63,7 +71,7 @@ impl Bus {
         }
     }
 
-    pub fn write_word(&mut self, addr: u32, value: u32) {
+    fn write_word(&mut self, addr: u32, value: u32) {
         let addr = addr as usize;
         match addr {
             0x02000000..=0x023FFFFF => {
@@ -81,8 +89,30 @@ impl Bus {
         }
     }
 
+    fn read_bulk(&self, addr: u32, len: u32) -> Vec<u8> {
+        let addr = addr as usize;
+        let len = len as usize;
+        match addr {
+            0x02000000..=0x023FFFFF => {
+                let addr = addr - 0x02000000;
+                self.mem[addr..addr + len].to_vec()
+            }
+            _ => {
+                logger::error(
+                    logger::LogSource::Bus9,
+                    format!(
+                        "Invalid read bulk address: {:#010X}-{:#010X}",
+                        addr,
+                        addr + len
+                    ),
+                );
+                vec![0; len]
+            }
+        }
+    }
+
     // it's 1am i don't know what to call this
-    pub fn write_bulk(&mut self, addr: u32, data: Vec<u8>) {
+    fn write_bulk(&mut self, addr: u32, data: Vec<u8>) {
         let addr = addr as usize;
         match addr {
             0x02000000..=0x023FFFFF => {
@@ -97,4 +127,18 @@ impl Bus {
             }
         }
     }
+}
+
+pub struct FakeBus;
+
+impl BusTrait for FakeBus {
+    fn write_byte(&mut self, _addr: u32, _value: u8) {}
+    fn read_word(&self, _addr: u32) -> u32 {
+        0
+    }
+    fn write_word(&mut self, _addr: u32, _value: u32) {}
+    fn read_bulk(&self, _addr: u32, _len: u32) -> Vec<u8> {
+        vec![]
+    }
+    fn write_bulk(&mut self, _addr: u32, _data: Vec<u8>) {}
 }

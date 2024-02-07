@@ -47,6 +47,7 @@ pub struct NitrousGUI {
     #[serde(skip)]
     pub load_rom_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
 
+    pub arm9_disassembler: bool,
     pub arm9_info: bool,
     pub emulation_log: bool,
     pub memory_viewer: bool,
@@ -71,6 +72,7 @@ impl Default for NitrousGUI {
 
             load_rom_channel: channel(),
 
+            arm9_disassembler: false,
             arm9_info: false,
             emulation_log: false,
             memory_viewer: false,
@@ -156,6 +158,7 @@ impl eframe::App for NitrousGUI {
                 });
         });
 
+        self.show_arm9_disassembler(ctx);
         self.show_arm9_info(ctx);
         self.show_emulation_log(ctx);
         self.show_memory_viewer(ctx);

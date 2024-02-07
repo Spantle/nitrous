@@ -1,8 +1,14 @@
 use core::mem::swap;
 
-use crate::nds::{cpu::arm9::instructions::lookup_instruction_set, cpu::bus::Bus, logger};
+use crate::nds::{
+    cpu::{
+        arm9::instructions::lookup_instruction_set,
+        bus::{Bus, BusTrait},
+    },
+    logger,
+};
 
-use super::models::{Context, PipelineState, ProcessorMode, Registers, PSR};
+use super::models::{Context, FakeDisassembly, PipelineState, ProcessorMode, Registers, PSR};
 
 #[derive(Debug)]
 pub struct Arm9 {
@@ -21,12 +27,22 @@ pub struct Arm9 {
     pub pipeline_state: PipelineState,
 }
 
+pub trait Arm9Trait {
+    fn r(&mut self) -> &mut Registers;
+    fn er(&self, r: u8) -> u32;
+    fn eru(&self, r: u8) -> u32;
+
+    fn cpsr(&mut self) -> &mut PSR;
+    fn set_cpsr(&mut self, psr: PSR);
+    fn get_spsr(&self) -> PSR;
+}
+
 impl Default for Arm9 {
     fn default() -> Arm9 {
         // TODO: figure out what the default PSR value is for SPSRs
         let psr = PSR::default().value();
         Arm9 {
-            r: Registers([0; 16]),
+            r: Registers::default(),
             r_fiq: [0, 0, 0, 0, 0, 0, 0, psr],
             r_irq: [0, 0, psr],
             r_svc: [0, 0, psr],
@@ -58,14 +74,16 @@ impl Arm9 {
                 // print as binary
                 logger::debug(
                     logger::LogSource::Arm9,
-                    format!("executing instruction: {:#08X} ({:032b})", inst, inst),
+                    format!("executing instruction: {:#010X} ({:032b})", inst, inst),
                 );
 
                 let r15 = self.r[15];
-                let cycles = lookup_instruction_set(Context {
+                let cycles = lookup_instruction_set(&mut Context {
                     inst: inst.into(),
                     arm9: self,
                     bus,
+
+                    dis: &mut FakeDisassembly,
                 });
                 if r15 == self.r[15] {
                     self.r[15] += 4;
@@ -83,47 +101,6 @@ impl Arm9 {
             if self.clock(bus) {
                 break;
             }
-        }
-    }
-
-    pub fn get_spsr(&self) -> PSR {
-        match self.cpsr.get_mode() {
-            ProcessorMode::FIQ => PSR::from(self.r_fiq[7]),
-            ProcessorMode::IRQ => PSR::from(self.r_irq[2]),
-            ProcessorMode::SVC => PSR::from(self.r_svc[2]),
-            ProcessorMode::ABT => PSR::from(self.r_abt[2]),
-            ProcessorMode::UND => PSR::from(self.r_und[2]),
-            _ => {
-                logger::warn(
-                    logger::LogSource::Arm9,
-                    "UNPREDICTABLE: attempt to get SPSR in non-exception mode.",
-                );
-                PSR::default()
-            }
-        }
-    }
-
-    // this stands for "get execute register"
-    // when executing instructions, the PC is 8 bytes ahead of the current instruction
-    pub fn er(&self, r: u8) -> u32 {
-        match r {
-            15 => self.r[15] + 8,
-            _ => self.r[r],
-        }
-    }
-
-    // this stands for "get execute register unpredictable"
-    // when executing instructions, the PC is unpredictable
-    pub fn eru(&self, r: u8) -> u32 {
-        match r {
-            15 => {
-                logger::warn(
-                    logger::LogSource::Arm9,
-                    "UNPREDICTABLE: r15 was specified in an invalid context",
-                );
-                self.r[15] // NOTE: this might need to be + 8?
-            }
-            _ => self.r[r],
         }
     }
 
@@ -164,5 +141,90 @@ impl Arm9 {
                 }
             }
         }
+    }
+}
+
+impl Arm9Trait for Arm9 {
+    fn r(&mut self) -> &mut Registers {
+        &mut self.r
+    }
+
+    // this stands for "get execute register"
+    // when executing instructions, the PC is 8 bytes ahead of the current instruction
+    fn er(&self, r: u8) -> u32 {
+        match r {
+            15 => self.r[15] + 8,
+            _ => self.r[r],
+        }
+    }
+
+    // this stands for "get execute register unpredictable"
+    // when executing instructions, the PC is unpredictable
+    fn eru(&self, r: u8) -> u32 {
+        match r {
+            15 => {
+                logger::warn(
+                    logger::LogSource::Arm9,
+                    "UNPREDICTABLE: r15 was specified in an invalid context",
+                );
+                self.r[15] // NOTE: this might need to be + 8?
+            }
+            _ => self.r[r],
+        }
+    }
+
+    fn cpsr(&mut self) -> &mut PSR {
+        &mut self.cpsr
+    }
+
+    fn set_cpsr(&mut self, psr: PSR) {
+        self.cpsr = psr;
+    }
+
+    fn get_spsr(&self) -> PSR {
+        match self.cpsr.get_mode() {
+            ProcessorMode::FIQ => PSR::from(self.r_fiq[7]),
+            ProcessorMode::IRQ => PSR::from(self.r_irq[2]),
+            ProcessorMode::SVC => PSR::from(self.r_svc[2]),
+            ProcessorMode::ABT => PSR::from(self.r_abt[2]),
+            ProcessorMode::UND => PSR::from(self.r_und[2]),
+            _ => {
+                logger::warn(
+                    logger::LogSource::Arm9,
+                    "UNPREDICTABLE: attempt to get SPSR in non-exception mode.",
+                );
+                PSR::default()
+            }
+        }
+    }
+}
+
+#[derive(Default)]
+pub struct FakeArm9 {
+    r: Registers,
+    cpsr: PSR,
+}
+
+impl Arm9Trait for FakeArm9 {
+    fn r(&mut self) -> &mut Registers {
+        &mut self.r
+    }
+
+    fn er(&self, _r: u8) -> u32 {
+        0
+    }
+
+    fn eru(&self, _r: u8) -> u32 {
+        0
+    }
+
+    fn cpsr(&mut self) -> &mut PSR {
+        &mut self.cpsr
+    }
+
+    fn set_cpsr(&mut self, _psr: PSR) {}
+
+    fn get_spsr(&self) -> PSR {
+        PSR::default()
     }
 }

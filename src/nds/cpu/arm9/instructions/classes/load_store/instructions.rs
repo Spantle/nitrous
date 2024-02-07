@@ -1,10 +1,19 @@
-use crate::nds::cpu::arm9::models::Context;
+use crate::nds::cpu::{
+    arm9::{
+        arm9::Arm9Trait,
+        models::{Context, DisassemblyTrait},
+    },
+    bus::BusTrait,
+};
 
 use super::LoadStoreInstruction;
 
 // LDR
 #[inline(always)]
-pub fn ldr(ctx: Context<LoadStoreInstruction>, address: u32) -> u32 {
+pub fn ldr(
+    ctx: Context<LoadStoreInstruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
+    address: u32,
+) -> u32 {
     let (arm9, bus, inst) = (ctx.arm9, ctx.bus, ctx.inst);
     let bits = address & 0b11; // i have no idea what to call this
     let mut cycles = 1 + (bits != 0) as u32;
@@ -21,11 +30,11 @@ pub fn ldr(ctx: Context<LoadStoreInstruction>, address: u32) -> u32 {
 
     if inst.destination_register == 15 {
         // note: this is for armv5
-        arm9.r[15] = value & 0xFFFFFFFE;
-        arm9.cpsr.set_thumb(value & 1 != 0);
+        arm9.r()[15] = value & 0xFFFFFFFE;
+        arm9.cpsr().set_thumb(value & 1 != 0);
         cycles += 4;
     } else {
-        arm9.r[inst.destination_register] = value;
+        arm9.r()[inst.destination_register] = value;
     }
 
     cycles
@@ -33,16 +42,22 @@ pub fn ldr(ctx: Context<LoadStoreInstruction>, address: u32) -> u32 {
 
 // STR
 #[inline(always)]
-pub fn str(ctx: Context<LoadStoreInstruction>, address: u32) -> u32 {
+pub fn str(
+    ctx: &mut Context<LoadStoreInstruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
+    address: u32,
+) -> u32 {
     ctx.bus
-        .write_word(address, ctx.arm9.r[ctx.inst.destination_register]);
+        .write_word(address, ctx.arm9.r()[ctx.inst.destination_register]);
 
     1
 }
 
 // STRB
 #[inline(always)]
-pub fn strb(ctx: Context<LoadStoreInstruction>, address: u32) -> u32 {
+pub fn strb(
+    ctx: &mut Context<LoadStoreInstruction, impl Arm9Trait, impl BusTrait, impl DisassemblyTrait>,
+    address: u32,
+) -> u32 {
     ctx.bus
         .write_byte(address, ctx.arm9.eru(ctx.inst.destination_register) as u8);
 

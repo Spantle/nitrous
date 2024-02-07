@@ -1,8 +1,44 @@
-use std::{fmt::Display, sync::Mutex, time::SystemTime};
+use std::{fmt::Display, sync::Mutex};
 
 use once_cell::sync::Lazy;
 
 pub static LOGS: Lazy<Mutex<Vec<Log>>> = Lazy::new(|| Mutex::new(Vec::new()));
+
+pub trait LoggerTrait {
+    fn log_debug(&self, content: &str);
+    fn log_info(&self, content: &str);
+    fn log_warn(&self, content: &str);
+    fn log_error(&self, content: &str);
+}
+
+pub struct Logger(pub LogSource);
+
+pub struct FakeLogger;
+
+impl LoggerTrait for Logger {
+    fn log_debug(&self, content: &str) {
+        debug(self.0, content);
+    }
+
+    fn log_info(&self, content: &str) {
+        info(self.0, content);
+    }
+
+    fn log_warn(&self, content: &str) {
+        warn(self.0, content);
+    }
+
+    fn log_error(&self, content: &str) {
+        error(self.0, content);
+    }
+}
+
+impl LoggerTrait for FakeLogger {
+    fn log_debug(&self, _content: &str) {}
+    fn log_info(&self, _content: &str) {}
+    fn log_warn(&self, _content: &str) {}
+    fn log_error(&self, _content: &str) {}
+}
 
 #[derive(Debug)]
 pub struct Log {
@@ -20,7 +56,7 @@ pub enum LogKind {
     Error,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum LogSource {
     Emu,
     Arm9,
