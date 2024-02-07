@@ -1,6 +1,6 @@
 use crate::nds::{
     cpu::arm9::models::{Context, ContextTrait, DisassemblyTrait, Instruction},
-    logger,
+    logger::LoggerTrait,
 };
 
 use super::{instructions, DataProcessingInstruction};
@@ -15,6 +15,7 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
         arm9: ctx.arm9,
         bus: ctx.bus,
         dis: ctx.dis,
+        logger: ctx.logger,
     };
 
     // cycles are the same for all data-processing instructions
@@ -40,10 +41,8 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
             instructions::mov::<true>(&mut ctx);
         }
         _ => {
-            logger::warn(
-                logger::LogSource::Arm9,
-                format!("unknown data-processing opcode {:04b}", opcode),
-            );
+            ctx.logger
+                .log_warn(format!("unknown data-processing opcode {:04b}", opcode));
         }
     };
 

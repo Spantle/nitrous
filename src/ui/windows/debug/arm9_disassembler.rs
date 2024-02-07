@@ -1,7 +1,10 @@
 use crate::{
-    nds::cpu::{
-        arm9::{self, models::Disassembly},
-        bus::{self, BusTrait},
+    nds::{
+        cpu::{
+            arm9::{self, models::Disassembly},
+            bus::{self, BusTrait},
+        },
+        logger,
     },
     ui::{NitrousGUI, NitrousUI, NitrousWindow},
 };
@@ -69,6 +72,7 @@ impl NitrousGUI {
                         &mut arm9::FakeArm9::default(),
                         &mut bus::FakeBus,
                         &mut disassembly,
+                        &mut logger::FakeLogger,
                     ));
                     row.col(|ui| {
                         ui.label(format!("{:08X}", address));

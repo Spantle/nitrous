@@ -1,6 +1,6 @@
 use crate::nds::{
     cpu::arm9::models::{Context, ContextTrait, Instruction},
-    logger,
+    logger::LoggerTrait,
 };
 
 use super::{branch, data_processing, load_store};
@@ -34,10 +34,8 @@ pub fn lookup_instruction_class(
             branch::lookup(inst_set, ctx)
         }
         _ => {
-            logger::warn(
-                logger::LogSource::Arm9,
-                format!("unknown instruction class {:03b}", class),
-            );
+            ctx.logger
+                .log_warn(format!("unknown instruction class {:03b}", class));
             1
         }
     }

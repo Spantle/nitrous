@@ -3,7 +3,7 @@ use crate::nds::{
         arm9::Arm9Trait,
         models::{Context, ContextTrait, DisassemblyTrait, Instruction},
     },
-    logger,
+    logger::LoggerTrait,
 };
 
 use super::{instructions, LoadStoreInstruction};
@@ -18,6 +18,7 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
         arm9: ctx.arm9,
         bus: ctx.bus,
         dis: ctx.dis,
+        logger: ctx.logger,
     };
     let (arm9, inst) = (&mut ctx.arm9, &ctx.inst);
     ctx.dis.push_reg_arg(inst.destination_register);
@@ -44,23 +45,17 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
         arm9.er(inst.first_source_register) - inst.addressing_mode
     };
 
-    // logger::debug(
-    //     logger::LogSource::Arm9,
-    //     format!(
-    //         "load/store address: {:#010X} ({}) ({}) {:#010X}",
-    //         address,
-    //         inst.first_source_register,
-    //         arm9.er(inst.first_source_register),
-    //         inst.addressing_mode
-    //     ),
-    // );
-    // logger::debug(
-    //     logger::LogSource::Arm9,
-    //     format!(
-    //         "addressing mode: {} {} {} {} {} {}",
-    //         IS_REGISTER, post_indexing, is_add, is_unsigned_byte, w, is_load
-    //     ),
-    // );
+    // ctx.logger.log_debug(format!(
+    //     "load/store address: {:#010X} ({}) ({}) {:#010X}",
+    //     address,
+    //     inst.first_source_register,
+    //     arm9.er(inst.first_source_register),
+    //     inst.addressing_mode
+    // ));
+    // ctx.logger.log_debug(format!(
+    //     "addressing mode: {} {} {} {} {} {}",
+    //     IS_REGISTER, post_indexing, is_add, is_unsigned_byte, w, is_load
+    // ));
 
     if w {
         ctx.dis.push_str_end_arg("!", "");
@@ -87,12 +82,9 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
         }
     }
 
-    logger::warn(
-        logger::LogSource::Arm9,
-        format!(
-            "unknown load/store inst {} {} {} {} {} {}",
-            IS_REGISTER, post_indexing, is_add, is_unsigned_byte, w, is_load
-        ),
-    );
+    ctx.logger.log_warn(format!(
+        "unknown load/store inst {} {} {} {} {} {}",
+        IS_REGISTER, post_indexing, is_add, is_unsigned_byte, w, is_load
+    ));
     1
 }

@@ -83,6 +83,7 @@ impl Arm9 {
                     self,
                     bus,
                     &mut FakeDisassembly,
+                    &mut logger::Logger(logger::LogSource::Arm9),
                 ));
                 if r15 == self.r[15] {
                     self.r[15] += 4;

@@ -1,6 +1,6 @@
 use crate::nds::{
     cpu::arm9::models::{Context, ContextTrait, Instruction},
-    logger,
+    logger::LoggerTrait,
 };
 
 use super::{classes::lookup_instruction_class, conditions::calculate_cond};
@@ -12,7 +12,7 @@ pub fn run_instruction_set(
 ) -> u32 {
     let cond_result = calculate_cond(inst_set, ctx);
     if !cond_result {
-        logger::debug(logger::LogSource::Arm9, "condition failed");
+        ctx.logger.log_debug("condition failed");
         return 0;
     }
 
@@ -26,7 +26,7 @@ pub fn run_instruction_set<const INST_SET: u16>(
 ) -> u32 {
     let cond_result = calculate_cond(INST_SET, ctx);
     if !cond_result {
-        logger::debug(logger::LogSource::Arm9, "condition failed");
+        ctx.logger.log_debug("condition failed");
         return 0;
     }
 

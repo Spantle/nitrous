@@ -5,10 +5,10 @@ use once_cell::sync::Lazy;
 pub static LOGS: Lazy<Mutex<Vec<Log>>> = Lazy::new(|| Mutex::new(Vec::new()));
 
 pub trait LoggerTrait {
-    fn log_debug(&self, content: &str);
-    fn log_info(&self, content: &str);
-    fn log_warn(&self, content: &str);
-    fn log_error(&self, content: &str);
+    fn log_debug<T: Into<String> + Display>(&self, content: T);
+    fn log_info<T: Into<String> + Display>(&self, content: T);
+    fn log_warn<T: Into<String> + Display>(&self, content: T);
+    fn log_error<T: Into<String> + Display>(&self, content: T);
 }
 
 pub struct Logger(pub LogSource);
@@ -16,28 +16,28 @@ pub struct Logger(pub LogSource);
 pub struct FakeLogger;
 
 impl LoggerTrait for Logger {
-    fn log_debug(&self, content: &str) {
+    fn log_debug<T: Into<String> + Display>(&self, content: T) {
         debug(self.0, content);
     }
 
-    fn log_info(&self, content: &str) {
+    fn log_info<T: Into<String> + Display>(&self, content: T) {
         info(self.0, content);
     }
 
-    fn log_warn(&self, content: &str) {
+    fn log_warn<T: Into<String> + Display>(&self, content: T) {
         warn(self.0, content);
     }
 
-    fn log_error(&self, content: &str) {
+    fn log_error<T: Into<String> + Display>(&self, content: T) {
         error(self.0, content);
     }
 }
 
 impl LoggerTrait for FakeLogger {
-    fn log_debug(&self, _content: &str) {}
-    fn log_info(&self, _content: &str) {}
-    fn log_warn(&self, _content: &str) {}
-    fn log_error(&self, _content: &str) {}
+    fn log_debug<T: Into<String> + Display>(&self, _content: T) {}
+    fn log_info<T: Into<String> + Display>(&self, _content: T) {}
+    fn log_warn<T: Into<String> + Display>(&self, _content: T) {}
+    fn log_error<T: Into<String> + Display>(&self, _content: T) {}
 }
 
 #[derive(Debug)]
