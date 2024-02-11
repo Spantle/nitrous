@@ -28,13 +28,14 @@ pub struct Arm9 {
 }
 
 pub trait Arm9Trait {
-    fn r(&mut self) -> &mut Registers;
+    fn r(&mut self) -> &mut Registers; // TODO: rename this to `registers`
     fn er(&self, r: u8) -> u32;
     fn eru(&self, r: u8) -> u32;
 
     fn cpsr(&mut self) -> &mut PSR;
     fn set_cpsr(&mut self, psr: PSR);
     fn get_spsr(&self) -> PSR;
+    fn switch_mode(&mut self, mode: ProcessorMode, is_error_or_interrupt: bool);
 }
 
 impl Default for Arm9 {
@@ -103,45 +104,6 @@ impl Arm9 {
             }
         }
     }
-
-    fn switch_mode(&mut self, mode: ProcessorMode, is_error_or_interrupt: bool) {
-        if self.cpsr.get_mode() == mode {
-            return;
-        }
-
-        match mode {
-            ProcessorMode::USR => {
-                todo!("switch to user mode");
-            }
-            ProcessorMode::FIQ => {
-                swap(&mut self.r[8], &mut self.r_fiq[0]);
-                swap(&mut self.r[9], &mut self.r_fiq[1]);
-                swap(&mut self.r[10], &mut self.r_fiq[2]);
-                swap(&mut self.r[11], &mut self.r_fiq[3]);
-                swap(&mut self.r[12], &mut self.r_fiq[4]);
-                swap(&mut self.r[13], &mut self.r_fiq[5]);
-                swap(&mut self.r[14], &mut self.r_fiq[6]);
-                if is_error_or_interrupt {
-                    swap(&mut self.cpsr, &mut PSR::from(self.r_fiq[7]));
-                }
-            }
-            _ => {
-                let r_to_swap = &mut match mode {
-                    ProcessorMode::IRQ => self.r_irq,
-                    ProcessorMode::SVC => self.r_svc,
-                    ProcessorMode::UND => self.r_und,
-                    ProcessorMode::ABT => self.r_abt,
-                    _ => return,
-                };
-
-                swap(&mut self.r[13], &mut r_to_swap[0]);
-                swap(&mut self.r[14], &mut r_to_swap[1]);
-                if is_error_or_interrupt {
-                    swap(&mut self.cpsr, &mut PSR::from(r_to_swap[2]));
-                }
-            }
-        }
-    }
 }
 
 impl Arm9Trait for Arm9 {
@@ -178,6 +140,11 @@ impl Arm9Trait for Arm9 {
     }
 
     fn set_cpsr(&mut self, psr: PSR) {
+        let new_mode = psr.get_mode();
+        if new_mode != self.cpsr.get_mode() {
+            self.switch_mode(new_mode, false);
+        }
+
         self.cpsr = psr;
     }
 
@@ -194,6 +161,49 @@ impl Arm9Trait for Arm9 {
                     "UNPREDICTABLE: attempt to get SPSR in non-exception mode.",
                 );
                 PSR::default()
+            }
+        }
+    }
+
+    fn switch_mode(&mut self, mode: ProcessorMode, is_error_or_interrupt: bool) {
+        let current_mode = self.cpsr.get_mode();
+        let mut new_mode = mode;
+        if current_mode == new_mode {
+            return;
+        }
+
+        // a cheat to invert the swapping logic without having to copy paste a bunch of code >:)
+        if new_mode == ProcessorMode::SYS || new_mode == ProcessorMode::USR {
+            new_mode = current_mode;
+        }
+
+        match new_mode {
+            ProcessorMode::FIQ => {
+                swap(&mut self.r[8], &mut self.r_fiq[0]);
+                swap(&mut self.r[9], &mut self.r_fiq[1]);
+                swap(&mut self.r[10], &mut self.r_fiq[2]);
+                swap(&mut self.r[11], &mut self.r_fiq[3]);
+                swap(&mut self.r[12], &mut self.r_fiq[4]);
+                swap(&mut self.r[13], &mut self.r_fiq[5]);
+                swap(&mut self.r[14], &mut self.r_fiq[6]);
+                if is_error_or_interrupt {
+                    swap(&mut self.cpsr, &mut PSR::from(self.r_fiq[7]));
+                }
+            }
+            _ => {
+                let r_to_swap = &mut match new_mode {
+                    ProcessorMode::IRQ => self.r_irq,
+                    ProcessorMode::SVC => self.r_svc,
+                    ProcessorMode::UND => self.r_und,
+                    ProcessorMode::ABT => self.r_abt,
+                    _ => return,
+                };
+
+                swap(&mut self.r[13], &mut r_to_swap[0]);
+                swap(&mut self.r[14], &mut r_to_swap[1]);
+                if is_error_or_interrupt {
+                    swap(&mut self.cpsr, &mut PSR::from(r_to_swap[2]));
+                }
             }
         }
     }
@@ -227,4 +237,6 @@ impl Arm9Trait for FakeArm9 {
     fn get_spsr(&self) -> PSR {
         PSR::default()
     }
+
+    fn switch_mode(&mut self, _mode: ProcessorMode, _is_error_or_interrupt: bool) {}
 }
