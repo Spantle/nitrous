@@ -23,13 +23,19 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
 
     let opcode = (inst_set >> 1) & 0b1111;
     let s = inst_set & 1 != 0;
+
+    // TODO: check if this is optimized away
+    if s {
+        ctx.dis.set_inst_suffix("S");
+    }
+
     match (opcode, s) {
         (0b0100, false) => {
             ctx.dis.set_inst("ADD");
             instructions::add::<false>(&mut ctx);
         }
         (0b0100, true) => {
-            ctx.dis.set_inst("ADDS");
+            ctx.dis.set_inst("ADD");
             instructions::add::<true>(&mut ctx);
         }
         (0b1101, false) => {
@@ -37,7 +43,7 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
             instructions::mov::<false>(&mut ctx);
         }
         (0b1101, true) => {
-            ctx.dis.set_inst("MOVS");
+            ctx.dis.set_inst("MOV");
             instructions::mov::<true>(&mut ctx);
         }
         _ => {
