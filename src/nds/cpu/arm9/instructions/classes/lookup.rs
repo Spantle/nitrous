@@ -3,7 +3,7 @@ use crate::nds::{
     logger::LoggerTrait,
 };
 
-use super::{branch, data_processing, load_store};
+use super::{branch, data_processing, load_store, load_store_multiple};
 
 #[inline(always)]
 pub fn lookup_instruction_class(
@@ -28,6 +28,10 @@ pub fn lookup_instruction_class(
         0b011 => {
             // Load/Store word or unsigned byte ("register offset/index" / "scaled register offset/index")
             load_store::lookup::<true, _>(inst_set, ctx)
+        }
+        0b100 => {
+            // Load/Store Multiple
+            load_store_multiple::lookup::<_>(inst_set, ctx)
         }
         0b101 => {
             // Branch

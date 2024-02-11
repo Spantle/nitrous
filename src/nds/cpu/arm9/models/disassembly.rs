@@ -5,6 +5,7 @@ pub trait DisassemblyTrait {
 
     fn push_reg_arg(&mut self, reg: u8);
     fn push_word_arg(&mut self, arg: u32);
+    fn push_str_arg(&mut self, arg: &str);
 
     fn push_reg_end_arg(&mut self, reg: u8, prefix: &str);
     fn push_word_end_arg(&mut self, arg: u32, prefix: &str);
@@ -38,6 +39,10 @@ impl DisassemblyTrait for Disassembly {
 
     fn push_word_arg(&mut self, arg: u32) {
         self.args.push(format!("#0x{:0X}", arg));
+    }
+
+    fn push_str_arg(&mut self, arg: &str) {
+        self.args.push(arg.to_string());
     }
 
     fn push_reg_end_arg(&mut self, reg: u8, prefix: &str) {
@@ -98,6 +103,7 @@ impl DisassemblyTrait for FakeDisassembly {
     fn set_inst_suffix(&mut self, _inst_suffix: &str) {}
     fn push_reg_arg(&mut self, _reg: u8) {}
     fn push_word_arg(&mut self, _arg: u32) {}
+    fn push_str_arg(&mut self, _arg: &str) {}
     fn push_reg_end_arg(&mut self, _reg: u8, _prefix: &str) {}
     fn push_word_end_arg(&mut self, _arg: u32, _prefix: &str) {}
     fn push_str_end_arg(&mut self, _arg: &str, _prefix: &str) {}
