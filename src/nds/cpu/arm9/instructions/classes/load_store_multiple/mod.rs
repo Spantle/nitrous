@@ -18,15 +18,15 @@ impl LoadStoreMultipleInstruction {
         let (rn, start_address, end_address) = addressing_mode::parse(inst_set, ctx);
         let register_list = ctx.inst.get_halfword(0, 15);
 
-        ctx.dis.push_str_end_arg("{", "");
+        ctx.dis.push_str_end_arg("", Some("{"));
         let mut prefix = "";
         for i in 0..=15 {
             if register_list >> i & 1 == 1 {
-                ctx.dis.push_reg_end_arg(i, prefix);
+                ctx.dis.push_reg_end_arg(i, Some(prefix));
                 prefix = ",";
             }
         }
-        ctx.dis.push_str_end_arg("}", "");
+        ctx.dis.push_str_end_arg("", Some("}"));
 
         LoadStoreMultipleInstruction {
             rn,

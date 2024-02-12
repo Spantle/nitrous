@@ -81,10 +81,53 @@ impl NitrousGUI {
                         ui.label(format!("{:08X}", inst));
                     });
                     row.col(|ui| {
-                        let disassembly: String = disassembly.into();
-                        ui.label(disassembly);
+                        ui.horizontal(|ui| {
+                            ui.spacing_mut().item_spacing.x = 0.0;
+
+                            ui.colored_label(
+                                egui::Color32::from_rgb(250, 40, 170),
+                                disassembly.inst,
+                            );
+                            ui.colored_label(
+                                egui::Color32::from_rgb(255, 215, 0),
+                                disassembly
+                                    .cond
+                                    .unwrap_or_default()
+                                    .iter()
+                                    .collect::<String>(),
+                            );
+                            ui.colored_label(
+                                egui::Color32::from_rgb(30, 160, 255),
+                                disassembly.inst_suffix,
+                            );
+
+                            if !disassembly.args.is_empty() {
+                                ui.label(" ");
+
+                                for arg in &disassembly.args {
+                                    ui.colored_label(match_color(&arg.kind), arg.value.to_string());
+                                }
+                            }
+
+                            if !disassembly.end_args.is_empty() {
+                                ui.label(", ");
+
+                                for arg in &disassembly.end_args {
+                                    ui.colored_label(match_color(&arg.kind), arg.value.to_string());
+                                }
+                            }
+                        });
                     });
                 })
             })
+    }
+}
+
+fn match_color(kind: &arm9::models::ChunkKind) -> egui::Color32 {
+    match kind {
+        arm9::models::ChunkKind::Register => egui::Color32::from_rgb(190, 240, 250),
+        arm9::models::ChunkKind::Immediate => egui::Color32::from_rgb(250, 90, 70),
+        arm9::models::ChunkKind::Modifier => egui::Color32::from_rgb(210, 110, 210),
+        arm9::models::ChunkKind::Punctuation => egui::Color32::from_rgb(140, 140, 140),
     }
 }

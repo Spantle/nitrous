@@ -15,7 +15,7 @@ pub struct LoadStoreInstruction {
 impl LoadStoreInstruction {
     fn new<const IS_REGISTER: bool>(ctx: &mut Context<Instruction, impl ContextTrait>) -> Self {
         let first_source_register = ctx.inst.get_byte(16, 19);
-        ctx.dis.push_reg_end_arg(first_source_register, "[");
+        ctx.dis.push_reg_end_arg(first_source_register, Some("["));
 
         let addressing_mode = if IS_REGISTER {
             addressing_mode::parse_register(ctx)

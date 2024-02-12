@@ -20,7 +20,7 @@ pub fn parse_immediate(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shi
         carry_out = rotated & (1 << 31) != 0;
     }
 
-    ctx.dis.push_word_end_arg(rotated, "");
+    ctx.dis.push_word_end_arg(rotated, None);
 
     ShifterOperand {
         carry_out,
@@ -33,16 +33,16 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
 
     let mut carry_out = arm9.cpsr().get_carry();
     let rm = inst.get_byte(0, 3);
-    ctx.dis.push_reg_end_arg(rm, "");
+    ctx.dis.push_reg_end_arg(rm, None);
     let rm = arm9.er(rm);
 
     let operand = inst.get_byte(4, 6);
     let second_source_operand = match operand {
         0b000 => {
             // LSL immediate
-            ctx.dis.push_str_end_arg("LSL", ", ");
+            ctx.dis.push_str_end_arg("LSL", Some(", "));
             let shift_imm = inst.get_word(7, 11);
-            ctx.dis.push_word_end_arg(shift_imm, " ");
+            ctx.dis.push_word_end_arg(shift_imm, Some(" "));
 
             if shift_imm == 0 {
                 rm
@@ -53,9 +53,9 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
         }
         0b001 => {
             // LSL register
-            ctx.dis.push_str_end_arg("LSL", ", ");
+            ctx.dis.push_str_end_arg("LSL", Some(", "));
             let rs = inst.get_byte(8, 11);
-            ctx.dis.push_reg_end_arg(rs, " ");
+            ctx.dis.push_reg_end_arg(rs, Some(" "));
             let rs = arm9.er(rs);
 
             let least_significant_byte = rs & 0b11111111;
@@ -74,9 +74,9 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
         }
         0b010 => {
             // LSR immediate
-            ctx.dis.push_str_end_arg("LSR", ", ");
+            ctx.dis.push_str_end_arg("LSR", Some(", "));
             let shift_imm = inst.get_word(7, 11);
-            ctx.dis.push_word_end_arg(shift_imm, " ");
+            ctx.dis.push_word_end_arg(shift_imm, Some(" "));
 
             if shift_imm == 0 {
                 carry_out = rm & (1 << 31) != 0;
@@ -88,9 +88,9 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
         }
         0b011 => {
             // LSR register
-            ctx.dis.push_str_end_arg("LSR", ", ");
+            ctx.dis.push_str_end_arg("LSR", Some(", "));
             let rs = inst.get_byte(8, 11);
-            ctx.dis.push_reg_end_arg(rs, " ");
+            ctx.dis.push_reg_end_arg(rs, Some(" "));
             let rs = arm9.er(rs);
 
             let least_significant_byte = rs & 0b11111111;
@@ -109,9 +109,9 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
         }
         0b100 => {
             // ASR immediate
-            ctx.dis.push_str_end_arg("ASR", ", ");
+            ctx.dis.push_str_end_arg("ASR", Some(", "));
             let shift_imm = inst.get_word(7, 11);
-            ctx.dis.push_word_end_arg(shift_imm, " ");
+            ctx.dis.push_word_end_arg(shift_imm, Some(" "));
 
             if shift_imm == 0 {
                 let sign_bit = rm & (1 << 31) != 0;
@@ -128,9 +128,9 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
         }
         0b101 => {
             // ASR register
-            ctx.dis.push_str_end_arg("ASR", ", ");
+            ctx.dis.push_str_end_arg("ASR", Some(", "));
             let rs = inst.get_byte(8, 11);
-            ctx.dis.push_reg_end_arg(rs, " ");
+            ctx.dis.push_reg_end_arg(rs, Some(" "));
             let rs = arm9.er(rs);
 
             let least_significant_byte = rs & 0b11111111;
@@ -154,22 +154,22 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
             let shift_imm = inst.get_word(7, 11);
             if shift_imm == 0 {
                 // RRX
-                ctx.dis.push_str_end_arg("RRX", ", ");
-                ctx.dis.push_word_end_arg(shift_imm, " ");
+                ctx.dis.push_str_end_arg("RRX", Some(", "));
+                ctx.dis.push_word_end_arg(shift_imm, Some(" "));
                 carry_out = rm & 1 != 0;
                 (arm9.cpsr().get_carry() as u32) << 31 | rm >> 1
             } else {
-                ctx.dis.push_str_end_arg("ROR", ", ");
-                ctx.dis.push_word_end_arg(shift_imm, " ");
+                ctx.dis.push_str_end_arg("ROR", Some(", "));
+                ctx.dis.push_word_end_arg(shift_imm, Some(" "));
                 carry_out = rm & (1 << 31) != 0;
                 rm.rotate_right(shift_imm)
             }
         }
         0b111 => {
             // ROR register
-            ctx.dis.push_str_end_arg("ROR", ", ");
+            ctx.dis.push_str_end_arg("ROR", Some(", "));
             let rs = inst.get_byte(8, 11);
-            ctx.dis.push_reg_end_arg(rs, " ");
+            ctx.dis.push_reg_end_arg(rs, Some(" "));
             let rs = arm9.er(rs);
 
             let least_significant_byte = rs & 0b11111111;

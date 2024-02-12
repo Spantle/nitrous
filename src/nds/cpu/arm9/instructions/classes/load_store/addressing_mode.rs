@@ -8,15 +8,15 @@ use crate::nds::{
 
 pub fn parse_immediate(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let result = ctx.inst.get_word(0, 11);
-    ctx.dis.push_word_end_arg(result, ", ");
-    ctx.dis.push_str_end_arg("]", "");
+    ctx.dis.push_word_end_arg(result, Some(", "));
+    ctx.dis.push_str_end_arg("", Some("]"));
 
     result
 }
 
 pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let rm = ctx.inst.get_byte(0, 3);
-    ctx.dis.push_reg_end_arg(rm, ", ");
+    ctx.dis.push_reg_end_arg(rm, Some(", "));
     let rm = ctx.arm9.eru(rm);
 
     let shift = ctx.inst.get_byte(5, 6);
@@ -24,12 +24,12 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 
     let result = match shift {
         0b00 => {
             // LSL
-            ctx.dis.push_str_end_arg("LSL", ", ");
+            ctx.dis.push_str_end_arg("LSL", Some(", "));
             rm << shift_imm
         }
         0b01 => {
             // LSR
-            ctx.dis.push_str_end_arg("LSR", ", ");
+            ctx.dis.push_str_end_arg("LSR", Some(", "));
             if shift_imm == 0 {
                 // LSR #32
                 0
@@ -39,7 +39,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 
         }
         0b10 => {
             // ASR
-            ctx.dis.push_str_end_arg("ASR", ", ");
+            ctx.dis.push_str_end_arg("ASR", Some(", "));
             if shift_imm == 0 {
                 // ASR #32
                 if rm & (1 << 31) != 0 {
@@ -55,19 +55,19 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 
         0b11 => {
             if shift_imm == 0 {
                 // RRX
-                ctx.dis.push_str_end_arg("RRX", ", ");
+                ctx.dis.push_str_end_arg("RRX", Some(", "));
                 ctx.logger.log_debug("the funny actually happened"); // TODO: remove
                 (ctx.arm9.cpsr().get_carry() as u32) << 31 | rm >> 1
             } else {
                 // ROR
-                ctx.dis.push_str_end_arg("ROR", ", ");
+                ctx.dis.push_str_end_arg("ROR", Some(", "));
                 rm.rotate_right(shift_imm)
             }
         }
         _ => unreachable!(),
     };
 
-    ctx.dis.push_word_end_arg(shift_imm, " ");
-    ctx.dis.push_str_end_arg("]", "");
+    ctx.dis.push_word_end_arg(shift_imm, Some(" "));
+    ctx.dis.push_str_end_arg("", Some("]"));
     result
 }

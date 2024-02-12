@@ -12,9 +12,9 @@ pub fn parse(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -
 
     let rn = ctx.inst.get_byte(16, 19);
     if is_incremented {
-        ctx.dis.push_reg_arg(rn, "!");
+        ctx.dis.push_reg_arg(rn, Some("!"));
     } else {
-        ctx.dis.push_reg_arg(rn, "");
+        ctx.dis.push_reg_arg(rn, None);
     }
 
     let register_list = ctx.inst.get_halfword(0, 15);

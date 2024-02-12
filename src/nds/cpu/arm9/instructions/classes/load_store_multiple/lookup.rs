@@ -24,7 +24,7 @@ pub fn lookup<Ctx: ContextTrait>(inst_set: u16, ctx: &mut Context<Instruction, C
         ctx.dis.set_inst("LDM");
 
         if s {
-            ctx.dis.push_str_end_arg("^", "");
+            ctx.dis.push_str_end_arg("^", None);
 
             if has_15 {
                 return instructions::ldm_3(ctx);
