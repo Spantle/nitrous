@@ -40,15 +40,13 @@ pub trait Arm9Trait {
 
 impl Default for Arm9 {
     fn default() -> Arm9 {
-        // TODO: figure out what the default PSR value is for SPSRs
-        let psr = PSR::default().value();
         Arm9 {
             r: Registers::default(),
-            r_fiq: [0, 0, 0, 0, 0, 0, 0, psr],
-            r_irq: [0, 0, psr],
-            r_svc: [0, 0, psr],
-            r_abt: [0, 0, psr],
-            r_und: [0, 0, psr],
+            r_fiq: [0, 0, 0, 0, 0, 0, 0, ProcessorMode::FIQ.bits()],
+            r_irq: [0, 0, ProcessorMode::IRQ.bits()],
+            r_svc: [0, 0, ProcessorMode::SVC.bits()],
+            r_abt: [0, 0, ProcessorMode::ABT.bits()],
+            r_und: [0, 0, ProcessorMode::UND.bits()],
             cpsr: PSR::default(),
 
             pipeline_state: PipelineState::Fetch,

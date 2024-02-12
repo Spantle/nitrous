@@ -1,7 +1,7 @@
 use bitflags::bitflags;
 
 #[derive(Debug)]
-pub struct PSR(u32);
+pub struct PSR(pub u32);
 
 bitflags! {
     #[derive(Debug, Eq, PartialEq)]
@@ -19,7 +19,7 @@ bitflags! {
 
 impl Default for PSR {
     fn default() -> PSR {
-        PSR(ProcessorMode::SVC.bits())
+        PSR(ProcessorMode::SYS.bits())
     }
 }
 
