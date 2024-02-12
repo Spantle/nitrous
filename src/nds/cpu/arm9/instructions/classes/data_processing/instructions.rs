@@ -27,6 +27,7 @@ pub fn mov<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
 // ADD, ADDS
 pub fn add<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl ContextTrait>) {
     ctx.dis.push_reg_arg(ctx.inst.destination_register, None);
+    ctx.dis.push_str_arg(", ");
     ctx.dis.push_reg_arg(ctx.inst.first_source_register, None);
 
     let (inst, arm9) = (&mut ctx.inst, &mut ctx.arm9);
