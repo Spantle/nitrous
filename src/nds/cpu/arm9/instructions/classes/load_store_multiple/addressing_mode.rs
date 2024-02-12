@@ -10,12 +10,12 @@ pub fn parse(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -
     let is_upwards = inst_set >> 3 & 1 == 1; // U
     let is_incremented = inst_set >> 1 & 1 == 1; // W
 
-    if is_incremented {
-        ctx.dis.push_str_end_arg("!", "");
-    }
-
     let rn = ctx.inst.get_byte(16, 19);
-    ctx.dis.push_reg_arg(rn);
+    if is_incremented {
+        ctx.dis.push_reg_arg(rn, "!");
+    } else {
+        ctx.dis.push_reg_arg(rn, "");
+    }
 
     let register_list = ctx.inst.get_halfword(0, 15);
     let number_of_set_bits = register_list.count_ones();

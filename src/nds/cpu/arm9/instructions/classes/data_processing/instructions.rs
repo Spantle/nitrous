@@ -7,7 +7,7 @@ use super::DataProcessingInstruction;
 
 // MOV, MOVS
 pub fn mov<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl ContextTrait>) {
-    ctx.dis.push_reg_arg(ctx.inst.destination_register);
+    ctx.dis.push_reg_arg(ctx.inst.destination_register, "");
 
     let (inst, arm9) = (&mut ctx.inst, &mut ctx.arm9);
     let result = inst.second_source_operand;
@@ -26,8 +26,8 @@ pub fn mov<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
 
 // ADD, ADDS
 pub fn add<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl ContextTrait>) {
-    ctx.dis.push_reg_arg(ctx.inst.destination_register);
-    ctx.dis.push_reg_arg(ctx.inst.first_source_register);
+    ctx.dis.push_reg_arg(ctx.inst.destination_register, "");
+    ctx.dis.push_reg_arg(ctx.inst.first_source_register, "");
 
     let (inst, arm9) = (&mut ctx.inst, &mut ctx.arm9);
     if S {

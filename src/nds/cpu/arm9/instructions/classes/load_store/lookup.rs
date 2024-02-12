@@ -21,7 +21,7 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
         logger: ctx.logger,
     };
     let (arm9, inst) = (&mut ctx.arm9, &ctx.inst);
-    ctx.dis.push_reg_arg(inst.destination_register);
+    ctx.dis.push_reg_arg(inst.destination_register, "");
 
     let post_indexing = inst_set >> 4 & 1 == 0; // P: technically 0 but we've flipped it since 1 is "offset"/"pre-indexed" addressing
     let is_add = inst_set >> 3 & 1 == 1; // U

@@ -3,7 +3,7 @@ pub trait DisassemblyTrait {
     fn set_inst(&mut self, inst: &str);
     fn set_inst_suffix(&mut self, inst_suffix: &str);
 
-    fn push_reg_arg(&mut self, reg: u8);
+    fn push_reg_arg(&mut self, reg: u8, suffix: &str);
     fn push_word_arg(&mut self, arg: u32);
     fn push_str_arg(&mut self, arg: &str);
 
@@ -33,8 +33,8 @@ impl DisassemblyTrait for Disassembly {
         self.inst_suffix = inst_suffix.to_string();
     }
 
-    fn push_reg_arg(&mut self, reg: u8) {
-        self.args.push(format!("r{}", reg));
+    fn push_reg_arg(&mut self, reg: u8, suffix: &str) {
+        self.args.push(format!("r{}{}", reg, suffix));
     }
 
     fn push_word_arg(&mut self, arg: u32) {
@@ -101,7 +101,7 @@ impl DisassemblyTrait for FakeDisassembly {
     fn set_cond(&mut self, _cond: [char; 2]) {}
     fn set_inst(&mut self, _inst: &str) {}
     fn set_inst_suffix(&mut self, _inst_suffix: &str) {}
-    fn push_reg_arg(&mut self, _reg: u8) {}
+    fn push_reg_arg(&mut self, _reg: u8, _suffix: &str) {}
     fn push_word_arg(&mut self, _arg: u32) {}
     fn push_str_arg(&mut self, _arg: &str) {}
     fn push_reg_end_arg(&mut self, _reg: u8, _prefix: &str) {}
