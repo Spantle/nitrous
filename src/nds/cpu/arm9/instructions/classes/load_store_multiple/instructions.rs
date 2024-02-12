@@ -17,7 +17,7 @@ pub fn ldm_1(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
     for i in 0..=14 {
         if inst.register_list >> i & 1 == 1 {
             arm9.r()[i] = bus.read_word(address);
-            address += 4;
+            address = address.wrapping_add(4);
         }
     }
 
@@ -28,7 +28,7 @@ pub fn ldm_1(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
         arm9.r()[15] = value & 0xFFFFFFFE;
         arm9.cpsr().set_thumb(value & 1 == 1);
 
-        // address += 4;
+        // address = address.wrapping_add(4);
     }
 
     // assert end_address = address - 4
@@ -37,6 +37,7 @@ pub fn ldm_1(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
 }
 
 // LDM (2)
+#[inline(always)]
 pub fn ldm_2(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u32 {
     let (arm9, bus, inst) = (ctx.arm9, ctx.bus, ctx.inst);
     let mut address = inst.start_address;
@@ -47,7 +48,7 @@ pub fn ldm_2(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
     for i in 0..=14 {
         if inst.register_list >> i & 1 == 1 {
             arm9.r()[i] = bus.read_word(address);
-            address += 4;
+            address = address.wrapping_add(4);
         }
     }
 
@@ -59,6 +60,7 @@ pub fn ldm_2(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
 }
 
 // LDM (3)
+#[inline(always)]
 pub fn ldm_3(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u32 {
     let (arm9, bus, inst) = (ctx.arm9, ctx.bus, ctx.inst);
     let mut address = inst.start_address;
@@ -66,7 +68,7 @@ pub fn ldm_3(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
     for i in 0..=14 {
         if inst.register_list >> i & 1 == 1 {
             arm9.r()[i] = bus.read_word(address);
-            address += 4;
+            address = address.wrapping_add(4);
         }
     }
 
@@ -80,7 +82,48 @@ pub fn ldm_3(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
         arm9.r()[15] = value & 0xFFFFFFFC;
     }
 
-    // address += 4;
+    // address = address.wrapping_add(4);
+    // assert end_address = address - 4
+
+    1 // TODO: this is not right
+}
+
+// STM (1)
+#[inline(always)]
+pub fn stm_1(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u32 {
+    let (arm9, bus, inst) = (ctx.arm9, ctx.bus, ctx.inst);
+    let mut address = inst.start_address;
+
+    for i in 0..=15 {
+        if inst.register_list >> i & 1 == 1 {
+            bus.write_word(address, arm9.r()[i]);
+            address = address.wrapping_add(4);
+        }
+    }
+
+    // assert end_address = address - 4
+
+    1 // TODO: this is not right
+}
+
+// STM (2)
+#[inline(always)]
+pub fn stm_2(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u32 {
+    let (arm9, bus, inst) = (ctx.arm9, ctx.bus, ctx.inst);
+    let mut address = inst.start_address;
+
+    let old_mode = arm9.cpsr().get_mode();
+    arm9.switch_mode(ProcessorMode::USR, false);
+
+    for i in 0..=15 {
+        if inst.register_list >> i & 1 == 1 {
+            bus.write_word(address, arm9.r()[i]);
+            address = address.wrapping_add(4);
+        }
+    }
+
+    arm9.switch_mode(old_mode, false);
+
     // assert end_address = address - 4
 
     1 // TODO: this is not right

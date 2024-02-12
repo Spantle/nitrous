@@ -35,9 +35,20 @@ pub fn lookup<Ctx: ContextTrait>(inst_set: u16, ctx: &mut Context<Instruction, C
             return instructions::ldm_1(ctx);
         }
     } else {
-        // TODO
+        ctx.dis.set_inst("STM");
+
+        if s {
+            if !is_incremented {
+                return instructions::stm_2(ctx);
+            }
+        } else {
+            return instructions::stm_1(ctx);
+        }
     }
 
-    ctx.logger.log_warn("unknown load/store multiple inst");
+    ctx.logger.log_warn(format!(
+        "unknown load/store multiple inst {} {} {} {}",
+        s, is_incremented, is_load, has_15
+    ));
     1
 }
