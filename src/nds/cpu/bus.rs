@@ -12,10 +12,13 @@ pub struct Bus {
 }
 
 pub trait BusTrait {
-    fn write_byte(&mut self, addr: u32, value: u8);
+    fn read_halfword(&mut self, addr: u32) -> u16;
     fn read_word(&self, addr: u32) -> u32;
-    fn write_word(&mut self, addr: u32, value: u32);
     fn read_bulk(&self, addr: u32, len: u32) -> Vec<u8>;
+
+    fn write_byte(&mut self, addr: u32, value: u8);
+    fn write_halfword(&mut self, addr: u32, value: u16);
+    fn write_word(&mut self, addr: u32, value: u32);
     fn write_bulk(&mut self, addr: u32, data: Vec<u8>);
 }
 
@@ -33,19 +36,21 @@ impl Default for Bus {
 }
 
 impl BusTrait for Bus {
-    fn write_byte(&mut self, addr: u32, value: u8) {
+    fn read_halfword(&mut self, addr: u32) -> u16 {
         let addr = addr as usize;
         match addr {
-            0x02000000..=0x023FFFFF => {
+            0x02000000..=0x023FFFFFF => {
                 let addr = addr - 0x02000000;
-                self.mem[addr] = value;
+                let mut bytes = [0; 2];
+                bytes.copy_from_slice(&self.mem[addr..addr + 2]);
+                u16::from_le_bytes(bytes)
             }
-            0x04000240..=0x04000249 => self.vramcnt[addr - 0x04000240] = value,
             _ => {
                 logger::error(
                     logger::LogSource::Bus9,
-                    format!("Invalid write byte address: {:#010X}", addr),
+                    format!("Invalid read halfword address: {:#010X}", addr),
                 );
+                0
             }
         }
     }
@@ -64,27 +69,9 @@ impl BusTrait for Bus {
             _ => {
                 logger::error(
                     logger::LogSource::Bus9,
-                    format!("Invalid read address: {:#010X}", addr),
+                    format!("Invalid read word address: {:#010X}", addr),
                 );
                 0
-            }
-        }
-    }
-
-    fn write_word(&mut self, addr: u32, value: u32) {
-        let addr = addr as usize;
-        match addr {
-            0x02000000..=0x023FFFFF => {
-                let addr = addr - 0x02000000;
-                self.mem[addr..addr + 4].copy_from_slice(&value.to_le_bytes());
-            }
-            0x04000000 => self.gpu2d_a.dispcnt = value.into(),
-            0x04000304 => self.powcnt1 = value.into(),
-            _ => {
-                logger::error(
-                    logger::LogSource::Bus9,
-                    format!("Invalid write address: {:#010X}", addr),
-                );
             }
         }
     }
@@ -111,6 +98,57 @@ impl BusTrait for Bus {
         }
     }
 
+    fn write_byte(&mut self, addr: u32, value: u8) {
+        let addr = addr as usize;
+        match addr {
+            0x02000000..=0x023FFFFF => {
+                let addr = addr - 0x02000000;
+                self.mem[addr] = value;
+            }
+            0x04000240..=0x04000249 => self.vramcnt[addr - 0x04000240] = value,
+            _ => {
+                logger::error(
+                    logger::LogSource::Bus9,
+                    format!("Invalid write byte address: {:#010X}", addr),
+                );
+            }
+        }
+    }
+
+    fn write_halfword(&mut self, addr: u32, value: u16) {
+        let addr = addr as usize;
+        match addr {
+            0x02000000..=0x023FFFFFE => {
+                let addr = addr - 0x02000000;
+                self.mem[addr..addr + 2].copy_from_slice(&value.to_le_bytes());
+            }
+            _ => {
+                logger::error(
+                    logger::LogSource::Bus9,
+                    format!("Invalid write halfword address: {:#010X}", addr),
+                );
+            }
+        }
+    }
+
+    fn write_word(&mut self, addr: u32, value: u32) {
+        let addr = addr as usize;
+        match addr {
+            0x02000000..=0x023FFFFF => {
+                let addr = addr - 0x02000000;
+                self.mem[addr..addr + 4].copy_from_slice(&value.to_le_bytes());
+            }
+            0x04000000 => self.gpu2d_a.dispcnt = value.into(),
+            0x04000304 => self.powcnt1 = value.into(),
+            _ => {
+                logger::error(
+                    logger::LogSource::Bus9,
+                    format!("Invalid write word address: {:#010X}", addr),
+                );
+            }
+        }
+    }
+
     // it's 1am i don't know what to call this
     fn write_bulk(&mut self, addr: u32, data: Vec<u8>) {
         let addr = addr as usize;
@@ -132,13 +170,18 @@ impl BusTrait for Bus {
 pub struct FakeBus;
 
 impl BusTrait for FakeBus {
-    fn write_byte(&mut self, _addr: u32, _value: u8) {}
+    fn read_halfword(&mut self, _addr: u32) -> u16 {
+        0
+    }
     fn read_word(&self, _addr: u32) -> u32 {
         0
     }
-    fn write_word(&mut self, _addr: u32, _value: u32) {}
     fn read_bulk(&self, _addr: u32, _len: u32) -> Vec<u8> {
         vec![]
     }
+
+    fn write_byte(&mut self, _addr: u32, _value: u8) {}
+    fn write_halfword(&mut self, _addr: u32, _value: u16) {}
+    fn write_word(&mut self, _addr: u32, _value: u32) {}
     fn write_bulk(&mut self, _addr: u32, _data: Vec<u8>) {}
 }
