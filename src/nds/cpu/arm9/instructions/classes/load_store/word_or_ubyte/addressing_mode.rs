@@ -6,14 +6,15 @@ use crate::nds::{
     logger::LoggerTrait,
 };
 
+#[inline(always)]
 pub fn parse_immediate(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let result = ctx.inst.get_word(0, 11);
     ctx.dis.push_word_end_arg(result, Some(", "));
-    ctx.dis.push_str_end_arg("", Some("]"));
 
     result
 }
 
+#[inline(always)]
 pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let rm = ctx.inst.get_byte(0, 3);
     ctx.dis.push_reg_end_arg(rm, Some(", "));
@@ -68,6 +69,5 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 
     };
 
     ctx.dis.push_word_end_arg(shift_imm, Some(" "));
-    ctx.dis.push_str_end_arg("", Some("]"));
     result
 }

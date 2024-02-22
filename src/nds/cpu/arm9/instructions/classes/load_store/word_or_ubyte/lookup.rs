@@ -14,7 +14,7 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
     ctx: &mut Context<Instruction, Ctx>,
 ) -> u32 {
     let mut ctx = Context::<_, Ctx> {
-        inst: LoadStoreInstruction::new::<IS_REGISTER>(ctx),
+        inst: LoadStoreInstruction::new::<IS_REGISTER>(inst_set, ctx),
         arm9: ctx.arm9,
         bus: ctx.bus,
         dis: ctx.dis,
@@ -29,20 +29,20 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
     let w = inst_set >> 1 & 1 == 1; // W
     let is_load = inst_set & 1 == 1; // L
 
+    let rn = arm9.er(inst.first_source_register);
+
     let address = if post_indexing {
-        let address = arm9.er(inst.first_source_register);
         if is_add {
-            arm9.r()[inst.first_source_register] =
-                arm9.r()[inst.first_source_register].wrapping_add(inst.addressing_mode);
+            arm9.r()[inst.first_source_register] = rn.wrapping_add(inst.addressing_mode);
         } else {
-            arm9.r()[inst.first_source_register] =
-                arm9.r()[inst.first_source_register].wrapping_sub(inst.addressing_mode);
-        }
-        address
+            arm9.r()[inst.first_source_register] = rn.wrapping_sub(inst.addressing_mode);
+        };
+
+        rn
     } else if is_add {
-        arm9.er(inst.first_source_register) + inst.addressing_mode
+        rn.wrapping_add(inst.addressing_mode)
     } else {
-        arm9.er(inst.first_source_register) - inst.addressing_mode
+        rn.wrapping_sub(inst.addressing_mode)
     };
 
     // ctx.logger.log_debug(format!(
