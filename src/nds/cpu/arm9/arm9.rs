@@ -35,7 +35,11 @@ pub trait Arm9Trait {
     fn cpsr(&mut self) -> &mut PSR;
     fn set_cpsr(&mut self, psr: PSR);
     fn get_spsr(&self) -> PSR;
-    fn switch_mode(&mut self, mode: ProcessorMode, is_error_or_interrupt: bool);
+    fn switch_mode<const RETURN_TO_DEFAULT: bool>(
+        &mut self,
+        mode: ProcessorMode,
+        copy_cpsr_to_spsr: bool,
+    );
 }
 
 impl Default for Arm9 {
@@ -137,10 +141,11 @@ impl Arm9Trait for Arm9 {
         &mut self.cpsr
     }
 
+    // TODO: review if this is needed
     fn set_cpsr(&mut self, psr: PSR) {
         let new_mode = psr.get_mode();
         if new_mode != self.cpsr.get_mode() {
-            self.switch_mode(new_mode, false);
+            self.switch_mode::<false>(new_mode, false);
         }
 
         self.cpsr = psr;
@@ -163,16 +168,30 @@ impl Arm9Trait for Arm9 {
         }
     }
 
-    fn switch_mode(&mut self, mode: ProcessorMode, is_error_or_interrupt: bool) {
+    fn switch_mode<const RETURN_TO_DEFAULT: bool>(
+        &mut self,
+        mode: ProcessorMode,
+        copy_cpsr_to_spsr: bool,
+    ) {
         let current_mode = self.cpsr.get_mode();
         let mut new_mode = mode;
-        if current_mode == new_mode {
-            return;
-        }
 
-        // a cheat to invert the swapping logic without having to copy paste a bunch of code >:)
-        if new_mode == ProcessorMode::SYS || new_mode == ProcessorMode::USR {
+        if RETURN_TO_DEFAULT {
+            // put things back the way that they were
             new_mode = current_mode;
+        } else {
+            if current_mode == new_mode {
+                return;
+            }
+
+            if self.cpsr.current_mode_has_spsr() {
+                self.switch_mode::<true>(ProcessorMode::USR, false);
+            }
+
+            // a cheat to invert the swapping logic without having to copy paste a bunch of code >:)
+            if new_mode == ProcessorMode::SYS || new_mode == ProcessorMode::USR {
+                new_mode = current_mode;
+            }
         }
 
         match new_mode {
@@ -184,8 +203,8 @@ impl Arm9Trait for Arm9 {
                 swap(&mut self.r[12], &mut self.r_fiq[4]);
                 swap(&mut self.r[13], &mut self.r_fiq[5]);
                 swap(&mut self.r[14], &mut self.r_fiq[6]);
-                if is_error_or_interrupt {
-                    swap(&mut self.cpsr, &mut PSR::from(self.r_fiq[7]));
+                if copy_cpsr_to_spsr {
+                    self.r_fiq[7] = self.cpsr.value();
                 }
             }
             _ => {
@@ -199,8 +218,8 @@ impl Arm9Trait for Arm9 {
 
                 swap(&mut self.r[13], &mut r_to_swap[0]);
                 swap(&mut self.r[14], &mut r_to_swap[1]);
-                if is_error_or_interrupt {
-                    swap(&mut self.cpsr, &mut PSR::from(r_to_swap[2]));
+                if copy_cpsr_to_spsr {
+                    r_to_swap[2] = self.cpsr.value();
                 }
             }
         }
@@ -236,5 +255,10 @@ impl Arm9Trait for FakeArm9 {
         PSR::default()
     }
 
-    fn switch_mode(&mut self, _mode: ProcessorMode, _is_error_or_interrupt: bool) {}
+    fn switch_mode<const RETURN_TO_DEFAULT: bool>(
+        &mut self,
+        _mode: ProcessorMode,
+        _copy_cpsr_to_spsr: bool,
+    ) {
+    }
 }

@@ -43,7 +43,7 @@ pub fn ldm_2(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
     let mut address = inst.start_address;
 
     let old_mode = arm9.cpsr().get_mode();
-    arm9.switch_mode(ProcessorMode::USR, false);
+    arm9.switch_mode::<false>(ProcessorMode::USR, false);
 
     for i in 0..=14 {
         if inst.register_list >> i & 1 == 1 {
@@ -52,7 +52,7 @@ pub fn ldm_2(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
         }
     }
 
-    arm9.switch_mode(old_mode, false);
+    arm9.switch_mode::<false>(old_mode, false);
 
     // assert end_address = address - 4
 
@@ -113,7 +113,7 @@ pub fn stm_2(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
     let mut address = inst.start_address;
 
     let old_mode = arm9.cpsr().get_mode();
-    arm9.switch_mode(ProcessorMode::USR, false);
+    arm9.switch_mode::<false>(ProcessorMode::USR, false);
 
     for i in 0..=15 {
         if inst.register_list >> i & 1 == 1 {
@@ -122,7 +122,7 @@ pub fn stm_2(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
         }
     }
 
-    arm9.switch_mode(old_mode, false);
+    arm9.switch_mode::<false>(old_mode, false);
 
     // assert end_address = address - 4
 

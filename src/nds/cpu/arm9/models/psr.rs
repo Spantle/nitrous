@@ -55,6 +55,10 @@ impl PSR {
         self.0 = (self.0 & !(1 << offset)) | ((value as u32) << offset);
     }
 
+    pub fn set_bits(&mut self, offset: u32, end: u32, value: u32) {
+        self.0 = (self.0 & !((1 << (end - offset)) - 1)) | (value << offset);
+    }
+
     pub fn get_mode(&self) -> ProcessorMode {
         ProcessorMode::from_bits_truncate(self.0 & ProcessorMode::MASK.bits())
     }
@@ -125,5 +129,13 @@ impl PSR {
 
     pub fn set_negative(&mut self, negative: bool) {
         self.set_bit(Self::NEGATIVE_OFFSET, negative)
+    }
+
+    pub fn in_a_privileged_mode(&self) -> bool {
+        self.get_mode() != ProcessorMode::USR
+    }
+
+    pub fn current_mode_has_spsr(&self) -> bool {
+        self.get_mode() != ProcessorMode::USR && self.get_mode() != ProcessorMode::SYS
     }
 }
