@@ -1,7 +1,7 @@
 use crate::nds::cpu::{
     arm9::{
         arm9::Arm9Trait,
-        models::{Context, ContextTrait, ProcessorMode},
+        models::{Bits, Context, ContextTrait, ProcessorMode},
     },
     bus::BusTrait,
 };
@@ -15,18 +15,18 @@ pub fn ldm_1(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
     let mut address = inst.start_address;
 
     for i in 0..=14 {
-        if inst.register_list >> i & 1 == 1 {
+        if inst.register_list.get_bit(i as u16) {
             arm9.r()[i] = bus.read_word(address);
             address = address.wrapping_add(4);
         }
     }
 
-    if inst.register_list >> 15 & 1 == 1 {
+    if inst.register_list.get_bit(15) {
         let value = bus.read_word(address);
 
         // NOTE: this is for armv5
         arm9.r()[15] = value & 0xFFFFFFFE;
-        arm9.cpsr().set_thumb(value & 1 == 1);
+        arm9.cpsr().set_thumb(value.get_bit(0));
 
         // address = address.wrapping_add(4);
     }
@@ -46,7 +46,7 @@ pub fn ldm_2(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
     arm9.switch_mode::<false>(ProcessorMode::USR, false);
 
     for i in 0..=14 {
-        if inst.register_list >> i & 1 == 1 {
+        if inst.register_list.get_bit(i as u16) {
             arm9.r()[i] = bus.read_word(address);
             address = address.wrapping_add(4);
         }
@@ -66,7 +66,7 @@ pub fn ldm_3(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
     let mut address = inst.start_address;
 
     for i in 0..=14 {
-        if inst.register_list >> i & 1 == 1 {
+        if inst.register_list.get_bit(i as u16) {
             arm9.r()[i] = bus.read_word(address);
             address = address.wrapping_add(4);
         }
@@ -95,7 +95,7 @@ pub fn stm_1(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
     let mut address = inst.start_address;
 
     for i in 0..=15 {
-        if inst.register_list >> i & 1 == 1 {
+        if inst.register_list.get_bit(i as u16) {
             bus.write_word(address, arm9.r()[i]);
             address = address.wrapping_add(4);
         }
@@ -116,7 +116,7 @@ pub fn stm_2(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
     arm9.switch_mode::<false>(ProcessorMode::USR, false);
 
     for i in 0..=15 {
-        if inst.register_list >> i & 1 == 1 {
+        if inst.register_list.get_bit(i as u16) {
             bus.write_word(address, arm9.r()[i]);
             address = address.wrapping_add(4);
         }

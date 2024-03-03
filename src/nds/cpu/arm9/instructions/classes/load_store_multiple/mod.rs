@@ -4,7 +4,7 @@ mod lookup;
 
 pub use lookup::lookup;
 
-use crate::nds::cpu::arm9::models::{Context, ContextTrait, DisassemblyTrait, Instruction};
+use crate::nds::cpu::arm9::models::{Bits, Context, ContextTrait, DisassemblyTrait, Instruction};
 
 pub struct LoadStoreMultipleInstruction {
     pub rn: u32,            // Rn
@@ -21,7 +21,7 @@ impl LoadStoreMultipleInstruction {
         ctx.dis.push_str_end_arg("", Some("{"));
         let mut prefix = "";
         for i in 0..=15 {
-            if register_list >> i & 1 == 1 {
+            if register_list.get_bit(i as u16) {
                 ctx.dis.push_reg_end_arg(i, Some(prefix));
                 prefix = ",";
             }

@@ -1,6 +1,6 @@
 use crate::nds::cpu::arm9::{
     arm9::Arm9Trait,
-    models::{Context, ContextTrait, DisassemblyTrait, Instruction},
+    models::{Bits, Context, ContextTrait, DisassemblyTrait, Instruction},
 };
 
 // AKA the addressing mode
@@ -47,7 +47,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
             if shift_imm == 0 {
                 rm
             } else {
-                carry_out = (rm >> (32 - shift_imm)) & 1 != 0;
+                carry_out = rm.get_bit(32 - shift_imm);
                 rm << shift_imm
             }
         }
@@ -62,10 +62,10 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
             if least_significant_byte == 0 {
                 rm
             } else if least_significant_byte < 32 {
-                carry_out = (rm >> (32 - least_significant_byte)) & 1 != 0;
+                carry_out = rm.get_bit(32 - least_significant_byte);
                 rm << least_significant_byte
             } else if least_significant_byte == 32 {
-                carry_out = rm & 1 != 0;
+                carry_out = rm.get_bit(0);
                 0
             } else {
                 carry_out = false;
@@ -82,7 +82,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
                 carry_out = rm & (1 << 31) != 0;
                 0
             } else {
-                carry_out = (rm >> (shift_imm - 1)) & 1 != 0;
+                carry_out = rm.get_bit(shift_imm - 1);
                 rm >> shift_imm
             }
         }
@@ -122,7 +122,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
                     0
                 }
             } else {
-                carry_out = (rm >> (shift_imm - 1)) & 1 != 0;
+                carry_out = rm.get_bit(shift_imm - 1);
                 ((rm as i32) >> shift_imm) as u32
             }
         }
@@ -156,7 +156,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
                 // RRX
                 ctx.dis.push_str_end_arg("RRX", Some(", "));
                 ctx.dis.push_word_end_arg(shift_imm, Some(" "));
-                carry_out = rm & 1 != 0;
+                carry_out = rm.get_bit(1);
                 (arm9.cpsr().get_carry() as u32) << 31 | rm >> 1
             } else {
                 ctx.dis.push_str_end_arg("ROR", Some(", "));

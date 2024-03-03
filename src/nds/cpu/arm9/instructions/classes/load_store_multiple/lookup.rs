@@ -1,5 +1,5 @@
 use crate::nds::{
-    cpu::arm9::models::{Context, ContextTrait, DisassemblyTrait, Instruction},
+    cpu::arm9::models::{Bits, Context, ContextTrait, DisassemblyTrait, Instruction},
     logger::LoggerTrait,
 };
 
@@ -18,7 +18,7 @@ pub fn lookup<Ctx: ContextTrait>(inst_set: u16, ctx: &mut Context<Instruction, C
     let s = inst_set >> 2 & 1 == 1; // S
     let is_incremented = inst_set >> 1 & 1 == 1; // W
     let is_load = inst_set & 1 == 1; // L
-    let has_15 = ctx.inst.register_list >> 15 & 1 == 1;
+    let has_15 = ctx.inst.register_list.get_bit(15);
 
     if is_load {
         ctx.dis.set_inst("LDM");

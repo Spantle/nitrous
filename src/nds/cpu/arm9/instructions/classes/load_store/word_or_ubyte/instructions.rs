@@ -1,7 +1,7 @@
 use crate::nds::cpu::{
     arm9::{
         arm9::Arm9Trait,
-        models::{Context, ContextTrait},
+        models::{Bits, Context, ContextTrait},
     },
     bus::BusTrait,
 };
@@ -28,7 +28,7 @@ pub fn ldr(ctx: Context<LoadStoreInstruction, impl ContextTrait>, address: u32) 
     if inst.destination_register == 15 {
         // note: this is for armv5
         arm9.r()[15] = value & 0xFFFFFFFE;
-        arm9.cpsr().set_thumb(value & 1 != 0);
+        arm9.cpsr().set_thumb(value.get_bit(0));
         cycles += 4;
     } else {
         arm9.r()[inst.destination_register] = value;
