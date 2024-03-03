@@ -141,12 +141,12 @@ impl Arm9Trait for Arm9 {
         &mut self.cpsr
     }
 
-    // TODO: review if this is needed
+    // TODO: review if setting the cpsr also changes modes?
     fn set_cpsr(&mut self, psr: PSR) {
-        let new_mode = psr.get_mode();
-        if new_mode != self.cpsr.get_mode() {
-            self.switch_mode::<false>(new_mode, false);
-        }
+        // let new_mode = psr.get_mode();
+        // if new_mode != self.cpsr.get_mode() {
+        //     self.switch_mode::<false>(new_mode, false);
+        // }
 
         self.cpsr = psr;
     }
