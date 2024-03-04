@@ -1,7 +1,7 @@
 use crate::nds::{
     cpu::arm9::{
         arm9::Arm9Trait,
-        models::{Context, ContextTrait, DisassemblyTrait, Instruction},
+        models::{Bits, Context, ContextTrait, DisassemblyTrait, Instruction},
     },
     logger::LoggerTrait,
 };
@@ -43,8 +43,9 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 
             ctx.dis.push_str_end_arg("ASR", Some(", "));
             if shift_imm == 0 {
                 // ASR #32
-                if rm & (1 << 31) != 0 {
+                if rm.get_bit(31) {
                     // technically bit 31 is supposed to equal 1 but we cheat this
+                    // update from a few months later: what the fuck are you talking about
                     0xFFFFFFFF
                 } else {
                     0

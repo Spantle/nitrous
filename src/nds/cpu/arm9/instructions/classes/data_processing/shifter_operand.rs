@@ -17,7 +17,7 @@ pub fn parse_immediate(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shi
 
     let rotated = immed_8.rotate_right(rotate_imm * 2);
     if rotate_imm != 0 {
-        carry_out = rotated & (1 << 31) != 0;
+        carry_out = rotated.get_bit(31);
     }
 
     ctx.dis.push_word_end_arg(rotated, None);
@@ -79,7 +79,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
             ctx.dis.push_word_end_arg(shift_imm, Some(" "));
 
             if shift_imm == 0 {
-                carry_out = rm & (1 << 31) != 0;
+                carry_out = rm.get_bit(31);
                 0
             } else {
                 carry_out = rm.get_bit(shift_imm - 1);
@@ -97,10 +97,10 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
             if least_significant_byte == 0 {
                 rm
             } else if least_significant_byte < 32 {
-                carry_out = rm & (1 << (least_significant_byte - 1)) != 0;
+                carry_out = rm.get_bit(least_significant_byte - 1);
                 rm >> least_significant_byte
             } else if least_significant_byte == 32 {
-                carry_out = rm & (1 << 31) != 0;
+                carry_out = rm.get_bit(31);
                 0
             } else {
                 carry_out = false;
@@ -114,7 +114,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
             ctx.dis.push_word_end_arg(shift_imm, Some(" "));
 
             if shift_imm == 0 {
-                let sign_bit = rm & (1 << 31) != 0;
+                let sign_bit = rm.get_bit(31);
                 carry_out = sign_bit;
                 if sign_bit {
                     0xFFFFFFFF
@@ -137,10 +137,10 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
             if least_significant_byte == 0 {
                 rm
             } else if least_significant_byte < 32 {
-                carry_out = rm & (1 << (least_significant_byte - 1)) != 0;
+                carry_out = rm.get_bit(least_significant_byte - 1);
                 ((rm as i32) >> least_significant_byte) as u32
             } else {
-                let sign_bit = rm & (1 << 31) != 0;
+                let sign_bit = rm.get_bit(31);
                 carry_out = sign_bit;
                 if sign_bit {
                     0xFFFFFFFF
@@ -161,7 +161,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
             } else {
                 ctx.dis.push_str_end_arg("ROR", Some(", "));
                 ctx.dis.push_word_end_arg(shift_imm, Some(" "));
-                carry_out = rm & (1 << 31) != 0;
+                carry_out = rm.get_bit(31);
                 rm.rotate_right(shift_imm)
             }
         }
@@ -177,10 +177,10 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
             if least_significant_byte == 0 {
                 rm
             } else if least_significant_bits == 0 {
-                carry_out = rm & (1 << 31) != 0;
+                carry_out = rm.get_bit(31);
                 rm
             } else {
-                carry_out = rm & (1 << (least_significant_bits - 1)) != 0;
+                carry_out = rm.get_bit(least_significant_bits - 1);
                 rm.rotate_right(least_significant_bits)
             }
         }

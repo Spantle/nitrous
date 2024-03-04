@@ -1,7 +1,7 @@
 use crate::nds::cpu::arm9::{
     arm9::Arm9Trait,
     instructions::classes::data_processing::DataProcessingInstruction,
-    models::{Context, ContextTrait, DisassemblyTrait},
+    models::{Bits, Context, ContextTrait, DisassemblyTrait},
 };
 
 // MOV, MOVS
@@ -16,7 +16,7 @@ pub fn mov<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
         if inst.destination_register == 15 {
             arm9.set_cpsr(arm9.get_spsr());
         } else {
-            arm9.cpsr().set_negative(result & (1 << 31) != 0);
+            arm9.cpsr().set_negative(result.get_bit(31));
             arm9.cpsr().set_zero(result == 0);
             arm9.cpsr().set_carry(inst.carry_out);
         }

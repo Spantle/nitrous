@@ -1,7 +1,7 @@
 use crate::nds::cpu::arm9::{
     arm9::Arm9Trait,
     instructions::classes::data_processing::DataProcessingInstruction,
-    models::{Context, ContextTrait, DisassemblyTrait},
+    models::{Bits, Context, ContextTrait, DisassemblyTrait},
 };
 
 // ADD, ADDS
@@ -19,13 +19,13 @@ pub fn add<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
         if inst.destination_register == 15 {
             arm9.set_cpsr(arm9.get_spsr());
         } else {
-            arm9.cpsr().set_negative(result & (1 << 31) != 0);
+            arm9.cpsr().set_negative(result.get_bit(31));
             arm9.cpsr().set_zero(result == 0);
             arm9.cpsr().set_carry(overflow);
             arm9.cpsr().set_overflow(
-                (first_source_register & (1 << 31) == 0)
-                    && (inst.second_source_operand & (1 << 31) == 0)
-                    && (result & (1 << 31) != 0),
+                !first_source_register.get_bit(31)
+                    && !inst.second_source_operand.get_bit(31)
+                    && result.get_bit(31),
             );
         }
     } else {
