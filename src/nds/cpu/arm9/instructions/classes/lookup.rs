@@ -3,7 +3,7 @@ use crate::nds::{
     logger::LoggerTrait,
 };
 
-use super::{branch, data_processing, load_store, load_store_multiple};
+use super::{branch, data_processing, load_store, load_store_multiple, status_register_access};
 
 #[inline(always)]
 pub fn lookup_instruction_class(
@@ -16,19 +16,16 @@ pub fn lookup_instruction_class(
         0b000 => {
             if !ctx.inst.get_bit(4) || !ctx.inst.get_bit(7) {
                 // bit 20, and bits 23-24
-                if inst_set & 0b1 == 0 && inst_set >> 3 & 0b11 == 0b10 {
+                if inst_set & 1 == 0 && inst_set >> 3 & 0b11 == 0b10 {
                     // Miscellaneous
+                    return lookup_miscellaneous_instructions(inst_set, ctx);
                 } else {
                     // Data Processing (immediate shift / register shift)
                     return data_processing::lookup::<false, _>(inst_set, ctx);
                 }
-            } else {
-                // Multiplies, extra load/stores
-                return lookup_multiples_and_extra_load_store_instructions(inst_set, ctx);
             }
 
-            // Data Processing (immediate shift / register shift)
-            data_processing::lookup::<false, _>(inst_set, ctx)
+            lookup_multiples_and_extra_load_store_instructions(inst_set, ctx)
         }
         0b001 => {
             // Data Processing (immediate)
@@ -68,44 +65,97 @@ fn lookup_multiples_and_extra_load_store_instructions(
     if !ctx.inst.get_bit(6) {
         if !ctx.inst.get_bit(5) {
             // bit 24
-            if inst_set >> 4 & 0b1 == 0 {
+            if inst_set >> 4 & 1 == 0 {
                 // Multiply
-                0
+                return 0;
             } else {
                 // Semaphore
-                1
+                return 1;
             }
         } else {
             // bit 22
-            if inst_set >> 2 & 0b1 == 0 {
+            if inst_set >> 2 & 1 == 0 {
                 // Load/store halfword (register offset)
-                load_store::halfword_or_ibyte::lookup::<false, _>(inst_set, ctx)
+                return load_store::halfword_or_ibyte::lookup::<false, _>(inst_set, ctx);
             } else {
                 // Load/store halfword (immediate offset)
-                load_store::halfword_or_ibyte::lookup::<true, _>(inst_set, ctx)
+                return load_store::halfword_or_ibyte::lookup::<true, _>(inst_set, ctx);
             }
         }
+    }
+
+    // else
+
+    // bit 20
+    if inst_set & 1 == 0 {
+        // Load/store two words
+        // bit 22
+        if inst_set >> 2 & 1 == 0 {
+            // Load/store two words (register offset)
+            0
+        } else {
+            // Load/store two words (immediate offset)
+            1
+        }
     } else {
-        // bit 20
-        if inst_set & 0b1 == 0 {
-            // Load/store two words
-            // bit 22
-            if inst_set >> 2 & 0b1 == 0 {
-                // Load/store two words (register offset)
+        // bit 22
+        if inst_set >> 2 & 1 == 0 {
+            // Load signed halfword/byte (register offset)
+            load_store::halfword_or_ibyte::lookup::<false, _>(inst_set, ctx)
+        } else {
+            // Load signed halfword/byte (immediate offset)
+            load_store::halfword_or_ibyte::lookup::<true, _>(inst_set, ctx)
+        }
+    }
+}
+
+#[inline(always)]
+fn lookup_miscellaneous_instructions(
+    inst_set: u16,
+    ctx: &mut Context<Instruction, impl ContextTrait>,
+) -> u32 {
+    let bits = ctx.inst.get_byte(4, 7);
+    match bits {
+        0b0000 => {
+            // bit 21
+            if inst_set >> 1 & 1 == 0 {
+                // Move status register to register
                 0
             } else {
-                // Load/store two words (immediate offset)
+                // Move register to status register
+                status_register_access::instructions::msr(inst_set, ctx)
+            }
+        }
+        0b0001 => {
+            // bit 22
+            if inst_set >> 2 & 1 == 0 {
+                // Branch/exchange instruction set
+                0
+            } else {
+                // Count leading zeroes
                 1
             }
-        } else {
-            // bit 22
-            if inst_set >> 2 & 0b1 == 0 {
-                // Load signed halfword/byte (register offset)
-                load_store::halfword_or_ibyte::lookup::<false, _>(inst_set, ctx)
-            } else {
-                // Load signed halfword/byte (immediate offset)
-                load_store::halfword_or_ibyte::lookup::<true, _>(inst_set, ctx)
-            }
+        }
+        0b0011 => {
+            // Branch and link/exchange instruction set
+            0
+        }
+        0b0101 => {
+            // Enhanced DSP add/subtracts
+            0
+        }
+        0b0111 => {
+            // Software breakpoint
+            0
+        }
+        0b1000 | 0b1010 | 0b1100 | 0b1110 => {
+            // Enhanced DSP multiplies
+            0
+        }
+        _ => {
+            ctx.logger
+                .log_warn(format!("unknown miscellaneous instruction {:04b}", bits));
+            1
         }
     }
 }
