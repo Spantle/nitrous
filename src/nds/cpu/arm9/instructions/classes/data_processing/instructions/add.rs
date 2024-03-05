@@ -6,6 +6,7 @@ use crate::nds::cpu::arm9::{
 
 // ADD, ADDS
 pub fn add<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl ContextTrait>) {
+    ctx.dis.set_inst("ADD");
     ctx.dis.push_reg_arg(ctx.inst.destination_register, None);
     ctx.dis.push_str_arg(", ");
     ctx.dis.push_reg_arg(ctx.inst.first_source_register, None);

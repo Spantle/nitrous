@@ -6,6 +6,7 @@ use crate::nds::cpu::arm9::{
 
 // MOV, MOVS
 pub fn mov<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl ContextTrait>) {
+    ctx.dis.set_inst("MOV");
     ctx.dis.push_reg_arg(ctx.inst.destination_register, None);
 
     let (inst, arm9) = (&mut ctx.inst, &mut ctx.arm9);

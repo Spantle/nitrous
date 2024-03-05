@@ -31,19 +31,15 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
 
     match (opcode, s) {
         (0b0100, false) => {
-            ctx.dis.set_inst("ADD");
             instructions::add::<false>(&mut ctx);
         }
         (0b0100, true) => {
-            ctx.dis.set_inst("ADD");
             instructions::add::<true>(&mut ctx);
         }
         (0b1101, false) => {
-            ctx.dis.set_inst("MOV");
             instructions::mov::<false>(&mut ctx);
         }
         (0b1101, true) => {
-            ctx.dis.set_inst("MOV");
             instructions::mov::<true>(&mut ctx);
         }
         _ => {
