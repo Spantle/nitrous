@@ -13,7 +13,7 @@ pub fn add<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
     let (inst, arm9) = (&mut ctx.inst, &mut ctx.arm9);
     if S {
         let first_source_register = arm9.er(inst.first_source_register);
-        let (result, overflow) = first_source_register.overflowing_add(inst.second_source_operand);
+        let (result, carry) = first_source_register.overflowing_add(inst.second_source_operand);
         arm9.r()[inst.destination_register] = result;
 
         if inst.destination_register == 15 {
@@ -21,11 +21,11 @@ pub fn add<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
         } else {
             arm9.cpsr().set_negative(result.get_bit(31));
             arm9.cpsr().set_zero(result == 0);
-            arm9.cpsr().set_carry(overflow);
+            arm9.cpsr().set_carry(carry);
             arm9.cpsr().set_overflow(
-                !first_source_register.get_bit(31)
-                    && !inst.second_source_operand.get_bit(31)
-                    && result.get_bit(31),
+                (first_source_register as i32)
+                    .overflowing_add_unsigned(inst.second_source_operand)
+                    .1,
             );
         }
     } else {
