@@ -39,7 +39,7 @@ impl BusTrait for Bus {
     fn read_halfword(&mut self, addr: u32) -> u16 {
         let addr = addr as usize;
         match addr {
-            0x02000000..=0x023FFFFFF => {
+            0x02000000..=0x023FFFFF => {
                 let addr = addr - 0x02000000;
                 let mut bytes = [0; 2];
                 bytes.copy_from_slice(&self.mem[addr..addr + 2]);
