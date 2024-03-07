@@ -48,6 +48,12 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
         (0b1101, true) => {
             instructions::mov::<true>(&mut ctx);
         }
+        (0b1110, false) => {
+            instructions::bic::<false>(&mut ctx);
+        }
+        (0b1110, true) => {
+            instructions::bic::<true>(&mut ctx);
+        }
         _ => {
             ctx.logger
                 .log_warn(format!("unknown data-processing opcode {:04b}", opcode));
