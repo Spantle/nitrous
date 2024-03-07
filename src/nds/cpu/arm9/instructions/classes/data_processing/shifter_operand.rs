@@ -40,9 +40,14 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
     let second_source_operand = match operand {
         0b000 => {
             // LSL immediate
-            ctx.dis.push_str_end_arg("LSL", Some(", "));
             let shift_imm = inst.get_word(7, 11);
-            ctx.dis.push_word_end_arg(shift_imm, Some(" "));
+
+            // the default if you don't want any shifting is to LSL shift 0
+            // so in this scenario we exclude the LSL from the disassembly
+            if shift_imm != 0 {
+                ctx.dis.push_str_end_arg("LSL", Some(", "));
+                ctx.dis.push_word_end_arg(shift_imm, Some(" "));
+            }
 
             if shift_imm == 0 {
                 rm
