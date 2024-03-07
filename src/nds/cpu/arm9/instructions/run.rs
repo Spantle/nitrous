@@ -10,8 +10,10 @@ pub fn run_instruction_set(
     inst_set: u16,
     ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {
+    use crate::nds::cpu::arm9::models::DisassemblyTrait;
+
     let cond_result = calculate_cond(inst_set, ctx);
-    if !cond_result {
+    if !ctx.dis.is_real() && !cond_result {
         ctx.logger.log_debug("condition failed");
         return 0;
     }

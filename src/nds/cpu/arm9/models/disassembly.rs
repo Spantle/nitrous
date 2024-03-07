@@ -17,6 +17,8 @@ impl Chunk {
 }
 
 pub trait DisassemblyTrait {
+    fn is_real(&self) -> bool;
+
     fn set_cond(&mut self, cond: [char; 2]);
     fn set_inst(&mut self, inst: &str);
     fn set_inst_suffix(&mut self, inst_suffix: &str);
@@ -39,6 +41,10 @@ pub struct Disassembly {
 }
 
 impl DisassemblyTrait for Disassembly {
+    fn is_real(&self) -> bool {
+        true
+    }
+
     fn set_cond(&mut self, cond: [char; 2]) {
         self.cond = Some(cond);
     }
@@ -142,6 +148,10 @@ impl Default for Disassembly {
 pub struct FakeDisassembly;
 
 impl DisassemblyTrait for FakeDisassembly {
+    fn is_real(&self) -> bool {
+        false
+    }
+
     fn set_cond(&mut self, _cond: [char; 2]) {}
     fn set_inst(&mut self, _inst: &str) {}
     fn set_inst_suffix(&mut self, _inst_suffix: &str) {}
