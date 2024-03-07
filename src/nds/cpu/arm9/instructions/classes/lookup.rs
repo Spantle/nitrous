@@ -61,15 +61,19 @@ fn lookup_multiples_and_extra_load_store_instructions(
     ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {
     // agony
+    // TODO: organize this better, try to reuse bits 6 and 5
+    // there's also problems with halfword_or_ibyte's categorization
 
     if !ctx.inst.get_bit(6) {
         if !ctx.inst.get_bit(5) {
             // bit 24
             if inst_set >> 4 & 1 == 0 {
                 // Multiply
+                ctx.logger.log_warn("multiply instruction not implemented");
                 return 0;
             } else {
                 // Semaphore
+                ctx.logger.log_warn("semaphore instruction not implemented");
                 return 1;
             }
         } else {
@@ -89,6 +93,8 @@ fn lookup_multiples_and_extra_load_store_instructions(
     // bit 20
     if inst_set & 1 == 0 {
         // Load/store two words
+        ctx.logger
+            .log_warn("load/store two words instruction not implemented");
         // bit 22
         if inst_set >> 2 & 1 == 0 {
             // Load/store two words (register offset)
@@ -120,6 +126,8 @@ fn lookup_miscellaneous_instructions(
             // bit 21
             if inst_set >> 1 & 1 == 0 {
                 // Move status register to register
+                ctx.logger
+                    .log_warn("move status register to register instruction not implemented");
                 0
             } else {
                 // Move register to status register
@@ -130,26 +138,38 @@ fn lookup_miscellaneous_instructions(
             // bit 22
             if inst_set >> 2 & 1 == 0 {
                 // Branch/exchange instruction set
+                ctx.logger
+                    .log_warn("branch/exchange instruction set instruction not implemented");
                 0
             } else {
                 // Count leading zeroes
+                ctx.logger
+                    .log_warn("count leading zeroes instruction not implemented");
                 1
             }
         }
         0b0011 => {
             // Branch and link/exchange instruction set
+            ctx.logger
+                .log_warn("branch and link/exchange instruction set instruction not implemented");
             0
         }
         0b0101 => {
             // Enhanced DSP add/subtracts
+            ctx.logger
+                .log_warn("enhanced DSP add/subtracts instruction not implemented");
             0
         }
         0b0111 => {
             // Software breakpoint
+            ctx.logger
+                .log_warn("software breakpoint instruction not implemented");
             0
         }
         0b1000 | 0b1010 | 0b1100 | 0b1110 => {
             // Enhanced DSP multiplies
+            ctx.logger
+                .log_warn("enhanced DSP multiplies instruction not implemented");
             0
         }
         _ => {
