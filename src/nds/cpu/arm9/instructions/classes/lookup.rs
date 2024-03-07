@@ -138,9 +138,7 @@ fn lookup_miscellaneous_instructions(
             // bit 22
             if inst_set >> 2 & 1 == 0 {
                 // Branch/exchange instruction set
-                ctx.logger
-                    .log_warn("branch/exchange instruction set instruction not implemented");
-                0
+                branch::instructions::bx(ctx)
             } else {
                 // Count leading zeroes
                 ctx.logger
