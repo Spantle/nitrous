@@ -33,15 +33,23 @@ impl NitrousGUI {
                 .read_bulk(bus.cart.arm9_load_address, bus.cart.arm9_size)
         };
 
+        let pc = self.emulator.arm9.r[15] as usize;
         let height = ui.text_style_height(&egui::TextStyle::Monospace);
         let total_rows = mem.len() / 4;
         let arm9_load_address = bus.cart.arm9_load_address as usize;
-        egui_extras::TableBuilder::new(ui)
+        let mut table_builder = egui_extras::TableBuilder::new(ui)
             .striped(true)
             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
             .column(egui_extras::Column::auto())
             .column(egui_extras::Column::auto())
-            .column(egui_extras::Column::auto())
+            .column(egui_extras::Column::auto());
+
+        if self.emulator.is_running() {
+            let pc_row = (pc - arm9_load_address) / 4;
+            table_builder = table_builder.scroll_to_row(pc_row, None);
+        }
+
+        table_builder
             .header(height, |mut header| {
                 header.col(|c| {
                     c.strong("Address");
@@ -64,7 +72,7 @@ impl NitrousGUI {
                         mem[start + 3],
                     ]);
 
-                    row.set_selected(address == self.emulator.arm9.r[15] as usize);
+                    row.set_selected(address == pc);
 
                     let mut disassembly = Disassembly::default();
                     arm9::lookup_instruction_set(&mut arm9::models::Context::new(
