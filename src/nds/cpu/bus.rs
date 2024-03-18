@@ -46,7 +46,7 @@ impl BusTrait for Bus {
                 u16::from_le_bytes(bytes)
             }
             _ => {
-                logger::error(
+                logger::warn(
                     logger::LogSource::Bus9,
                     format!("Invalid read halfword address: {:#010X}", addr),
                 );
@@ -67,7 +67,7 @@ impl BusTrait for Bus {
             0x04000000 => self.gpu2d_a.dispcnt.value(),
             0x04000304 => self.powcnt1.value(),
             _ => {
-                logger::error(
+                logger::warn(
                     logger::LogSource::Bus9,
                     format!("Invalid read word address: {:#010X}", addr),
                 );
@@ -85,7 +85,7 @@ impl BusTrait for Bus {
                 self.mem[addr..addr + len].to_vec()
             }
             _ => {
-                logger::error(
+                logger::warn(
                     logger::LogSource::Bus9,
                     format!(
                         "Invalid read bulk address: {:#010X}-{:#010X}",
@@ -107,7 +107,7 @@ impl BusTrait for Bus {
             }
             0x04000240..=0x04000249 => self.vramcnt[addr - 0x04000240] = value,
             _ => {
-                logger::error(
+                logger::warn(
                     logger::LogSource::Bus9,
                     format!("Invalid write byte address: {:#010X}", addr),
                 );
@@ -123,7 +123,7 @@ impl BusTrait for Bus {
                 self.mem[addr..addr + 2].copy_from_slice(&value.to_le_bytes());
             }
             _ => {
-                logger::error(
+                logger::warn(
                     logger::LogSource::Bus9,
                     format!("Invalid write halfword address: {:#010X}", addr),
                 );
@@ -141,7 +141,7 @@ impl BusTrait for Bus {
             0x04000000 => self.gpu2d_a.dispcnt = value.into(),
             0x04000304 => self.powcnt1 = value.into(),
             _ => {
-                logger::error(
+                logger::warn(
                     logger::LogSource::Bus9,
                     format!("Invalid write word address: {:#010X}", addr),
                 );
@@ -158,7 +158,7 @@ impl BusTrait for Bus {
                 self.mem[addr..addr + data.len()].copy_from_slice(&data);
             }
             _ => {
-                logger::error(
+                logger::warn(
                     logger::LogSource::Bus9,
                     format!("Invalid write bulk address: {:#010X}", addr),
                 );

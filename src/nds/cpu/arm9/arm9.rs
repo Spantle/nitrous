@@ -62,12 +62,12 @@ impl Arm9 {
     pub fn clock(&mut self, bus: &mut Bus) -> bool {
         match self.pipeline_state {
             PipelineState::Fetch => {
-                logger::debug(logger::LogSource::Arm9, "fetching instruction");
+                // logger::debug(logger::LogSource::Arm9, "fetching instruction");
                 self.pipeline_state = PipelineState::Decode;
                 false
             }
             PipelineState::Decode => {
-                logger::debug(logger::LogSource::Arm9, "decoding instruction");
+                // logger::debug(logger::LogSource::Arm9, "decoding instruction");
                 self.pipeline_state = PipelineState::Execute;
                 false
             }
@@ -75,10 +75,10 @@ impl Arm9 {
                 // get 4 bytes
                 let inst = bus.read_word(self.r[15]);
                 // print as binary
-                logger::debug(
-                    logger::LogSource::Arm9,
-                    format!("executing instruction: {:#010X} ({:032b})", inst, inst),
-                );
+                // logger::debug(
+                //     logger::LogSource::Arm9,
+                //     format!("executing instruction: {:#010X} ({:032b})", inst, inst),
+                // );
 
                 let r15 = self.r[15];
                 let cycles = lookup_instruction_set(&mut Context::new(
