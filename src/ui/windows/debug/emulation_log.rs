@@ -1,5 +1,5 @@
 use crate::{
-    nds::logger,
+    nds::logger::{self, do_pause_on_warn, set_pause_on_warn},
     ui::{NitrousGUI, NitrousUI, NitrousWindow},
 };
 
@@ -13,6 +13,13 @@ impl NitrousGUI {
                     ui.horizontal(|ui| {
                         if ui.button("Clear").clicked() {
                             logger::LOGS.lock().unwrap().clear();
+                        }
+
+                        let orig_pause_on_warn = do_pause_on_warn();
+                        let mut pause_on_warn = orig_pause_on_warn;
+                        ui.checkbox(&mut pause_on_warn, "Pause on Warn");
+                        if pause_on_warn != orig_pause_on_warn {
+                            set_pause_on_warn(pause_on_warn);
                         }
                     });
                 });

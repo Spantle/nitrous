@@ -1,13 +1,15 @@
+use std::sync::atomic::AtomicBool;
+
 use super::cpu::{
     arm9::Arm9,
     bus::{Bus, BusTrait},
 };
 
+static IS_EMULATOR_RUNNING: AtomicBool = AtomicBool::new(false);
+
 pub struct Emulator {
     pub arm9: Arm9,
     pub bus: Bus,
-
-    running: bool,
 }
 
 impl Default for Emulator {
@@ -15,8 +17,6 @@ impl Default for Emulator {
         Emulator {
             arm9: Arm9::default(),
             bus: Bus::default(),
-
-            running: false,
         }
     }
 }
@@ -43,19 +43,19 @@ impl Emulator {
     }
 
     pub fn start(&mut self) {
-        self.running = true;
+        set_emulator_running(true);
     }
 
     pub fn pause(&mut self) {
-        self.running = false;
+        set_emulator_running(false);
     }
 
     pub fn is_running(&self) -> bool {
-        self.running
+        is_emulator_running()
     }
 
     pub fn clock(&mut self) {
-        if !self.running {
+        if !self.is_running() {
             return;
         }
 
@@ -65,4 +65,12 @@ impl Emulator {
     pub fn step(&mut self) {
         self.arm9.step(&mut self.bus);
     }
+}
+
+pub fn is_emulator_running() -> bool {
+    IS_EMULATOR_RUNNING.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+pub fn set_emulator_running(running: bool) {
+    IS_EMULATOR_RUNNING.store(running, std::sync::atomic::Ordering::Relaxed);
 }

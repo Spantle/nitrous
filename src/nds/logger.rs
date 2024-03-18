@@ -1,8 +1,14 @@
-use std::{fmt::Display, sync::Mutex};
+use std::{
+    fmt::Display,
+    sync::{atomic::AtomicBool, Mutex},
+};
 
 use once_cell::sync::Lazy;
 
+use crate::nds::emulator::set_emulator_running;
+
 pub static LOGS: Lazy<Mutex<Vec<Log>>> = Lazy::new(|| Mutex::new(Vec::new()));
+static PAUSE_ON_WARN: AtomicBool = AtomicBool::new(true);
 
 pub trait LoggerTrait {
     fn log_debug<T: Into<String> + Display>(&self, content: T);
@@ -90,6 +96,10 @@ pub fn info<T: Into<String> + Display>(source: LogSource, content: T) {
 }
 
 pub fn warn<T: Into<String> + Display>(source: LogSource, content: T) {
+    if do_pause_on_warn() {
+        set_emulator_running(false);
+    }
+
     warn!("[{:?}] {}", source, &content);
     LOGS.lock().unwrap().push(Log {
         kind: LogKind::Warn,
@@ -100,6 +110,8 @@ pub fn warn<T: Into<String> + Display>(source: LogSource, content: T) {
 }
 
 pub fn error<T: Into<String> + Display>(source: LogSource, content: T) {
+    set_emulator_running(false);
+
     error!("[{:?}] {}", source, &content);
     LOGS.lock().unwrap().push(Log {
         kind: LogKind::Error,
@@ -107,4 +119,12 @@ pub fn error<T: Into<String> + Display>(source: LogSource, content: T) {
         content: content.to_string(),
         timestamp: now(),
     })
+}
+
+pub fn do_pause_on_warn() -> bool {
+    PAUSE_ON_WARN.load(std::sync::atomic::Ordering::Relaxed)
+}
+
+pub fn set_pause_on_warn(pause: bool) {
+    PAUSE_ON_WARN.store(pause, std::sync::atomic::Ordering::Relaxed);
 }
