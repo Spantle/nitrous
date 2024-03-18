@@ -59,7 +59,7 @@ pub enum LogKind {
 #[derive(Debug, Clone, Copy)]
 pub enum LogSource {
     Emu,
-    Arm9,
+    Arm9(u32),
     Bus9,
     Cart,
 }

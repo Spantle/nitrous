@@ -86,7 +86,7 @@ impl Arm9 {
                     self,
                     bus,
                     &mut FakeDisassembly,
-                    &mut logger::Logger(logger::LogSource::Arm9),
+                    &mut logger::Logger(logger::LogSource::Arm9(inst)),
                 ));
                 if r15 == self.r[15] {
                     self.r[15] += 4;
@@ -128,7 +128,7 @@ impl Arm9Trait for Arm9 {
         match r {
             15 => {
                 logger::warn(
-                    logger::LogSource::Arm9,
+                    logger::LogSource::Arm9(0),
                     "UNPREDICTABLE: r15 was specified in an invalid context",
                 );
                 self.r[15] // NOTE: this might need to be + 8?
@@ -160,7 +160,7 @@ impl Arm9Trait for Arm9 {
             ProcessorMode::UND => PSR::from(self.r_und[2]),
             _ => {
                 logger::warn(
-                    logger::LogSource::Arm9,
+                    logger::LogSource::Arm9(0),
                     "UNPREDICTABLE: attempt to get SPSR in non-exception mode.",
                 );
                 PSR::default()
