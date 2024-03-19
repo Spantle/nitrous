@@ -33,7 +33,7 @@ pub fn run_instruction_set<const INST_SET: u16>(
     if !cond_result {
         ctx.logger.log_debug(format!(
             "condition failed {:#06X} ({:016b})",
-            inst_set, inst_set
+            INST_SET, INST_SET
         ));
         return 0;
     }
