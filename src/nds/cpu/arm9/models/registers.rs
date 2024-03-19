@@ -1,5 +1,12 @@
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 pub struct Registers(pub [u32; 16]);
+
+impl Default for Registers {
+    // TODO: in the future, this should be set by the BIOS
+    fn default() -> Self {
+        Self([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x803EC0, 0, 0])
+    }
+}
 
 impl std::ops::Index<u8> for Registers {
     type Output = u32;

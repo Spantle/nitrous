@@ -47,8 +47,8 @@ impl Default for Arm9 {
         Arm9 {
             r: Registers::default(),
             r_fiq: [0, 0, 0, 0, 0, 0, 0, 0],
-            r_irq: [0, 0, 0],
-            r_svc: [0, 0, 0],
+            r_irq: [0x803FA0, 0, 0], // TODO: in the future, the stack pointer should be set by the BIOS
+            r_svc: [0x803FC0, 0, 0], // TODO: in the future, the stack pointer should be set by the BIOS
             r_abt: [0, 0, 0],
             r_und: [0, 0, 0],
             cpsr: PSR::default(),

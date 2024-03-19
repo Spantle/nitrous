@@ -7,6 +7,9 @@ pub struct Bus {
     pub mem: Vec<u8>,
     pub gpu2d_a: Gpu2d,
 
+    // TODO: move this, it shouldn't be accessible by the DMA
+    pub data_tcm: [u8; 1024 * 16],
+
     pub vramcnt: [u8; 10], // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
     pub powcnt1: POWCNT1,  // 0x04000304
 }
@@ -28,6 +31,8 @@ impl Default for Bus {
             cart: Cartridge::default(),
             mem: vec![0; 1024 * 1024 * 4],
             gpu2d_a: Gpu2d::default(),
+
+            data_tcm: [0; 1024 * 16],
 
             vramcnt: [0; 10],
             powcnt1: POWCNT1::default(),
@@ -134,6 +139,10 @@ impl BusTrait for Bus {
     fn write_word(&mut self, addr: u32, value: u32) {
         let addr = addr as usize;
         match addr {
+            0x00800000..=0x00803FFF => {
+                let addr = addr - 0x00800000;
+                self.data_tcm[addr..addr + 4].copy_from_slice(&value.to_le_bytes());
+            }
             0x02000000..=0x023FFFFF => {
                 let addr = addr - 0x02000000;
                 self.mem[addr..addr + 4].copy_from_slice(&value.to_le_bytes());
