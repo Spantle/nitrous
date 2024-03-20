@@ -10,6 +10,7 @@ pub struct Bus {
     // TODO: move this, it shouldn't be accessible by the DMA
     pub data_tcm: [u8; 1024 * 16],
 
+    pub dispstat: u16,     // 0x04000004
     pub vramcnt: [u8; 10], // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
     pub powcnt1: POWCNT1,  // 0x04000304
 }
@@ -34,6 +35,7 @@ impl Default for Bus {
 
             data_tcm: [0; 1024 * 16],
 
+            dispstat: 0x4,
             vramcnt: [0; 10],
             powcnt1: POWCNT1::default(),
         }
@@ -50,6 +52,7 @@ impl BusTrait for Bus {
                 bytes.copy_from_slice(&self.mem[addr..addr + 2]);
                 u16::from_le_bytes(bytes)
             }
+            0x04000004 => self.dispstat,
             _ => {
                 logger::warn(
                     logger::LogSource::Bus9,
