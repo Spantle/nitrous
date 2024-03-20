@@ -226,10 +226,18 @@ impl Arm9Trait for Arm9 {
     }
 }
 
-#[derive(Default)]
 pub struct FakeArm9 {
     r: Registers,
     cpsr: PSR,
+}
+
+impl FakeArm9 {
+    pub fn new(r15: u32) -> FakeArm9 {
+        FakeArm9 {
+            r: Registers::new(r15 + 8),
+            cpsr: PSR::default(),
+        }
+    }
 }
 
 impl Arm9Trait for FakeArm9 {
@@ -237,12 +245,12 @@ impl Arm9Trait for FakeArm9 {
         &mut self.r
     }
 
-    fn er(&self, _r: u8) -> u32 {
-        0
+    fn er(&self, r: u8) -> u32 {
+        self.r[r]
     }
 
-    fn eru(&self, _r: u8) -> u32 {
-        0
+    fn eru(&self, r: u8) -> u32 {
+        self.r[r]
     }
 
     fn cpsr(&mut self) -> &mut PSR {

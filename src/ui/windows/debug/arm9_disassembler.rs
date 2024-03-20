@@ -77,7 +77,7 @@ impl NitrousGUI {
                     let mut disassembly = Disassembly::default();
                     arm9::lookup_instruction_set(&mut arm9::models::Context::new(
                         inst.into(),
-                        &mut arm9::FakeArm9::default(),
+                        &mut arm9::FakeArm9::new(address as u32),
                         &mut bus::FakeBus,
                         &mut disassembly,
                         &mut logger::FakeLogger,

@@ -8,6 +8,13 @@ impl Default for Registers {
     }
 }
 
+impl Registers {
+    // TODO: in the future, this should be set by the BIOS
+    pub fn new(r15: u32) -> Self {
+        Self([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x803EC0, 0, r15])
+    }
+}
+
 impl std::ops::Index<u8> for Registers {
     type Output = u32;
 
