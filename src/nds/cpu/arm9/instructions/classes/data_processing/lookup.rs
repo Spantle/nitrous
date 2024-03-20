@@ -30,17 +30,17 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
     }
 
     match (opcode, s) {
-        (0b0010, false) => {
-            instructions::sub::<false>(&mut ctx);
-        }
-        (0b0010, true) => {
-            instructions::sub::<true>(&mut ctx);
-        }
         (0b0000, false) => {
             instructions::and::<false>(&mut ctx);
         }
         (0b0000, true) => {
             instructions::and::<true>(&mut ctx);
+        }
+        (0b0010, false) => {
+            instructions::sub::<false>(&mut ctx);
+        }
+        (0b0010, true) => {
+            instructions::sub::<true>(&mut ctx);
         }
         (0b0100, false) => {
             instructions::add::<false>(&mut ctx);
