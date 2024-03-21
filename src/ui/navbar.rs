@@ -56,6 +56,10 @@ impl NitrousGUI {
             return true;
         }
 
+        ui.separator();
+
+        ui.checkbox(&mut self.preferences, "Preferences");
+
         false
     }
 

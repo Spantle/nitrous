@@ -7,6 +7,8 @@ use egui::load::SizedTexture;
 
 use crate::nds::Emulator;
 
+use super::windows::file::preferences::PreferencesPanel;
+
 #[cfg(not(target_arch = "wasm32"))]
 pub fn init(emulator: Emulator) -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
@@ -46,13 +48,19 @@ pub struct NitrousGUI {
 
     #[serde(skip)]
     pub load_rom_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
+    #[serde(skip)]
+    pub load_arm9_bios_channel: (Sender<String>, Receiver<String>),
 
+    // Debug
     pub arm9_disassembler: bool,
     pub arm9_info: bool,
     pub emulation_log: bool,
     pub memory_viewer: bool,
     pub register_viewer: bool,
     pub test_window: bool,
+
+    // File
+    pub preferences: bool,
 
     #[serde(skip)]
     pub arm9_info_selected: Option<(String, usize)>,
@@ -63,6 +71,10 @@ pub struct NitrousGUI {
     pub memory_viewer_selected: Option<usize>,
     #[serde(skip)]
     pub memory_viewer_selected_pending_value: Option<u8>,
+
+    #[serde(skip)]
+    pub preferences_selected: PreferencesPanel,
+    pub preferences_arm9_bios_path: String,
 }
 
 impl Default for NitrousGUI {
@@ -71,6 +83,7 @@ impl Default for NitrousGUI {
             emulator: Emulator::default(),
 
             load_rom_channel: channel(),
+            load_arm9_bios_channel: channel(),
 
             arm9_disassembler: false,
             arm9_info: false,
@@ -79,11 +92,16 @@ impl Default for NitrousGUI {
             register_viewer: false,
             test_window: false,
 
+            preferences: false,
+
             arm9_info_selected: None,
             arm9_info_selected_pending_value: String::new(),
 
             memory_viewer_selected: None,
             memory_viewer_selected_pending_value: None,
+
+            preferences_selected: PreferencesPanel::Emulation,
+            preferences_arm9_bios_path: String::new(),
         }
     }
 }
@@ -158,6 +176,7 @@ impl eframe::App for NitrousGUI {
                 });
         });
 
+        // Debug
         self.show_arm9_disassembler(ctx);
         self.show_arm9_info(ctx);
         self.show_emulation_log(ctx);
@@ -165,8 +184,16 @@ impl eframe::App for NitrousGUI {
         self.show_register_viewer(ctx);
         self.show_test_window(ctx);
 
+        // File
+        self.show_preferences(ctx);
+
         if let Ok(bytes) = self.load_rom_channel.1.try_recv() {
             self.emulator.load_rom(bytes);
+        }
+
+        if let Ok(string) = self.load_arm9_bios_channel.1.try_recv() {
+            self.preferences_arm9_bios_path = string;
+            self.emulator.load_bios(&self.preferences_arm9_bios_path);
         }
 
         if self.emulator.is_running() {

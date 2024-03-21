@@ -42,6 +42,8 @@ impl Emulator {
         self.arm9.r[15] = self.bus.cart.arm9_entry_address;
     }
 
+    pub async fn load_bios(&mut self, arm9_bios_path: &String) {}
+
     pub fn start(&mut self) {
         set_emulator_running(true);
     }
