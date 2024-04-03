@@ -44,12 +44,19 @@ fn creator(cc: &eframe::CreationContext, emulator: Emulator) -> Box<dyn eframe::
 #[serde(default)]
 pub struct NitrousGUI {
     #[serde(skip)]
+    is_first_run: bool,
+
+    #[serde(skip)]
     pub emulator: Emulator,
 
     #[serde(skip)]
     pub load_rom_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
     #[serde(skip)]
+    #[cfg(not(target_arch = "wasm32"))]
     pub load_arm9_bios_channel: (Sender<String>, Receiver<String>),
+    #[serde(skip)]
+    #[cfg(target_arch = "wasm32")]
+    pub load_arm9_bios_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
 
     // Debug
     pub arm9_disassembler: bool,
@@ -80,6 +87,8 @@ pub struct NitrousGUI {
 impl Default for NitrousGUI {
     fn default() -> Self {
         NitrousGUI {
+            is_first_run: true,
+
             emulator: Emulator::default(),
 
             load_rom_channel: channel(),
@@ -187,17 +196,36 @@ impl eframe::App for NitrousGUI {
         // File
         self.show_preferences(ctx);
 
-        if let Ok(bytes) = self.load_rom_channel.1.try_recv() {
-            self.emulator.load_rom(bytes);
-        }
-
-        if let Ok(string) = self.load_arm9_bios_channel.1.try_recv() {
-            self.preferences_arm9_bios_path = string;
-            self.emulator.load_bios(&self.preferences_arm9_bios_path);
-        }
-
         if self.emulator.is_running() {
             ctx.request_repaint();
+        } else {
+            // do slow stuff if idle
+            if self.is_first_run {
+                self.is_first_run = false;
+
+                if !self.preferences_arm9_bios_path.is_empty() {
+                    self.emulator
+                        .load_bios_from_path(&self.preferences_arm9_bios_path);
+                }
+            }
+
+            if let Ok(bytes) = self.load_rom_channel.1.try_recv() {
+                self.emulator.load_rom(bytes);
+            }
+
+            if let Ok(content) = self.load_arm9_bios_channel.1.try_recv() {
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    self.preferences_arm9_bios_path = content;
+                    self.emulator
+                        .load_bios_from_path(&self.preferences_arm9_bios_path);
+                }
+
+                #[cfg(target_arch = "wasm32")]
+                {
+                    self.emulator.load_bios(content);
+                }
+            }
         }
     }
 }

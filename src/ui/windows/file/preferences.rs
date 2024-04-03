@@ -27,25 +27,36 @@ impl NitrousGUI {
     }
 
     fn show_emulation_preferences(&mut self, ui: &mut egui::Ui) {
-        let mut test = "";
-        ui.label("ARM9 BIOS file:");
-        ui.text_edit_singleline(&mut test);
-        if ui.button("Browse").clicked() {
-            let sender = self.load_arm9_bios_channel.0.clone();
+        ui.horizontal(|ui| {
+            ui.label("ARM9 BIOS file:");
+            ui.text_edit_singleline(&mut self.preferences_arm9_bios_path);
 
-            let task = rfd::AsyncFileDialog::new()
-                .add_filter("ARM9 BIOS", &["bin"])
-                .pick_file();
+            if ui.button("Browse").clicked() {
+                let sender = self.load_arm9_bios_channel.0.clone();
 
-            let ctx = ui.ctx().clone();
-            execute(async move {
-                let file = task.await;
-                if let Some(file) = file {
-                    let _result = sender.send(file.path().to_string_lossy().to_string());
-                    ctx.request_repaint();
-                }
-            });
-        }
+                let task = rfd::AsyncFileDialog::new()
+                    .add_filter("ARM9 BIOS", &["bin"])
+                    .pick_file();
+
+                let ctx = ui.ctx().clone();
+                execute(async move {
+                    let file = task.await;
+                    if let Some(file) = file {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _result = sender.send(file.path().to_string_lossy().to_string());
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            let _result = sender.send(file.read().await);
+                        }
+
+                        ctx.request_repaint();
+                    }
+                });
+            }
+        });
     }
 }
 

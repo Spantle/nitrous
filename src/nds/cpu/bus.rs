@@ -3,6 +3,7 @@ use crate::nds::{cartridge::Cartridge, gpu::gpu2d::Gpu2d, logger};
 use super::arm9::models::POWCNT1;
 
 pub struct Bus {
+    pub arm9_bios: Vec<u8>,
     pub cart: Cartridge,
     pub mem: Vec<u8>,
     pub gpu2d_a: Gpu2d,
@@ -29,6 +30,7 @@ pub trait BusTrait {
 impl Default for Bus {
     fn default() -> Self {
         Bus {
+            arm9_bios: vec![0; 1024 * 32],
             cart: Cartridge::default(),
             mem: vec![0; 1024 * 1024 * 4],
             gpu2d_a: Gpu2d::default(),
