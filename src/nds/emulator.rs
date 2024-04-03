@@ -13,6 +13,8 @@ static IS_EMULATOR_RUNNING: AtomicBool = AtomicBool::new(false);
 pub struct Emulator {
     pub arm9: Arm9,
     pub bus: Bus,
+
+    flipflop: bool,
 }
 
 impl Default for Emulator {
@@ -20,6 +22,8 @@ impl Default for Emulator {
         Emulator {
             arm9: Arm9::default(),
             bus: Bus::default(),
+
+            flipflop: true,
         }
     }
 }
@@ -80,6 +84,11 @@ impl Emulator {
         }
 
         self.arm9.clock(&mut self.bus);
+
+        self.flipflop = !self.flipflop;
+        if self.flipflop {
+            self.bus.gpu2d_a.clock();
+        }
     }
 
     pub fn step(&mut self) {

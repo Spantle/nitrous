@@ -135,7 +135,9 @@ impl eframe::App for NitrousGUI {
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // for _ in 0..100 {
         self.emulator.clock();
+        // }
 
         ctx.set_visuals(egui::Visuals {
             window_shadow: egui::epaint::Shadow {
