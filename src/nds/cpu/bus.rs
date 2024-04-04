@@ -8,7 +8,8 @@ pub struct Bus {
     pub mem: Vec<u8>,
     pub gpu2d_a: Gpu2d,
 
-    // TODO: move this, it shouldn't be accessible by the DMA
+    // TODO: move these, it shouldn't be accessible by the DMA
+    pub inst_tcm: Vec<u8>,
     pub data_tcm: [u8; 1024 * 16],
 
     pub vramcnt: [u8; 10], // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
@@ -35,6 +36,7 @@ impl Default for Bus {
             mem: vec![0; 1024 * 1024 * 4],
             gpu2d_a: Gpu2d::default(),
 
+            inst_tcm: vec![0; 1024 * 32],
             data_tcm: [0; 1024 * 16],
 
             vramcnt: [0; 10],
@@ -47,6 +49,7 @@ impl BusTrait for Bus {
     fn read_byte(&mut self, addr: u32) -> u8 {
         let addr = addr as usize;
         match addr {
+            0x00000000..=0x00007FFF => self.inst_tcm[addr],
             0x02000000..=0x023FFFFF => {
                 let addr = addr - 0x02000000;
                 self.mem[addr]
@@ -84,6 +87,11 @@ impl BusTrait for Bus {
     fn read_word(&self, addr: u32) -> u32 {
         let addr = addr as usize;
         match addr {
+            0x00000000..=0x00007FFF => {
+                let mut bytes = [0; 4];
+                bytes.copy_from_slice(&self.inst_tcm[addr..addr + 4]);
+                u32::from_le_bytes(bytes)
+            }
             0x00800000..=0x00803FFF => {
                 let addr = addr - 0x00800000;
                 let mut bytes = [0; 4];
@@ -153,6 +161,10 @@ impl BusTrait for Bus {
             0x02000000..=0x023FFFFF => {
                 let addr = addr - 0x02000000;
                 self.mem[addr..addr + 2].copy_from_slice(&value.to_le_bytes());
+            }
+            0x06800000..=0x0680A3FF => {
+                let addr = addr - 0x06800000;
+                self.gpu2d_a.vram_lcdc_alloc[addr..addr + 2].copy_from_slice(&value.to_le_bytes());
             }
             _ => {
                 logger::warn(
