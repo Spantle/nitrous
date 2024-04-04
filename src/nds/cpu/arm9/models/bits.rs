@@ -21,7 +21,7 @@ impl Bits<u32> for u32 {
 
     #[inline(always)]
     fn get_bits(&self, offset: u32, end: u32) -> u32 {
-        (self >> offset) & ((1 << (end - offset)) - 1)
+        (self >> offset) & ((1 << (end - offset + 1)) - 1)
     }
 
     #[inline(always)]
@@ -44,7 +44,7 @@ impl Bits<u16> for u16 {
 
     #[inline(always)]
     fn get_bits(&self, offset: u16, end: u16) -> u16 {
-        (self >> offset) & ((1 << (end - offset)) - 1)
+        (self >> offset) & ((1 << (end - offset + 1)) - 1)
     }
 
     #[inline(always)]
@@ -67,7 +67,7 @@ impl Bits<u8> for u8 {
 
     #[inline(always)]
     fn get_bits(&self, offset: u8, end: u8) -> u8 {
-        (self >> offset) & ((1 << (end - offset)) - 1)
+        (self >> offset) & ((1 << (end - offset + 1)) - 1)
     }
 
     #[inline(always)]
