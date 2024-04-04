@@ -16,6 +16,7 @@ pub struct Bus {
 }
 
 pub trait BusTrait {
+    fn read_byte(&mut self, addr: u32) -> u8;
     fn read_halfword(&mut self, addr: u32) -> u16;
     fn read_word(&self, addr: u32) -> u32;
     fn read_bulk(&self, addr: u32, len: u32) -> Vec<u8>;
@@ -43,6 +44,23 @@ impl Default for Bus {
 }
 
 impl BusTrait for Bus {
+    fn read_byte(&mut self, addr: u32) -> u8 {
+        let addr = addr as usize;
+        match addr {
+            0x02000000..=0x023FFFFF => {
+                let addr = addr - 0x02000000;
+                self.mem[addr]
+            }
+            _ => {
+                logger::warn(
+                    logger::LogSource::Bus9,
+                    format!("Invalid read byte address: {:#010X}", addr),
+                );
+                0
+            }
+        }
+    }
+
     fn read_halfword(&mut self, addr: u32) -> u16 {
         let addr = addr as usize;
         match addr {
@@ -188,6 +206,9 @@ impl BusTrait for Bus {
 pub struct FakeBus;
 
 impl BusTrait for FakeBus {
+    fn read_byte(&mut self, _addr: u32) -> u8 {
+        0
+    }
     fn read_halfword(&mut self, _addr: u32) -> u16 {
         0
     }

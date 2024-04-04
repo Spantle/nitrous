@@ -75,16 +75,10 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
     } else {
         if is_load {
             ctx.dis.set_inst("LDRB");
-            // return instructions::ldrb(ctx, address);
+            return instructions::ldrb(ctx, address);
         } else {
             ctx.dis.set_inst("STRB");
             return instructions::strb(&mut ctx, address);
         }
     }
-
-    ctx.logger.log_warn(format!(
-        "unknown load/store inst {} {} {} {} {} {}",
-        IS_REGISTER, post_indexing, is_add, is_unsigned_byte, w, is_load
-    ));
-    1
 }
