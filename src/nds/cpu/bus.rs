@@ -66,6 +66,12 @@ impl BusTrait for Bus {
     fn read_word(&self, addr: u32) -> u32 {
         let addr = addr as usize;
         match addr {
+            0x00800000..=0x00803FFF => {
+                let addr = addr - 0x00800000;
+                let mut bytes = [0; 4];
+                bytes.copy_from_slice(&self.data_tcm[addr..addr + 4]);
+                u32::from_le_bytes(bytes)
+            }
             0x02000000..=0x023FFFFF => {
                 let addr = addr - 0x02000000;
                 let mut bytes = [0; 4];
