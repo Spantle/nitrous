@@ -27,6 +27,8 @@ impl Default for Gpu2d {
     }
 }
 
+const COLOUR_MULT: f32 = 255.0 / 31.0;
+
 impl Gpu2d {
     pub fn clock(&mut self) {
         self.x = (self.x + 1) % (256 + 99);
@@ -44,9 +46,9 @@ impl Gpu2d {
                 let mut bytes = [0; 2];
                 bytes.copy_from_slice(&self.vram_lcdc_alloc[addr..addr + 2]);
                 let halfword = u16::from_le_bytes(bytes);
-                let r = (halfword.get_bits(0, 4) * 8) as u8;
-                let g = (halfword.get_bits(5, 9) * 8) as u8;
-                let b = (halfword.get_bits(10, 14) * 8) as u8;
+                let r = ((halfword.get_bits(0, 4) as f32) * COLOUR_MULT) as u8;
+                let g = ((halfword.get_bits(5, 9) as f32) * COLOUR_MULT) as u8;
+                let b = ((halfword.get_bits(10, 14) as f32) * COLOUR_MULT) as u8;
 
                 let pixel = egui::Color32::from_rgb(r, g, b);
                 pixels.push(pixel);
