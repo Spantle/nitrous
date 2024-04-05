@@ -126,9 +126,7 @@ fn lookup_miscellaneous_instructions(
             // bit 21
             if inst_set >> 1 & 1 == 0 {
                 // Move status register to register
-                ctx.logger
-                    .log_warn("move status register to register instruction not implemented");
-                0
+                status_register_access::instructions::mrs(inst_set, ctx)
             } else {
                 // Move register to status register
                 status_register_access::instructions::msr(inst_set, ctx)
