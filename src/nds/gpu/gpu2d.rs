@@ -35,7 +35,8 @@ impl Gpu2d {
         self.vcount = (self.vcount + (self.x == 0) as u16) % (192 + 71);
 
         self.dispstat.set_hblank_flag(self.x >= 256);
-        self.dispstat.set_vblank_flag(self.vcount >= 192);
+        self.dispstat
+            .set_vblank_flag(self.vcount >= 192 && self.vcount != 262);
 
         let vcount_setting = self.dispstat.get_vcount_setting();
         self.dispstat.set_vcount_flag(vcount_setting == self.vcount);
