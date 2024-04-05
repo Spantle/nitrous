@@ -9,7 +9,8 @@ impl Default for DISPSTAT {
 impl DISPSTAT {
     const VBLANK_FLAG_OFFSET: u16 = 0;
     const HBLANK_FLAG_OFFSET: u16 = 1;
-    const VCOUNT_FLAG_OFFSET: u16 = 8;
+    const VCOUNT_FLAG_OFFSET: u16 = 2;
+    const VCOUNT_SETTING_OFFSET: u16 = 7;
 
     pub fn value(&self) -> u16 {
         self.0
@@ -49,11 +50,19 @@ impl DISPSTAT {
         self.set_bit(Self::HBLANK_FLAG_OFFSET, value);
     }
 
-    pub fn get_vcount_flag(&self) -> u16 {
-        self.get_bits(Self::VCOUNT_FLAG_OFFSET, 8)
+    pub fn get_vcount_flag(&self) -> bool {
+        self.get_bit(Self::VCOUNT_FLAG_OFFSET)
     }
 
-    pub fn set_vcount_flag(&mut self, value: u16) {
-        self.set_bits(Self::VCOUNT_FLAG_OFFSET, 8, value);
+    pub fn set_vcount_flag(&mut self, value: bool) {
+        self.set_bit(Self::VCOUNT_FLAG_OFFSET, value);
+    }
+
+    pub fn get_vcount_setting(&self) -> u16 {
+        self.get_bits(Self::VCOUNT_SETTING_OFFSET, 9)
+    }
+
+    pub fn set_vcount_setting(&mut self, value: u16) {
+        self.set_bits(Self::VCOUNT_SETTING_OFFSET, 9, value);
     }
 }
