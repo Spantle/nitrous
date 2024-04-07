@@ -168,6 +168,8 @@ impl Arm9Trait for Arm9 {
         }
     }
 
+    // RETURN_TO_DEFAULT should be false, it should only be used by this function internally
+    // copy_cpsr_to_spsr should be true only when an exception switches the mode
     fn switch_mode<const RETURN_TO_DEFAULT: bool>(
         &mut self,
         mode: ProcessorMode,
@@ -184,14 +186,16 @@ impl Arm9Trait for Arm9 {
                 return;
             }
 
+            // put things back before switching to the new mode
             if self.cpsr.current_mode_has_spsr() {
                 self.switch_mode::<true>(ProcessorMode::USR, false);
             }
 
             // a cheat to invert the swapping logic without having to copy paste a bunch of code >:)
-            if new_mode == ProcessorMode::SYS || new_mode == ProcessorMode::USR {
-                new_mode = current_mode;
-            }
+            // update: i don't know what this was for
+            // if new_mode == ProcessorMode::SYS || new_mode == ProcessorMode::USR {
+            //     new_mode = current_mode;
+            // }
         }
 
         match new_mode {
@@ -209,11 +213,14 @@ impl Arm9Trait for Arm9 {
             }
             _ => {
                 let r_to_swap = &mut match new_mode {
-                    ProcessorMode::IRQ => self.r_irq,
-                    ProcessorMode::SVC => self.r_svc,
-                    ProcessorMode::UND => self.r_und,
-                    ProcessorMode::ABT => self.r_abt,
-                    _ => return,
+                    ProcessorMode::IRQ => &mut self.r_irq,
+                    ProcessorMode::SVC => &mut self.r_svc,
+                    ProcessorMode::UND => &mut self.r_und,
+                    ProcessorMode::ABT => &mut self.r_abt,
+                    _ => {
+                        self.cpsr.set_mode(new_mode);
+                        return;
+                    }
                 };
 
                 swap(&mut self.r[13], &mut r_to_swap[0]);
@@ -223,6 +230,8 @@ impl Arm9Trait for Arm9 {
                 }
             }
         }
+
+        self.cpsr.set_mode(new_mode);
     }
 }
 
