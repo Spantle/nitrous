@@ -5,6 +5,7 @@ mod cmp;
 mod eor;
 mod mov;
 mod sub;
+mod tst;
 
 pub use add::*;
 pub use and::*;
@@ -13,3 +14,4 @@ pub use cmp::*;
 pub use eor::*;
 pub use mov::*;
 pub use sub::*;
+pub use tst::*;
