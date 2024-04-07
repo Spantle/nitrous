@@ -162,7 +162,7 @@ impl BusTrait for Bus {
                 let addr = addr - 0x02000000;
                 self.mem[addr..addr + 2].copy_from_slice(&value.to_le_bytes());
             }
-            0x06800000..=0x0680A3FF => {
+            0x06800000..=0x068A4000 => {
                 let addr = addr - 0x06800000;
                 self.gpu2d_a.vram_lcdc_alloc[addr..addr + 2].copy_from_slice(&value.to_le_bytes());
             }
