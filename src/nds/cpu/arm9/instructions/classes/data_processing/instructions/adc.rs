@@ -12,9 +12,9 @@ pub fn adc<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
     ctx.dis.push_reg_arg(ctx.inst.first_source_register, None);
 
     let (inst, arm9) = (&mut ctx.inst, &mut ctx.arm9);
+    let c_flag = arm9.cpsr().get_carry() as u32;
     if S {
         let first_source_register = arm9.er(inst.first_source_register);
-        let c_flag = arm9.cpsr().get_carry() as u32;
 
         let (result1, carry1) = first_source_register.overflowing_add(inst.second_source_operand);
         let (result, carry2) = result1.overflowing_add(c_flag);
@@ -36,6 +36,7 @@ pub fn adc<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
     } else {
         arm9.r()[inst.destination_register] = arm9
             .er(inst.first_source_register)
-            .wrapping_add(inst.second_source_operand);
+            .wrapping_add(inst.second_source_operand)
+            .wrapping_add(c_flag);
     }
 }
