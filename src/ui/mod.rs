@@ -1,4 +1,5 @@
 mod helpers;
+mod input;
 mod main;
 mod navbar;
 mod windows;

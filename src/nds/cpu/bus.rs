@@ -1,6 +1,6 @@
 use crate::nds::{cartridge::Cartridge, gpu::gpu2d::Gpu2d, logger};
 
-use super::arm9::models::POWCNT1;
+use super::arm9::models::{KEYINPUT, POWCNT1};
 
 pub struct Bus {
     pub arm9_bios: Vec<u8>,
@@ -12,8 +12,9 @@ pub struct Bus {
     pub inst_tcm: Vec<u8>,
     pub data_tcm: [u8; 1024 * 16],
 
-    pub vramcnt: [u8; 10], // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
-    pub powcnt1: POWCNT1,  // 0x04000304
+    pub keyinput: KEYINPUT, // 0x04000130
+    pub vramcnt: [u8; 10],  // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
+    pub powcnt1: POWCNT1,   // 0x04000304
 }
 
 pub trait BusTrait {
@@ -39,6 +40,7 @@ impl Default for Bus {
             inst_tcm: vec![0; 1024 * 32],
             data_tcm: [0; 1024 * 16],
 
+            keyinput: KEYINPUT::default(),
             vramcnt: [0; 10],
             powcnt1: POWCNT1::default(),
         }
@@ -74,6 +76,7 @@ impl BusTrait for Bus {
                 u16::from_le_bytes(bytes)
             }
             0x04000004 => self.gpu2d_a.dispstat.value(),
+            0x04000130 => self.keyinput.value(),
             _ => {
                 logger::warn(
                     logger::LogSource::Bus9,
@@ -188,6 +191,10 @@ impl BusTrait for Bus {
             }
             0x04000000 => self.gpu2d_a.dispcnt = value.into(),
             0x04000304 => self.powcnt1 = value.into(),
+            0x06800000..=0x068A4000 => {
+                let addr = addr - 0x06800000;
+                self.gpu2d_a.vram_lcdc_alloc[addr..addr + 4].copy_from_slice(&value.to_le_bytes());
+            }
             _ => {
                 logger::warn(
                     logger::LogSource::Bus9,

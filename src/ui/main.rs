@@ -138,6 +138,7 @@ impl eframe::App for NitrousGUI {
         // for _ in 0..100 {
         self.emulator.clock();
         // }
+        self.handle_input(ctx);
 
         ctx.set_visuals(egui::Visuals {
             window_shadow: egui::epaint::Shadow {

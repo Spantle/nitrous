@@ -47,11 +47,12 @@ impl NitrousGUI {
             })
     }
 
-    fn names(&self) -> [&str; 14] {
+    fn names(&self) -> [&str; 15] {
         [
             "DISPCNT",
             "DISPSTAT",
             "VCOUNT",
+            "KEYINPUT",
             "VRAMCNT_A",
             "VRAMCNT_B",
             "VRAMCNT_C",
@@ -66,11 +67,12 @@ impl NitrousGUI {
         ]
     }
 
-    fn values(&self) -> [u32; 14] {
+    fn values(&self) -> [u32; 15] {
         [
             self.emulator.bus.gpu2d_a.dispcnt.value(),
             self.emulator.bus.gpu2d_a.dispstat.value() as u32,
             self.emulator.bus.gpu2d_a.vcount as u32,
+            self.emulator.bus.keyinput.value() as u32,
             self.emulator.bus.vramcnt[0] as u32,
             self.emulator.bus.vramcnt[1] as u32,
             self.emulator.bus.vramcnt[2] as u32,
