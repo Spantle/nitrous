@@ -58,7 +58,6 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 
             if shift_imm == 0 {
                 // RRX
                 ctx.dis.push_str_end_arg("RRX", Some(", "));
-                ctx.logger.log_debug("the funny actually happened"); // TODO: remove
                 (ctx.arm9.cpsr().get_carry() as u32) << 31 | rm >> 1
             } else {
                 // ROR

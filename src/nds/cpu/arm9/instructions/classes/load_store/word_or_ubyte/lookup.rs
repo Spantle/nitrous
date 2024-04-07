@@ -67,18 +67,16 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
     if !is_unsigned_byte {
         if is_load {
             ctx.dis.set_inst("LDR");
-            return instructions::ldr(ctx, address);
+            instructions::ldr(ctx, address)
         } else {
             ctx.dis.set_inst("STR");
-            return instructions::str(&mut ctx, address);
+            instructions::str(&mut ctx, address)
         }
+    } else if is_load {
+        ctx.dis.set_inst("LDRB");
+        instructions::ldrb(ctx, address)
     } else {
-        if is_load {
-            ctx.dis.set_inst("LDRB");
-            return instructions::ldrb(ctx, address);
-        } else {
-            ctx.dis.set_inst("STRB");
-            return instructions::strb(&mut ctx, address);
-        }
+        ctx.dis.set_inst("STRB");
+        instructions::strb(&mut ctx, address)
     }
 }
