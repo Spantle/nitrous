@@ -1,6 +1,6 @@
 use crate::nds::cpu::arm9::{
     arm9::Arm9Trait,
-    models::{Bits, Context, ContextTrait, DisassemblyTrait, Instruction},
+    models::{Bits, Context, ContextTrait, DisassemblyTrait, Instruction, ProcessorMode},
 };
 
 // MSR
@@ -47,7 +47,11 @@ pub fn msr(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> 
 
     if !r {
         if field_mask.get_bit(0) && arm9.cpsr().in_a_privileged_mode() {
-            arm9.cpsr().set_bits(0, 7, operand.get_bits(0, 7)); // 0:7
+            arm9.switch_mode::<false>(
+                ProcessorMode::from_bits_truncate(operand.get_bits(0, 4)),
+                false,
+            );
+            arm9.cpsr().set_bits(5, 7, operand.get_bits(5, 7)); // 0:7
         }
         if field_mask.get_bit(1) && arm9.cpsr().in_a_privileged_mode() {
             arm9.cpsr().set_bits(8, 15, operand.get_bits(8, 15)); // 8:15
