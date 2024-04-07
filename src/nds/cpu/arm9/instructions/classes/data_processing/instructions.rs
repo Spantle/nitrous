@@ -1,3 +1,4 @@
+mod adc;
 mod add;
 mod and;
 mod bic;
@@ -7,6 +8,7 @@ mod mov;
 mod sub;
 mod tst;
 
+pub use adc::*;
 pub use add::*;
 pub use and::*;
 pub use bic::*;
