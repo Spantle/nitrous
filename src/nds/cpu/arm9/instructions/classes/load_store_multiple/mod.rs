@@ -7,7 +7,6 @@ pub use lookup::lookup;
 use crate::nds::cpu::arm9::models::{Bits, Context, ContextTrait, DisassemblyTrait, Instruction};
 
 pub struct LoadStoreMultipleInstruction {
-    pub rn: u32,            // Rn
     pub register_list: u16, // bits[15:0] result
     pub start_address: u32, // cheating
     pub end_address: u32,   // cheating
@@ -15,7 +14,7 @@ pub struct LoadStoreMultipleInstruction {
 
 impl LoadStoreMultipleInstruction {
     fn new(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> Self {
-        let (rn, start_address, end_address) = addressing_mode::parse(inst_set, ctx);
+        let (start_address, end_address) = addressing_mode::parse(inst_set, ctx);
         let register_list = ctx.inst.get_halfword(0, 15);
 
         ctx.dis.push_str_end_arg("", Some("{"));
@@ -29,7 +28,6 @@ impl LoadStoreMultipleInstruction {
         ctx.dis.push_str_end_arg("", Some("}"));
 
         LoadStoreMultipleInstruction {
-            rn,
             register_list,
             start_address,
             end_address,
