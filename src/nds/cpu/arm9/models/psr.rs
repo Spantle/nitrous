@@ -1,5 +1,7 @@
 use bitflags::bitflags;
 
+use super::Bits;
+
 #[derive(Debug)]
 pub struct PSR(pub u32);
 
@@ -48,15 +50,15 @@ impl PSR {
     }
 
     fn get_bit(&self, offset: u32) -> bool {
-        (self.0 >> offset) & 1 == 1
+        self.0.get_bit(offset)
     }
 
     fn set_bit(&mut self, offset: u32, value: bool) {
-        self.0 = (self.0 & !(1 << offset)) | ((value as u32) << offset);
+        self.0.set_bit(offset, value)
     }
 
     pub fn set_bits(&mut self, offset: u32, end: u32, value: u32) {
-        self.0 = (self.0 & !((1 << (end - offset)) - 1)) | (value << offset);
+        self.0.set_bits(offset, end, value)
     }
 
     pub fn get_mode(&self) -> ProcessorMode {
