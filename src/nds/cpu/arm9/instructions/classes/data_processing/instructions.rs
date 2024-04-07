@@ -5,6 +5,7 @@ mod bic;
 mod cmp;
 mod eor;
 mod mov;
+mod orr;
 mod sub;
 mod tst;
 
@@ -15,5 +16,6 @@ pub use bic::*;
 pub use cmp::*;
 pub use eor::*;
 pub use mov::*;
+pub use orr::*;
 pub use sub::*;
 pub use tst::*;
