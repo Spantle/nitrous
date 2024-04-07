@@ -10,7 +10,7 @@ pub fn mvn<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
     ctx.dis.push_reg_arg(ctx.inst.destination_register, None);
 
     let (inst, arm9) = (&mut ctx.inst, &mut ctx.arm9);
-    let result = inst.second_source_operand;
+    let result = !inst.second_source_operand;
     arm9.r()[inst.destination_register] = result;
 
     if S {
