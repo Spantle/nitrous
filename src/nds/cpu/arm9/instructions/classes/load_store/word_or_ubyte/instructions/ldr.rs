@@ -11,7 +11,7 @@ use crate::nds::cpu::{
 #[inline(always)]
 pub fn ldr(ctx: Context<LoadStoreInstruction, impl ContextTrait>, address: u32) -> u32 {
     let (arm9, bus, inst) = (ctx.arm9, ctx.bus, ctx.inst);
-    let bits = address & 0b11; // i have no idea what to call this
+    let bits = address.get_bits(0, 1); // i have no idea what to call this
     let mut cycles = 1 + (bits != 0) as u32;
 
     // If register 15 is specified for <Rd>, address[1:0] must be 0b00. If not, the result is UNPREDICTABLE.
