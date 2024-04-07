@@ -26,8 +26,8 @@ impl Bits<u32> for u32 {
 
     #[inline(always)]
     fn set_bits(&mut self, offset: u32, end: u32, value: u32) {
-        let len = end - offset + 1;
-        *self = (*self & !((1 << len) - 1)) | (value << offset);
+        let mask = ((1 << (end - offset + 1)) - 1) << offset;
+        *self = (*self & !mask) | ((value << offset) & mask);
     }
 }
 
@@ -49,8 +49,8 @@ impl Bits<u16> for u16 {
 
     #[inline(always)]
     fn set_bits(&mut self, offset: u16, end: u16, value: u16) {
-        let len = end - offset + 1;
-        *self = (*self & !((1 << len) - 1)) | (value << offset);
+        let mask = ((1 << (end - offset + 1)) - 1) << offset;
+        *self = (*self & !mask) | ((value << offset) & mask);
     }
 }
 
@@ -72,7 +72,7 @@ impl Bits<u8> for u8 {
 
     #[inline(always)]
     fn set_bits(&mut self, offset: u8, end: u8, value: u8) {
-        let len = end - offset + 1;
-        *self = (*self & !((1 << len) - 1)) | (value << offset);
+        let mask = ((1 << (end - offset + 1)) - 1) << offset;
+        *self = (*self & !mask) | ((value << offset) & mask);
     }
 }
