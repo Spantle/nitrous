@@ -1,6 +1,6 @@
 use std::{
-    sync::mpsc::Receiver,
-    sync::mpsc::{channel, Sender},
+    sync::mpsc::{channel, Receiver, Sender},
+    time::{Duration, Instant},
 };
 
 use egui::load::SizedTexture;
@@ -82,6 +82,15 @@ pub struct NitrousGUI {
     #[serde(skip)]
     pub preferences_selected: PreferencesPanel,
     pub preferences_arm9_bios_path: String,
+
+    #[serde(skip)]
+    idle_times: [u128; 60],
+    #[serde(skip)]
+    frame_times: [u128; 60],
+    #[serde(skip)]
+    last_ui_time: Duration,
+    #[serde(skip)]
+    last_frame_end: Instant,
 }
 
 impl Default for NitrousGUI {
@@ -111,6 +120,11 @@ impl Default for NitrousGUI {
 
             preferences_selected: PreferencesPanel::Emulation,
             preferences_arm9_bios_path: String::new(),
+
+            idle_times: [0; 60],
+            frame_times: [0; 60],
+            last_ui_time: Duration::default(),
+            last_frame_end: Instant::now(),
         }
     }
 }
@@ -135,10 +149,39 @@ impl eframe::App for NitrousGUI {
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // for _ in 0..100 {
-        self.emulator.clock();
-        // }
+        let idle_time = self.last_frame_end.elapsed();
+
         self.handle_input(ctx);
+
+        if self.emulator.is_running() {
+            let estimated_compute_time = self.idle_times.iter().sum::<u128>() / 60;
+            let estimated_fps = 1_000_000 / (self.frame_times.iter().sum::<u128>() / 60);
+            let max_cycles = 66_000_000 / estimated_fps;
+
+            let start_time = Instant::now();
+            for _ in 0..max_cycles {
+                if !self.emulator.is_running() {
+                    break;
+                }
+
+                if start_time.elapsed().as_micros() > estimated_compute_time {
+                    break;
+                }
+
+                self.emulator.clock();
+            }
+        } else {
+            let idle_micros = idle_time.as_micros();
+            self.idle_times.rotate_left(1);
+            self.idle_times[59] = idle_micros;
+
+            let frame_time = idle_time + self.last_ui_time;
+            let frame_micros = frame_time.as_micros();
+            self.frame_times.rotate_left(1);
+            self.frame_times[59] = frame_micros;
+        }
+
+        let start_ui = std::time::Instant::now();
 
         ctx.set_visuals(egui::Visuals {
             window_shadow: egui::epaint::Shadow {
@@ -230,5 +273,8 @@ impl eframe::App for NitrousGUI {
                 }
             }
         }
+
+        self.last_ui_time = start_ui.elapsed();
+        self.last_frame_end = Instant::now();
     }
 }
