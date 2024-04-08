@@ -8,7 +8,7 @@ use once_cell::sync::Lazy;
 use crate::nds::emulator::set_emulator_running;
 
 pub static LOGS: Lazy<Mutex<Vec<Log>>> = Lazy::new(|| Mutex::new(Vec::new()));
-static PAUSE_ON_WARN: AtomicBool = AtomicBool::new(true);
+static PAUSE_ON_WARN: AtomicBool = AtomicBool::new(false);
 
 pub trait LoggerTrait {
     fn log_debug<T: Into<String> + Display>(&self, content: T);
