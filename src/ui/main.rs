@@ -1,8 +1,6 @@
-use std::{
-    sync::mpsc::{channel, Receiver, Sender},
-    time::{Duration, Instant},
-};
+use std::sync::mpsc::{channel, Receiver, Sender};
 
+use coarsetime::{Duration, Instant};
 use egui::load::SizedTexture;
 
 use crate::nds::Emulator;
@@ -84,9 +82,9 @@ pub struct NitrousGUI {
     pub preferences_arm9_bios_path: String,
 
     #[serde(skip)]
-    idle_times: [u128; 60],
+    idle_times: [u64; 60],
     #[serde(skip)]
-    frame_times: [u128; 60],
+    frame_times: [u64; 60],
     #[serde(skip)]
     last_ui_time: Duration,
     #[serde(skip)]
@@ -154,8 +152,8 @@ impl eframe::App for NitrousGUI {
         self.handle_input(ctx);
 
         if self.emulator.is_running() {
-            let estimated_compute_time = self.idle_times.iter().sum::<u128>() / 60;
-            let estimated_fps = 1_000_000 / (self.frame_times.iter().sum::<u128>() / 60);
+            let estimated_compute_time = self.idle_times.iter().sum::<u64>() / 60;
+            let estimated_fps = 1_000_000 / (self.frame_times.iter().sum::<u64>() / 60);
             let max_cycles = 66_000_000 / estimated_fps;
 
             let start_time = Instant::now();
@@ -181,7 +179,7 @@ impl eframe::App for NitrousGUI {
             self.frame_times[59] = frame_micros;
         }
 
-        let start_ui = std::time::Instant::now();
+        let start_ui = Instant::now();
 
         ctx.set_visuals(egui::Visuals {
             window_shadow: egui::epaint::Shadow {
