@@ -84,7 +84,7 @@ pub struct NitrousGUI {
     #[serde(skip)]
     idle_times: [u128; 60],
     #[serde(skip)]
-    frame_times: [u128; 60],
+    ui_times: [u128; 60],
     #[serde(skip)]
     last_ui_time: Duration,
     #[serde(skip)]
@@ -120,7 +120,7 @@ impl Default for NitrousGUI {
             preferences_arm9_bios_path: String::new(),
 
             idle_times: [0; 60],
-            frame_times: [0; 60],
+            ui_times: [0; 60],
             last_ui_time: Duration::default(),
             last_frame_end: Instant::now(),
         }
@@ -162,19 +162,21 @@ impl eframe::App for NitrousGUI {
 
         let start_ui = Instant::now();
 
+        let idle_time_sum = self.idle_times.iter().sum::<u128>();
+        let frame_time_sum = self.ui_times.iter().sum::<u128>() + idle_time_sum;
+        let estimated_compute_time = idle_time_sum / 60;
+        let estimated_fps = 1_000_000 / (frame_time_sum / 60).max(1);
+        let max_cycles = 66_000_000 / estimated_fps;
+
+        // logger::debug(
+        //     logger::LogSource::Emu,
+        //     format!(
+        //         "Estimated Compute Time: {} Estimated FPS: {} Max Cycles: {}",
+        //         estimated_compute_time, estimated_fps, max_cycles
+        //     ),
+        // );
+
         if self.emulator.is_running() {
-            let estimated_compute_time = self.idle_times.iter().sum::<u128>() / 60;
-            let estimated_fps = 1_000_000 / (self.frame_times.iter().sum::<u128>() / 60);
-            let max_cycles = 66_000_000 / estimated_fps;
-
-            // logger::debug(
-            //     logger::LogSource::Emu,
-            //     format!(
-            //         "Estimated Compute Time: {} Estimated FPS: {} Max Cycles: {}",
-            //         estimated_compute_time, estimated_fps, max_cycles
-            //     ),
-            // );
-
             let start_time = Instant::now();
             for _ in 0..max_cycles {
                 if !self.emulator.is_running() {
@@ -193,20 +195,20 @@ impl eframe::App for NitrousGUI {
         self.idle_times.rotate_left(1);
         self.idle_times[59] = idle_micros;
 
-        let frame_time = idle_time + self.last_ui_time;
-        let frame_micros = frame_time.as_micros();
-        self.frame_times.rotate_left(1);
-        self.frame_times[59] = frame_micros;
+        let ui_micros = self.last_ui_time.as_micros();
+        self.ui_times.rotate_left(1);
+        self.ui_times[59] = ui_micros;
 
-        ctx.set_visuals(egui::Visuals {
-            window_shadow: egui::epaint::Shadow {
-                extrusion: 0.0,
-                color: egui::Color32::TRANSPARENT,
+        self.show_navbar(
+            ctx,
+            FpsInfo {
+                estimated_compute_time,
+                estimated_fps,
+                max_cycles,
+                idle_time: idle_micros,
+                ui_time: ui_micros,
             },
-            ..Default::default()
-        });
-
-        self.show_navbar(ctx);
+        );
 
         egui::CentralPanel::default().show(ctx, |ui| {
             egui_extras::StripBuilder::new(ui)
@@ -257,9 +259,7 @@ impl eframe::App for NitrousGUI {
         // File
         self.show_preferences(ctx);
 
-        if self.emulator.is_running() {
-            ctx.request_repaint();
-        } else {
+        if !self.emulator.is_running() {
             // do slow stuff if idle
             if self.is_first_run {
                 self.is_first_run = false;
@@ -291,5 +291,15 @@ impl eframe::App for NitrousGUI {
 
         self.last_ui_time = start_ui.elapsed();
         self.last_frame_end = Instant::now();
+
+        ctx.request_repaint();
     }
+}
+
+pub struct FpsInfo {
+    pub estimated_compute_time: u128,
+    pub estimated_fps: u128,
+    pub max_cycles: u128,
+    pub idle_time: u128,
+    pub ui_time: u128,
 }

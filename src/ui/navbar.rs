@@ -1,7 +1,7 @@
-use super::{NitrousGUI, NitrousUI};
+use super::{FpsInfo, NitrousGUI, NitrousUI};
 
 impl NitrousGUI {
-    pub fn show_navbar(&mut self, ctx: &egui::Context) {
+    pub fn show_navbar(&mut self, ctx: &egui::Context, fps_info: FpsInfo) {
         egui::TopBottomPanel::top("navbar").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 if ui.button("Organize").clicked() {
@@ -31,6 +31,15 @@ impl NitrousGUI {
                         debug!("Closing debug menu");
                         ui.close_menu();
                     }
+                });
+
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(format!(
+                        "FPS: {} ({}+{}ms)",
+                        fps_info.estimated_fps,
+                        fps_info.idle_time / 1000,
+                        fps_info.ui_time / 1000,
+                    ));
                 });
             });
         });
