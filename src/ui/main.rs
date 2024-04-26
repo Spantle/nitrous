@@ -3,7 +3,7 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use egui::load::SizedTexture;
 use web_time::{Duration, Instant};
 
-use crate::nds::Emulator;
+use crate::nds::{logger, Emulator};
 
 use super::windows::file::preferences::PreferencesPanel;
 
@@ -82,6 +82,8 @@ pub struct NitrousGUI {
     pub preferences_arm9_bios_path: String,
 
     #[serde(skip)]
+    fps_outliers: u8,
+    #[serde(skip)]
     idle_times: [u128; 60],
     #[serde(skip)]
     ui_times: [u128; 60],
@@ -119,6 +121,7 @@ impl Default for NitrousGUI {
             preferences_selected: PreferencesPanel::Emulation,
             preferences_arm9_bios_path: String::new(),
 
+            fps_outliers: 0,
             idle_times: [0; 60],
             ui_times: [0; 60],
             last_ui_time: Duration::default(),
@@ -192,8 +195,19 @@ impl eframe::App for NitrousGUI {
         }
 
         let idle_micros = idle_time.as_micros();
-        self.idle_times.rotate_left(1);
-        self.idle_times[59] = idle_micros;
+        if idle_micros > estimated_compute_time * 2 {
+            if self.fps_outliers >= 3 {
+                self.idle_times.rotate_left(1);
+                self.idle_times[59] = idle_micros;
+            } else {
+                logger::debug(logger::LogSource::Emu, "FPS Outlier detected".to_string());
+                self.fps_outliers += 1;
+            }
+        } else {
+            self.idle_times.rotate_left(1);
+            self.idle_times[59] = idle_micros;
+            self.fps_outliers = 0;
+        }
 
         let ui_micros = self.last_ui_time.as_micros();
         self.ui_times.rotate_left(1);
