@@ -2,10 +2,10 @@
 // i don't know why but it ruins the generic magic
 
 pub trait Bits<T> {
-    fn get_bit(&self, offset: T) -> bool;
-    fn get_bits(&self, offset: T, end: T) -> T;
-    fn set_bit(&mut self, offset: T, value: bool);
-    fn set_bits(&mut self, offset: T, end: T, value: T);
+    fn get_bit(&self, offset: Self) -> bool;
+    fn get_bits(&self, offset: Self, end: Self) -> Self;
+    fn set_bit(&mut self, offset: Self, value: bool);
+    fn set_bits(&mut self, offset: Self, end: Self, value: Self);
 }
 
 impl Bits<u32> for u32 {

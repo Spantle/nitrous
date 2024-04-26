@@ -49,14 +49,17 @@ impl PSR {
         PSR(value)
     }
 
+    #[inline(always)]
     fn get_bit(&self, offset: u32) -> bool {
         self.0.get_bit(offset)
     }
 
+    #[inline(always)]
     fn set_bit(&mut self, offset: u32, value: bool) {
         self.0.set_bit(offset, value)
     }
 
+    #[inline(always)]
     pub fn set_bits(&mut self, offset: u32, end: u32, value: u32) {
         self.0.set_bits(offset, end, value)
     }
