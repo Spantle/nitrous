@@ -195,12 +195,22 @@ impl eframe::App for NitrousGUI {
         }
 
         let idle_micros = idle_time.as_micros();
-        if idle_micros > estimated_compute_time * 2 {
+        // (estimated_compute_time / 1000) != 0 can be removed, it's just to reduce debug logs
+        if (estimated_compute_time / 1000) != 0 && idle_micros > estimated_compute_time * 10 {
+            logger::debug(
+                logger::LogSource::Emu,
+                format!(
+                    "FPS Outlier detected ({}ms/{}ms)",
+                    idle_micros / 1000,
+                    estimated_compute_time / 1000
+                ),
+            );
+
             if self.fps_outliers >= 3 {
+                logger::debug(logger::LogSource::Emu, "Too many outliers".to_string());
                 self.idle_times.rotate_left(1);
                 self.idle_times[59] = idle_micros;
             } else {
-                logger::debug(logger::LogSource::Emu, "FPS Outlier detected".to_string());
                 self.fps_outliers += 1;
             }
         } else {
