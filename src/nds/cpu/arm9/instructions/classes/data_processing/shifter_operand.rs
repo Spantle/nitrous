@@ -34,12 +34,12 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
     let mut carry_out = arm9.cpsr().get_carry();
     let rm = inst.get_byte(0, 3);
     ctx.dis.push_reg_end_arg(rm, None);
-    let rm = arm9.er(rm);
 
     let operand = inst.get_byte(4, 6);
     let second_source_operand = match operand {
         0b000 => {
             // LSL immediate
+            let rm = arm9.er(rm);
             let shift_imm = inst.get_word(7, 11);
 
             // the default if you don't want any shifting is to LSL shift 0
@@ -58,6 +58,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
         }
         0b001 => {
             // LSL register
+            let rm = arm9.eru(rm);
             ctx.dis.push_str_end_arg("LSL", Some(", "));
             let rs = inst.get_byte(8, 11);
             ctx.dis.push_reg_end_arg(rs, Some(" "));
@@ -79,6 +80,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
         }
         0b010 => {
             // LSR immediate
+            let rm = arm9.er(rm);
             ctx.dis.push_str_end_arg("LSR", Some(", "));
             let shift_imm = inst.get_word(7, 11);
             ctx.dis.push_word_end_arg(shift_imm, Some(" "));
@@ -93,6 +95,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
         }
         0b011 => {
             // LSR register
+            let rm = arm9.eru(rm);
             ctx.dis.push_str_end_arg("LSR", Some(", "));
             let rs = inst.get_byte(8, 11);
             ctx.dis.push_reg_end_arg(rs, Some(" "));
@@ -114,6 +117,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
         }
         0b100 => {
             // ASR immediate
+            let rm = arm9.er(rm);
             ctx.dis.push_str_end_arg("ASR", Some(", "));
             let shift_imm = inst.get_word(7, 11);
             ctx.dis.push_word_end_arg(shift_imm, Some(" "));
@@ -133,6 +137,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
         }
         0b101 => {
             // ASR register
+            let rm = arm9.eru(rm);
             ctx.dis.push_str_end_arg("ASR", Some(", "));
             let rs = inst.get_byte(8, 11);
             ctx.dis.push_reg_end_arg(rs, Some(" "));
@@ -156,6 +161,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
         }
         0b110 => {
             // ROR immediate
+            let rm = arm9.er(rm);
             let shift_imm = inst.get_word(7, 11);
             if shift_imm == 0 {
                 // RRX
@@ -172,6 +178,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
         }
         0b111 => {
             // ROR register
+            let rm = arm9.eru(rm);
             ctx.dis.push_str_end_arg("ROR", Some(", "));
             let rs = inst.get_byte(8, 11);
             ctx.dis.push_reg_end_arg(rs, Some(" "));
@@ -195,5 +202,22 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
     ShifterOperand {
         carry_out,
         second_source_operand,
+    }
+}
+
+// "unpredictable" behaviour
+trait Funny {
+    fn eru(&mut self, r: u8) -> u32;
+}
+
+impl<T> Funny for T
+where
+    T: Arm9Trait,
+{
+    fn eru(&mut self, r: u8) -> u32 {
+        match r {
+            15 => self.r()[15] + 12,
+            _ => self.r()[r],
+        }
     }
 }
