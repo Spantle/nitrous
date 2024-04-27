@@ -47,6 +47,9 @@ impl Default for Bus {
     }
 }
 
+// TODO: non-aligned reads and writes
+// i ***think*** only memory needs to be aligned? i really don't know how it all works, i can't find the documentation on it
+// as a guess i added alignment to read word and halfword memory but didn't touch anything else
 impl BusTrait for Bus {
     fn read_byte(&mut self, addr: u32) -> u8 {
         let addr = addr as usize;
@@ -70,7 +73,7 @@ impl BusTrait for Bus {
         let addr = addr as usize;
         match addr {
             0x02000000..=0x023FFFFF => {
-                let addr = addr - 0x02000000;
+                let addr = ((addr - 0x02000000) / 2) * 2;
                 let mut bytes = [0; 2];
                 bytes.copy_from_slice(&self.mem[addr..addr + 2]);
                 u16::from_le_bytes(bytes)
@@ -102,7 +105,7 @@ impl BusTrait for Bus {
                 u32::from_le_bytes(bytes)
             }
             0x02000000..=0x023FFFFF => {
-                let addr = addr - 0x02000000;
+                let addr = ((addr - 0x02000000) / 4) * 4;
                 let mut bytes = [0; 4];
                 bytes.copy_from_slice(&self.mem[addr..addr + 4]);
                 u32::from_le_bytes(bytes)
