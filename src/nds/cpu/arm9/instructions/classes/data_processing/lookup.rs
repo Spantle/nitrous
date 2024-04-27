@@ -66,6 +66,12 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
         (0b1000, true) => {
             instructions::tst(&mut ctx);
         }
+        (0b1001, false) => {
+            instructions::teq(&mut ctx);
+        }
+        (0b1001, true) => {
+            instructions::teq(&mut ctx);
+        }
         (0b1010, false) => {
             instructions::cmp(&mut ctx);
         }

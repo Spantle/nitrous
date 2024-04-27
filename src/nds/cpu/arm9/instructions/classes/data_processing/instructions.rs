@@ -8,6 +8,7 @@ mod mov;
 mod mvn;
 mod orr;
 mod sub;
+mod teq;
 mod tst;
 
 pub use adc::*;
@@ -20,4 +21,5 @@ pub use mov::*;
 pub use mvn::*;
 pub use orr::*;
 pub use sub::*;
+pub use teq::*;
 pub use tst::*;
