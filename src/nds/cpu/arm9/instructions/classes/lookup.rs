@@ -29,6 +29,11 @@ pub fn lookup_instruction_class(
         }
         0b001 => {
             // Data Processing (immediate)
+            if inst_set & 0b11 == 0b10 && inst_set >> 3 & 0b11 == 0b10 {
+                // Miscellaneous
+                return lookup_miscellaneous_instructions(inst_set, ctx);
+            }
+
             data_processing::lookup::<true, _>(inst_set, ctx)
         }
         0b010 => {
