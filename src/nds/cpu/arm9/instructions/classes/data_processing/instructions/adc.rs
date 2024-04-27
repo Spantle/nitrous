@@ -29,8 +29,8 @@ pub fn adc<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
             arm9.cpsr().set_carry(carry);
 
             let (result1, overflow1) =
-                (first_source_register as i32).overflowing_add_unsigned(inst.second_source_operand);
-            let (_, overflow2) = result1.overflowing_add_unsigned(c_flag);
+                (first_source_register as i32).overflowing_add(inst.second_source_operand as i32);
+            let (_, overflow2) = result1.overflowing_add(c_flag as i32);
             arm9.cpsr().set_overflow(overflow1 || overflow2);
         }
     } else {
