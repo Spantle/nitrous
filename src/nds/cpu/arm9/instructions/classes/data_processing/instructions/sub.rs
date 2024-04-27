@@ -25,7 +25,7 @@ pub fn sub<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
             arm9.cpsr().set_carry(!borrow);
             arm9.cpsr().set_overflow(
                 (first_source_register as i32)
-                    .overflowing_add(inst.second_source_operand as i32)
+                    .overflowing_sub(inst.second_source_operand as i32)
                     .1,
             );
         }
