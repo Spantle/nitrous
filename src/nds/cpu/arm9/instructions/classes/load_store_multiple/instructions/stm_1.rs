@@ -1,7 +1,7 @@
 use crate::nds::cpu::{
     arm9::{
         arm9::Arm9Trait,
-        instructions::classes::load_store_multiple::LoadStoreMultipleInstruction,
+        instructions::classes::load_store_multiple::{do_writeback, LoadStoreMultipleInstruction},
         models::{Bits, Context, ContextTrait},
     },
     bus::BusTrait,
@@ -9,8 +9,11 @@ use crate::nds::cpu::{
 
 // STM (1)
 #[inline(always)]
-pub fn stm_1(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u32 {
-    let (arm9, bus, inst) = (ctx.arm9, ctx.bus, ctx.inst);
+pub fn stm_1(
+    inst_set: u16,
+    mut ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>,
+) -> u32 {
+    let (arm9, bus, inst) = (&mut ctx.arm9, &mut ctx.bus, &ctx.inst);
     let mut address = inst.start_address;
 
     for i in 0..=15 {
@@ -21,6 +24,8 @@ pub fn stm_1(ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) -> u
     }
 
     // assert end_address = address - 4
+
+    do_writeback(inst_set, ctx);
 
     1 // TODO: this is not right
 }

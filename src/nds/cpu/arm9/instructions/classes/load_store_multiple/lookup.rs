@@ -23,22 +23,22 @@ pub fn lookup<Ctx: ContextTrait>(inst_set: u16, ctx: &mut Context<Instruction, C
             ctx.dis.push_str_end_arg("^", None);
 
             if has_15 {
-                instructions::ldm_3(ctx)
+                instructions::ldm_3(inst_set, ctx)
             } else {
                 // assumes W bit is 0
-                instructions::ldm_2(ctx)
+                instructions::ldm_2(inst_set, ctx)
             }
         } else {
-            instructions::ldm_1(ctx)
+            instructions::ldm_1(inst_set, ctx)
         }
     } else {
         ctx.dis.set_inst("STM");
 
         if s {
             // assumes W bit is 0
-            instructions::stm_2(ctx)
+            instructions::stm_2(inst_set, ctx)
         } else {
-            instructions::stm_1(ctx)
+            instructions::stm_1(inst_set, ctx)
         }
     }
 }
