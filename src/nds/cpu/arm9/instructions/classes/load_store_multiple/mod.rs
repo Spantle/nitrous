@@ -50,10 +50,11 @@ pub fn do_writeback(inst_set: u16, ctx: Context<LoadStoreMultipleInstruction, im
     // this technically should be in the addressing mode
     let is_writeback = inst_set >> 1 & 1 == 1; // W
     if is_writeback {
+        let is_load = inst_set & 1 == 1; // L
         let is_in_register_list = inst.register_list.get_bit(inst.destination as u16);
         let is_first = inst.register_list.trailing_zeros() as u8 == inst.destination;
         // unpredictable behaviour https://discord.com/channels/465585922579103744/667132407262216272/715981285121851503
-        if !is_in_register_list || is_first {
+        if !is_load || !is_in_register_list || is_first {
             arm9.r()[inst.destination] = inst.writeback_value;
         }
     }
