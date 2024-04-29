@@ -14,6 +14,11 @@ pub struct Cartridge {
     pub arm9_entry_address: u32,
     pub arm9_load_address: u32,
     pub arm9_size: u32,
+
+    pub arm7_rom_offset: u32,
+    pub arm7_entry_address: u32,
+    pub arm7_load_address: u32,
+    pub arm7_size: u32,
 }
 
 impl Cartridge {
@@ -54,6 +59,27 @@ impl Cartridge {
         logger::info(
             logger::LogSource::Cart,
             format!("ARM9 Size: {} bytes", self.arm9_size),
+        );
+
+        self.arm7_rom_offset = self.parse_u32(0x030);
+        self.arm7_entry_address = self.parse_u32(0x034);
+        self.arm7_load_address = self.parse_u32(0x038);
+        self.arm7_size = self.parse_u32(0x03C);
+        logger::info(
+            logger::LogSource::Cart,
+            format!("ARM7 ROM Offset: {:#010X}", self.arm7_rom_offset),
+        );
+        logger::info(
+            logger::LogSource::Cart,
+            format!("ARM7 Entry Address: {:#010X}", self.arm7_entry_address),
+        );
+        logger::info(
+            logger::LogSource::Cart,
+            format!("ARM7 Load Address: {:#010X}", self.arm7_load_address),
+        );
+        logger::info(
+            logger::LogSource::Cart,
+            format!("ARM7 Size: {} bytes", self.arm7_size),
         );
 
         logger::info(logger::LogSource::Cart, "=== End ROM ===");

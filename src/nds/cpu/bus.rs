@@ -1,11 +1,12 @@
 use crate::nds::{cartridge::Cartridge, gpu::gpu2d::Gpu2d, logger};
 
-use super::arm9::models::{KEYINPUT, POWCNT1};
+use super::arm::models::{KEYINPUT, POWCNT1};
 
 pub struct Bus {
     pub arm9_bios: Vec<u8>,
     pub cart: Cartridge,
     pub mem: Vec<u8>,
+    pub arm7_wram: Vec<u8>,
     pub gpu2d_a: Gpu2d,
 
     // TODO: move these, it shouldn't be accessible by the DMA
@@ -35,6 +36,7 @@ impl Default for Bus {
             arm9_bios: vec![0; 1024 * 32],
             cart: Cartridge::default(),
             mem: vec![0; 1024 * 1024 * 4],
+            arm7_wram: vec![0; 1024 * 64],
             gpu2d_a: Gpu2d::default(),
 
             inst_tcm: vec![0; 1024 * 32],
@@ -110,6 +112,13 @@ impl BusTrait for Bus {
                 bytes.copy_from_slice(&self.mem[addr..addr + 4]);
                 u32::from_le_bytes(bytes)
             }
+            // TODO: this is VERY wrong
+            0x03800000..=0x0380FFFF => {
+                let addr = addr - 0x03800000;
+                let mut bytes = [0; 4];
+                bytes.copy_from_slice(&self.arm7_wram[addr..addr + 4]);
+                u32::from_le_bytes(bytes)
+            }
             0x04000000 => self.gpu2d_a.dispcnt.value(),
             0x04000304 => self.powcnt1.value(),
             _ => {
@@ -129,6 +138,11 @@ impl BusTrait for Bus {
             0x02000000..=0x023FFFFF => {
                 let addr = addr - 0x02000000;
                 self.mem[addr..addr + len].to_vec()
+            }
+            // TODO: this is VERY wrong
+            0x03800000..=0x0380FFFF => {
+                let addr = addr - 0x03800000;
+                self.arm7_wram[addr..addr + len].to_vec()
             }
             _ => {
                 logger::warn(
@@ -214,6 +228,11 @@ impl BusTrait for Bus {
             0x02000000..=0x023FFFFF => {
                 let addr = addr - 0x02000000;
                 self.mem[addr..addr + data.len()].copy_from_slice(&data);
+            }
+            // TODO: this is VERY wrong
+            0x03800000..=0x0380FFFF => {
+                let addr = addr - 0x03800000;
+                self.arm7_wram[addr..addr + data.len()].copy_from_slice(&data);
             }
             _ => {
                 logger::warn(

@@ -2,7 +2,7 @@ use std::{fs, sync::atomic::AtomicBool};
 
 use super::{
     cpu::{
-        arm9::Arm9,
+        arm::{Arm, ArmBool},
         bus::{Bus, BusTrait},
     },
     logger,
@@ -11,7 +11,8 @@ use super::{
 static IS_EMULATOR_RUNNING: AtomicBool = AtomicBool::new(false);
 
 pub struct Emulator {
-    pub arm9: Arm9,
+    pub arm9: Arm<{ ArmBool::ARM9 }>,
+    pub arm7: Arm<{ ArmBool::ARM7 }>,
     pub bus: Bus,
 
     flipflop: bool,
@@ -20,7 +21,8 @@ pub struct Emulator {
 impl Default for Emulator {
     fn default() -> Emulator {
         Emulator {
-            arm9: Arm9::default(),
+            arm9: Arm::default(),
+            arm7: Arm::default(),
             bus: Bus::default(),
 
             flipflop: true,
@@ -45,8 +47,18 @@ impl Emulator {
                 .to_vec(),
         );
 
-        self.arm9 = Arm9::default();
+        self.bus.write_bulk(
+            self.bus.cart.arm7_load_address,
+            self.bus.cart.rom[self.bus.cart.arm7_rom_offset as usize
+                ..(self.bus.cart.arm7_rom_offset + self.bus.cart.arm7_size) as usize]
+                .to_vec(),
+        );
+
+        self.arm9 = Arm::default();
         self.arm9.r[15] = self.bus.cart.arm9_entry_address;
+
+        self.arm7 = Arm::default();
+        self.arm7.r[15] = self.bus.cart.arm7_entry_address;
     }
 
     pub fn load_bios(&mut self, bios: Vec<u8>) {
@@ -83,16 +95,19 @@ impl Emulator {
             return;
         }
 
+        // TODO: use cycles properly lol
         self.arm9.clock(&mut self.bus);
 
         self.flipflop = !self.flipflop;
         if self.flipflop {
+            self.arm7.clock(&mut self.bus);
             self.bus.gpu2d_a.clock();
         }
     }
 
     pub fn step(&mut self) {
         self.arm9.step(&mut self.bus);
+        self.arm7.step(&mut self.bus);
     }
 }
 

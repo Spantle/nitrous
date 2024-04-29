@@ -1,4 +1,4 @@
-use crate::nds::cpu::arm9::models::Bits;
+use crate::nds::cpu::arm::models::Bits;
 
 use super::models::{DISPCNT, DISPSTAT};
 

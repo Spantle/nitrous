@@ -66,6 +66,7 @@ pub enum LogKind {
 pub enum LogSource {
     Emu,
     Arm9(u32),
+    Arm7(u32),
     Bus9,
     Cart,
 }
