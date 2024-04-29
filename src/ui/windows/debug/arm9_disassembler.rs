@@ -1,7 +1,7 @@
 use crate::{
     nds::{
         cpu::{
-            arm9::{self, models::Disassembly},
+            arm::{self, models::Disassembly, ArmBool},
             bus::{self, BusTrait},
         },
         logger,
@@ -75,13 +75,15 @@ impl NitrousGUI {
                     row.set_selected(address == pc);
 
                     let mut disassembly = Disassembly::default();
-                    arm9::lookup_instruction_set(&mut arm9::models::Context::new(
-                        inst.into(),
-                        &mut arm9::FakeArm9::new(address as u32),
-                        &mut bus::FakeBus,
-                        &mut disassembly,
-                        &mut logger::FakeLogger,
-                    ));
+                    arm::lookup_instruction_set::<{ ArmBool::ARM9 }>(
+                        &mut arm::models::Context::new(
+                            inst.into(),
+                            &mut arm::FakeArm::new(address as u32),
+                            &mut bus::FakeBus,
+                            &mut disassembly,
+                            &mut logger::FakeLogger,
+                        ),
+                    );
                     row.col(|ui| {
                         ui.label(format!("{:08X}", address));
                     });
@@ -131,11 +133,11 @@ impl NitrousGUI {
     }
 }
 
-fn match_color(kind: &arm9::models::ChunkKind) -> egui::Color32 {
+fn match_color(kind: &arm::models::ChunkKind) -> egui::Color32 {
     match kind {
-        arm9::models::ChunkKind::Register => egui::Color32::from_rgb(190, 240, 250),
-        arm9::models::ChunkKind::Immediate => egui::Color32::from_rgb(250, 90, 70),
-        arm9::models::ChunkKind::Modifier => egui::Color32::from_rgb(210, 110, 210),
-        arm9::models::ChunkKind::Punctuation => egui::Color32::from_rgb(140, 140, 140),
+        arm::models::ChunkKind::Register => egui::Color32::from_rgb(190, 240, 250),
+        arm::models::ChunkKind::Immediate => egui::Color32::from_rgb(250, 90, 70),
+        arm::models::ChunkKind::Modifier => egui::Color32::from_rgb(210, 110, 210),
+        arm::models::ChunkKind::Punctuation => egui::Color32::from_rgb(140, 140, 140),
     }
 }

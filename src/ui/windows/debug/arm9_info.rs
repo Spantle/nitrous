@@ -1,4 +1,4 @@
-use crate::nds::cpu::arm9;
+use crate::nds::cpu::arm;
 use crate::ui::{NitrousGUI, NitrousUI, NitrousWindow};
 
 // this code is absolutely horrendous and i'm sorry (i just wanna write the emulator not this important useful crap i'm gonna be using 24/7 lol)
@@ -166,7 +166,7 @@ impl NitrousGUI {
                                 });
                             })
                             .body(|mut body| {
-                                let mut display_psr = |name: &str, psr: &arm9::models::PSR| {
+                                let mut display_psr = |name: &str, psr: &arm::models::PSR| {
                                     body.row(20.0, |mut row| {
                                         let flag = |ui: &mut egui::Ui, flag: bool| {
                                             let v = format!("{}", flag);
