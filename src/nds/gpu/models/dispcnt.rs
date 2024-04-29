@@ -1,6 +1,9 @@
+#![allow(dead_code)]
+
 use bitflags::bitflags;
 
 #[derive(Default)]
+#[allow(clippy::upper_case_acronyms)]
 pub struct DISPCNT(u32);
 
 impl From<u32> for DISPCNT {
