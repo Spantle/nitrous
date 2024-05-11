@@ -55,7 +55,7 @@ pub fn do_writeback(inst_set: u16, ctx: Context<LoadStoreMultipleInstruction, im
         let is_first = inst.register_list.trailing_zeros() as u8 == inst.destination;
         // unpredictable behaviour https://discord.com/channels/465585922579103744/667132407262216272/715981285121851503
         if !is_load || !is_in_register_list || is_first {
-            arm.r()[inst.destination] = inst.writeback_value;
+            arm.set_r(inst.destination, inst.writeback_value);
         }
     }
 }

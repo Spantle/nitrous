@@ -44,14 +44,17 @@ pub struct Arm<const ARM_BOOL: bool> {
 
     // emulator variables
     pub pipeline_state: PipelineState,
+    pub pc_changed: bool,
 }
 
 pub trait ArmTrait {
-    fn r(&mut self) -> &mut Registers; // TODO: rename this to `registers`
+    fn r(&self) -> &Registers; // TODO: rename this to `registers`
+    fn set_r(&mut self, r: u8, value: u32);
     fn er(&self, r: u8) -> u32;
     fn eru(&self, r: u8) -> u32;
 
-    fn cpsr(&mut self) -> &mut PSR;
+    fn cpsr(&self) -> &PSR;
+    fn cpsr_mut(&mut self) -> &mut PSR;
     fn set_cpsr(&mut self, psr: PSR);
     fn get_spsr(&self) -> PSR;
     fn switch_mode<const RETURN_TO_DEFAULT: bool>(
@@ -73,6 +76,7 @@ impl<const ARM_BOOL: bool> Default for Arm<ARM_BOOL> {
             cpsr: PSR::default(),
 
             pipeline_state: PipelineState::Fetch,
+            pc_changed: false,
         }
     }
 }
@@ -99,7 +103,6 @@ impl<const ARM_BOOL: bool> Arm<ARM_BOOL> {
                 //     format!("executing instruction: {:#010X} ({:032b})", inst, inst),
                 // );
 
-                let r15 = self.r[15];
                 let cycles = match ARM_BOOL {
                     ArmBool::ARM9 => lookup_instruction_set::<true>(&mut Context::new(
                         inst.into(),
@@ -117,9 +120,10 @@ impl<const ARM_BOOL: bool> Arm<ARM_BOOL> {
                     )),
                 };
 
-                if r15 == self.r[15] {
+                if !self.pc_changed {
                     self.r[15] += 4;
                 } else {
+                    self.pc_changed = false;
                     self.pipeline_state = PipelineState::Fetch;
                 }
 
@@ -138,8 +142,13 @@ impl<const ARM_BOOL: bool> Arm<ARM_BOOL> {
 }
 
 impl<const ARM_BOOL: bool> ArmTrait for Arm<ARM_BOOL> {
-    fn r(&mut self) -> &mut Registers {
-        &mut self.r
+    fn r(&self) -> &Registers {
+        &self.r
+    }
+
+    fn set_r(&mut self, r: u8, value: u32) {
+        self.pc_changed = self.pc_changed || r == 15;
+        self.r[r] = value;
     }
 
     // this stands for "get execute register"
@@ -170,7 +179,11 @@ impl<const ARM_BOOL: bool> ArmTrait for Arm<ARM_BOOL> {
         }
     }
 
-    fn cpsr(&mut self) -> &mut PSR {
+    fn cpsr(&self) -> &PSR {
+        &self.cpsr
+    }
+
+    fn cpsr_mut(&mut self) -> &mut PSR {
         &mut self.cpsr
     }
 
@@ -287,8 +300,12 @@ impl FakeArm {
 }
 
 impl ArmTrait for FakeArm {
-    fn r(&mut self) -> &mut Registers {
-        &mut self.r
+    fn r(&self) -> &Registers {
+        &self.r
+    }
+
+    fn set_r(&mut self, r: u8, value: u32) {
+        self.r[r] = value;
     }
 
     fn er(&self, r: u8) -> u32 {
@@ -299,7 +316,11 @@ impl ArmTrait for FakeArm {
         self.r[r]
     }
 
-    fn cpsr(&mut self) -> &mut PSR {
+    fn cpsr(&self) -> &PSR {
+        &self.cpsr
+    }
+
+    fn cpsr_mut(&mut self) -> &mut PSR {
         &mut self.cpsr
     }
 

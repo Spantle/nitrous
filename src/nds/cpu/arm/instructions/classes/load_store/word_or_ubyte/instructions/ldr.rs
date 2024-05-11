@@ -26,11 +26,11 @@ pub fn ldr(ctx: Context<LoadStoreInstruction, impl ContextTrait>, address: u32) 
 
     if inst.destination_register == 15 {
         // note: this is for armv5
-        arm.r()[15] = value & 0xFFFFFFFE;
-        arm.cpsr().set_thumb(value.get_bit(0));
+        arm.set_r(15, value & 0xFFFFFFFE);
+        arm.cpsr_mut().set_thumb(value.get_bit(0));
         cycles += 4;
     } else {
-        arm.r()[inst.destination_register] = value;
+        arm.set_r(inst.destination_register, value);
     }
 
     cycles

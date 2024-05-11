@@ -15,15 +15,15 @@ pub fn and<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
 
     let first_source_register = arm.er(inst.first_source_register);
     let result = first_source_register & inst.second_source_operand;
-    arm.r()[inst.destination_register] = result;
+    arm.set_r(inst.destination_register, result);
 
     if S {
         if inst.destination_register == 15 {
             arm.set_cpsr(arm.get_spsr());
         } else {
-            arm.cpsr().set_negative(result.get_bit(31));
-            arm.cpsr().set_zero(result == 0);
-            arm.cpsr().set_carry(inst.carry_out);
+            arm.cpsr_mut().set_negative(result.get_bit(31));
+            arm.cpsr_mut().set_zero(result == 0);
+            arm.cpsr_mut().set_carry(inst.carry_out);
         }
     }
 }

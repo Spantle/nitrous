@@ -10,7 +10,10 @@ use crate::nds::cpu::{
 // LDRB
 #[inline(always)]
 pub fn ldrb(ctx: Context<LoadStoreInstruction, impl ContextTrait>, address: u32) -> u32 {
-    ctx.arm.r()[ctx.inst.destination_register] = ctx.bus.read_byte(address) as u32;
+    ctx.arm.set_r(
+        ctx.inst.destination_register,
+        ctx.bus.read_byte(address) as u32,
+    );
 
     1
 }

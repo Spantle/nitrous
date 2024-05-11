@@ -51,16 +51,16 @@ pub fn msr(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> 
                 ProcessorMode::from_bits_truncate(operand.get_bits(0, 4)),
                 false,
             );
-            arm.cpsr().set_bits(5, 7, operand.get_bits(5, 7)); // 0:7
+            arm.cpsr_mut().set_bits(5, 7, operand.get_bits(5, 7)); // 0:7
         }
         if field_mask.get_bit(1) && arm.cpsr().in_a_privileged_mode() {
-            arm.cpsr().set_bits(8, 15, operand.get_bits(8, 15)); // 8:15
+            arm.cpsr_mut().set_bits(8, 15, operand.get_bits(8, 15)); // 8:15
         }
         if field_mask.get_bit(2) && arm.cpsr().in_a_privileged_mode() {
-            arm.cpsr().set_bits(16, 23, operand.get_bits(16, 23)); // 16:23
+            arm.cpsr_mut().set_bits(16, 23, operand.get_bits(16, 23)); // 16:23
         }
         if field_mask.get_bit(3) {
-            arm.cpsr().set_bits(24, 31, operand.get_bits(24, 31)); // 24:31
+            arm.cpsr_mut().set_bits(24, 31, operand.get_bits(24, 31)); // 24:31
         }
     } else if arm.cpsr().current_mode_has_spsr() {
         if field_mask.get_bit(0) {

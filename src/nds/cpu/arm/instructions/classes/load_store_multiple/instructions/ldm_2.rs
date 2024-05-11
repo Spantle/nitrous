@@ -21,7 +21,7 @@ pub fn ldm_2(
 
     for i in 0..=14 {
         if inst.register_list.get_bit(i as u16) {
-            arm.r()[i] = bus.read_word(address);
+            arm.set_r(i, bus.read_word(address));
             address = address.wrapping_add(4);
         }
     }

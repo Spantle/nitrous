@@ -19,24 +19,26 @@ pub fn adc<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
         let (result1, carry1) = first_source_register.overflowing_add(inst.second_source_operand);
         let (result, carry2) = result1.overflowing_add(c_flag);
         let carry = carry1 || carry2;
-        arm.r()[inst.destination_register] = result;
+        arm.set_r(inst.destination_register, result);
 
         if inst.destination_register == 15 {
             arm.set_cpsr(arm.get_spsr());
         } else {
-            arm.cpsr().set_negative(result.get_bit(31));
-            arm.cpsr().set_zero(result == 0);
-            arm.cpsr().set_carry(carry);
+            arm.cpsr_mut().set_negative(result.get_bit(31));
+            arm.cpsr_mut().set_zero(result == 0);
+            arm.cpsr_mut().set_carry(carry);
 
             let (result1, overflow1) =
                 (first_source_register as i32).overflowing_add(inst.second_source_operand as i32);
             let (_, overflow2) = result1.overflowing_add(c_flag as i32);
-            arm.cpsr().set_overflow(overflow1 || overflow2);
+            arm.cpsr_mut().set_overflow(overflow1 || overflow2);
         }
     } else {
-        arm.r()[inst.destination_register] = arm
-            .er(inst.first_source_register)
-            .wrapping_add(inst.second_source_operand)
-            .wrapping_add(c_flag);
+        arm.set_r(
+            inst.destination_register,
+            arm.er(inst.first_source_register)
+                .wrapping_add(inst.second_source_operand)
+                .wrapping_add(c_flag),
+        );
     }
 }

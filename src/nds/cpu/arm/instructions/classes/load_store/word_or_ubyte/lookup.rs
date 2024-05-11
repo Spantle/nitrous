@@ -30,9 +30,15 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
 
     let address = if post_indexing {
         if is_add {
-            arm.r()[inst.first_source_register] = rn.wrapping_add(inst.addressing_mode);
+            arm.set_r(
+                inst.first_source_register,
+                rn.wrapping_add(inst.addressing_mode),
+            );
         } else {
-            arm.r()[inst.first_source_register] = rn.wrapping_sub(inst.addressing_mode);
+            arm.set_r(
+                inst.first_source_register,
+                rn.wrapping_sub(inst.addressing_mode),
+            );
         };
 
         rn
@@ -56,7 +62,7 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
 
     if w {
         ctx.dis.push_str_end_arg("!", None);
-        arm.r()[inst.first_source_register] = address;
+        arm.set_r(inst.first_source_register, address);
     };
 
     // there's also some unpredictability if it's "Scaled register pre-indexed" and Rn and Rm are the same

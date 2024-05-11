@@ -18,7 +18,7 @@ pub fn ldm_1(
 
     for i in 0..=14 {
         if inst.register_list.get_bit(i as u16) {
-            arm.r()[i] = bus.read_word(address);
+            arm.set_r(i, bus.read_word(address));
             address = address.wrapping_add(4);
         }
     }
@@ -27,8 +27,8 @@ pub fn ldm_1(
         let value = bus.read_word(address);
 
         // NOTE: this is for armv5
-        arm.r()[15] = value & 0xFFFFFFFE;
-        arm.cpsr().set_thumb(value.get_bit(0));
+        arm.set_r(15, value & 0xFFFFFFFE);
+        arm.cpsr_mut().set_thumb(value.get_bit(0));
 
         // address = address.wrapping_add(4);
     }
