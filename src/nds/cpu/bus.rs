@@ -22,6 +22,7 @@ pub trait BusTrait {
     fn read_byte(&mut self, addr: u32) -> u8;
     fn read_halfword(&mut self, addr: u32) -> u16;
     fn read_word(&self, addr: u32) -> u32;
+    fn read_slice<const T: usize>(&self, addr: u32) -> [u8; T];
     fn read_bulk(&self, addr: u32, len: u32) -> Vec<u8>;
 
     fn write_byte(&mut self, addr: u32, value: u8);
@@ -129,6 +130,30 @@ impl BusTrait for Bus {
                 0
             }
         }
+    }
+
+    #[inline(always)]
+    fn read_slice<const T: usize>(&self, addr: u32) -> [u8; T] {
+        let addr = addr as usize / T * T;
+        let mut bytes = [0; T];
+        match addr {
+            0x00000000..=0x00007FFF => {
+                bytes.copy_from_slice(&self.inst_tcm[addr..addr + T]);
+            }
+            0x04000004..=0x04000005 => {
+                let value = self.gpu2d_a.dispstat.value().to_le_bytes();
+                let len = T.min(value.len());
+                bytes[..len].copy_from_slice(&value[..len]);
+            }
+            _ => {
+                logger::warn(
+                    logger::LogSource::Bus9,
+                    format!("Invalid read {} byte(s) address: {:#010X}", T, addr),
+                );
+            }
+        }
+
+        bytes
     }
 
     fn read_bulk(&self, addr: u32, len: u32) -> Vec<u8> {
@@ -258,6 +283,9 @@ impl BusTrait for FakeBus {
     }
     fn read_bulk(&self, _addr: u32, _len: u32) -> Vec<u8> {
         vec![]
+    }
+    fn read_slice<const T: usize>(&self, _addr: u32) -> [u8; T] {
+        [0; T]
     }
 
     fn write_byte(&mut self, _addr: u32, _value: u8) {}
