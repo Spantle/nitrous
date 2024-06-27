@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+
+#[allow(clippy::upper_case_acronyms)]
 pub struct DISPSTAT(u16);
 
 impl Default for DISPSTAT {

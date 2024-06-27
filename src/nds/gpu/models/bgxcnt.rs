@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use bitflags::bitflags;
 
 pub struct BGxCNT(u16);
