@@ -6,6 +6,7 @@ pub struct Shared {
     pub cart: Cartridge,
     pub gpu2d_a: Gpu2d,
     pub psram: Vec<u8>,
+    pub wram: Vec<u8>, // 32kb
 
     pub keyinput: KEYINPUT, // 0x04000130
     pub vramcnt: [u8; 10],  // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
@@ -18,6 +19,7 @@ impl Default for Shared {
             cart: Cartridge::default(),
             gpu2d_a: Gpu2d::default(),
             psram: vec![0; 1024 * 1024 * 4],
+            wram: vec![0; 1024 * 32],
 
             keyinput: KEYINPUT::default(),
             vramcnt: [0; 10],
@@ -32,6 +34,7 @@ impl Shared {
             cart: Cartridge::default(),
             gpu2d_a: Gpu2d::default(),
             psram: vec![0; 0],
+            wram: vec![0; 0],
 
             keyinput: KEYINPUT::default(),
             vramcnt: [0; 10],

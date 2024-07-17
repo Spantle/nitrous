@@ -37,6 +37,10 @@ impl BusTrait for Bus7 {
         let addr = addr as usize / T * T;
         let mut bytes = [0; T];
         match addr {
+            0x03000000..=0x037FFFFF => {
+                let addr = (addr - 0x03000000) % 0x8000;
+                bytes.copy_from_slice(&shared.wram[addr..addr + T]);
+            }
             _ => {
                 logger::warn(
                     logger::LogSource::Bus7,
@@ -52,6 +56,10 @@ impl BusTrait for Bus7 {
     fn write_slice<const T: usize>(&mut self, shared: &mut Shared, addr: u32, value: [u8; T]) {
         let addr = addr as usize / T * T;
         match addr {
+            0x03000000..=0x037FFFFF => {
+                let addr = (addr - 0x03000000) % 0x8000;
+                shared.wram[addr..addr + T].copy_from_slice(&value);
+            }
             _ => {
                 logger::warn(
                     logger::LogSource::Bus7,
