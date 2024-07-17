@@ -1,6 +1,6 @@
 use std::fmt;
 
-use super::Bits;
+use crate::nds::Bits;
 
 #[derive(Debug)]
 pub struct Instruction(u32);

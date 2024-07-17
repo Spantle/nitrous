@@ -69,21 +69,21 @@ impl NitrousGUI {
 
     fn values(&self) -> [u32; 15] {
         [
-            self.emulator.bus.gpu2d_a.dispcnt.value(),
-            self.emulator.bus.gpu2d_a.dispstat.value() as u32,
-            self.emulator.bus.gpu2d_a.vcount as u32,
-            self.emulator.bus.keyinput.value() as u32,
-            self.emulator.bus.vramcnt[0] as u32,
-            self.emulator.bus.vramcnt[1] as u32,
-            self.emulator.bus.vramcnt[2] as u32,
-            self.emulator.bus.vramcnt[3] as u32,
-            self.emulator.bus.vramcnt[4] as u32,
-            self.emulator.bus.vramcnt[5] as u32,
-            self.emulator.bus.vramcnt[6] as u32,
-            self.emulator.bus.vramcnt[7] as u32,
-            self.emulator.bus.vramcnt[8] as u32,
-            self.emulator.bus.vramcnt[9] as u32,
-            self.emulator.bus.powcnt1.value(),
+            self.emulator.shared.gpu2d_a.dispcnt.value(),
+            self.emulator.shared.gpu2d_a.dispstat.value() as u32,
+            self.emulator.shared.gpu2d_a.vcount as u32,
+            self.emulator.shared.keyinput.value() as u32,
+            self.emulator.shared.vramcnt[0] as u32,
+            self.emulator.shared.vramcnt[1] as u32,
+            self.emulator.shared.vramcnt[2] as u32,
+            self.emulator.shared.vramcnt[3] as u32,
+            self.emulator.shared.vramcnt[4] as u32,
+            self.emulator.shared.vramcnt[5] as u32,
+            self.emulator.shared.vramcnt[6] as u32,
+            self.emulator.shared.vramcnt[7] as u32,
+            self.emulator.shared.vramcnt[8] as u32,
+            self.emulator.shared.vramcnt[9] as u32,
+            self.emulator.shared.powcnt1.value(),
         ]
     }
 }

@@ -1,15 +1,13 @@
 use core::mem::swap;
 
-use crate::nds::{
-    cpu::{
-        arm::instructions::lookup_instruction_set,
-        bus::{Bus, BusTrait},
-    },
-    logger,
+use crate::nds::{cpu::arm::instructions::lookup_instruction_set, logger, shared::Shared};
+
+use super::{
+    bus::BusTrait,
+    models::{Context, FakeDisassembly, PipelineState, ProcessorMode, Registers, PSR},
 };
 
-use super::models::{Context, FakeDisassembly, PipelineState, ProcessorMode, Registers, PSR};
-
+#[derive(Debug, PartialEq)]
 pub enum ArmKind {
     ARM9,
     ARM7,
@@ -30,7 +28,9 @@ impl ArmBool {
 }
 
 #[derive(Debug)]
-pub struct Arm<const ARM_BOOL: bool> {
+pub struct Arm<Bus: BusTrait> {
+    _phantom: std::marker::PhantomData<Bus>,
+
     // R13: Stack Pointer
     // R14: Link Register
     // R15: Program Counter
@@ -42,12 +42,20 @@ pub struct Arm<const ARM_BOOL: bool> {
     pub r_und: [u32; 3], // r13-r14 + spsr
     pub cpsr: PSR,       // Current Program Status Register, technically a u32
 
+    // TODO: do this better
+    // it's 2am i cannot be bothered
+    // arm9 exclusives
+    pub inst_tcm: Vec<u8>, // 32kb
+    pub data_tcm: Vec<u8>, // 16kb
+    // arm7 exlusives
+    pub wram7: Vec<u8>, // 64kb
+
     // emulator variables
     pub pipeline_state: PipelineState,
     pub pc_changed: bool,
 }
 
-pub trait ArmTrait {
+pub trait ArmTrait<Bus: BusTrait> {
     fn r(&self) -> &Registers; // TODO: rename this to `registers`
     fn set_r(&mut self, r: u8, value: u32);
     fn er(&self, r: u8) -> u32;
@@ -62,11 +70,21 @@ pub trait ArmTrait {
         mode: ProcessorMode,
         copy_cpsr_to_spsr: bool,
     );
+
+    fn read_byte(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u8;
+    fn read_halfword(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u16;
+    fn read_word(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u32;
+
+    fn write_byte(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: u8);
+    fn write_halfword(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: u16);
+    fn write_word(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: u32);
 }
 
-impl<const ARM_BOOL: bool> Default for Arm<ARM_BOOL> {
-    fn default() -> Arm<ARM_BOOL> {
-        Arm {
+impl<Bus: BusTrait> Default for Arm<Bus> {
+    fn default() -> Arm<Bus> {
+        Arm::<Bus> {
+            _phantom: std::marker::PhantomData,
+
             r: Registers::default(),
             r_fiq: [0, 0, 0, 0, 0, 0, 0, 0],
             r_irq: [0x803FA0, 0, 0], // TODO: in the future, the stack pointer should be set by the BIOS
@@ -75,14 +93,18 @@ impl<const ARM_BOOL: bool> Default for Arm<ARM_BOOL> {
             r_und: [0, 0, 0],
             cpsr: PSR::default(),
 
+            inst_tcm: vec![0; 1024 * 32],
+            data_tcm: vec![0; 1024 * 16],
+            wram7: vec![0; 1024 * 64],
+
             pipeline_state: PipelineState::Fetch,
             pc_changed: false,
         }
     }
 }
 
-impl<const ARM_BOOL: bool> Arm<ARM_BOOL> {
-    pub fn clock(&mut self, bus: &mut Bus) -> bool {
+impl<Bus: BusTrait> Arm<Bus> {
+    pub fn clock(&mut self, bus: &mut Bus, shared: &mut Shared) -> bool {
         match self.pipeline_state {
             PipelineState::Fetch => {
                 // logger::debug(logger::LogSource::Arm9, "fetching instruction");
@@ -96,25 +118,34 @@ impl<const ARM_BOOL: bool> Arm<ARM_BOOL> {
             }
             PipelineState::Execute => {
                 // get 4 bytes
-                let inst = bus.read_word(self.r[15]);
+                let inst = self.read_word(bus, shared, self.r[15]);
                 // print as binary
-                // logger::debug(
-                //     logger::LogSource::Arm9,
-                //     format!("executing instruction: {:#010X} ({:032b})", inst, inst),
-                // );
+                // if Bus::kind() == ArmKind::ARM7 {
+                //     logger::debug(
+                //         logger::LogSource::Arm7(self.r[15]),
+                //         format!("executing instruction: {:#010X} ({:032b})", inst, inst),
+                //     );
+                // } else {
+                //     logger::debug(
+                //         logger::LogSource::Arm9(self.r[15]),
+                //         format!("executing instruction: {:#010X} ({:032b})", inst, inst),
+                //     );
+                // }
 
-                let cycles = match ARM_BOOL {
-                    ArmBool::ARM9 => lookup_instruction_set::<true>(&mut Context::new(
+                let cycles = match Bus::kind() {
+                    ArmKind::ARM9 => lookup_instruction_set::<true>(&mut Context::new(
                         inst.into(),
                         self,
                         bus,
+                        shared,
                         &mut FakeDisassembly,
                         &mut logger::Logger(logger::LogSource::Arm9(inst)),
                     )),
-                    ArmBool::ARM7 => lookup_instruction_set::<false>(&mut Context::new(
+                    ArmKind::ARM7 => lookup_instruction_set::<false>(&mut Context::new(
                         inst.into(),
                         self,
                         bus,
+                        shared,
                         &mut FakeDisassembly,
                         &mut logger::Logger(logger::LogSource::Arm7(inst)),
                     )),
@@ -132,16 +163,16 @@ impl<const ARM_BOOL: bool> Arm<ARM_BOOL> {
         }
     }
 
-    pub fn step(&mut self, bus: &mut Bus) {
+    pub fn step(&mut self, bus: &mut Bus, shared: &mut Shared) {
         loop {
-            if self.clock(bus) {
+            if self.clock(bus, shared) {
                 break;
             }
         }
     }
 }
 
-impl<const ARM_BOOL: bool> ArmTrait for Arm<ARM_BOOL> {
+impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
     fn r(&self) -> &Registers {
         &self.r
     }
@@ -165,9 +196,9 @@ impl<const ARM_BOOL: bool> ArmTrait for Arm<ARM_BOOL> {
     fn eru(&self, r: u8) -> u32 {
         match r {
             15 => {
-                let log_source = match ARM_BOOL {
-                    ArmBool::ARM9 => logger::LogSource::Arm9(0),
-                    ArmBool::ARM7 => logger::LogSource::Arm7(0),
+                let log_source = match Bus::kind() {
+                    ArmKind::ARM9 => logger::LogSource::Arm9(0),
+                    ArmKind::ARM7 => logger::LogSource::Arm7(0),
                 };
                 logger::warn(
                     log_source,
@@ -205,9 +236,9 @@ impl<const ARM_BOOL: bool> ArmTrait for Arm<ARM_BOOL> {
             ProcessorMode::ABT => PSR::from(self.r_abt[2]),
             ProcessorMode::UND => PSR::from(self.r_und[2]),
             _ => {
-                let log_source = match ARM_BOOL {
-                    ArmBool::ARM9 => logger::LogSource::Arm9(0),
-                    ArmBool::ARM7 => logger::LogSource::Arm7(0),
+                let log_source = match Bus::kind() {
+                    ArmKind::ARM9 => logger::LogSource::Arm9(0),
+                    ArmKind::ARM7 => logger::LogSource::Arm7(0),
                 };
                 logger::warn(
                     log_source,
@@ -283,6 +314,101 @@ impl<const ARM_BOOL: bool> ArmTrait for Arm<ARM_BOOL> {
 
         self.cpsr.set_mode(new_mode);
     }
+
+    fn read_byte(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u8 {
+        self.read_slice::<1>(bus, shared, addr)[0]
+    }
+    fn read_halfword(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u16 {
+        let bytes = self.read_slice::<2>(bus, shared, addr);
+        u16::from_le_bytes(bytes)
+    }
+    fn read_word(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u32 {
+        let bytes = self.read_slice::<4>(bus, shared, addr);
+        u32::from_le_bytes(bytes)
+    }
+
+    fn write_byte(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: u8) {
+        self.write_slice::<1>(bus, shared, addr, [value]);
+    }
+    fn write_halfword(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: u16) {
+        self.write_slice::<2>(bus, shared, addr, value.to_le_bytes());
+    }
+    fn write_word(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: u32) {
+        self.write_slice::<4>(bus, shared, addr, value.to_le_bytes());
+    }
+}
+
+impl<Bus: BusTrait> Arm<Bus> {
+    pub fn read_bulk(&self, bus: &mut Bus, shared: &mut Shared, addr: u32, size: usize) -> Vec<u8> {
+        let mut bytes = vec![0; size];
+        (0..size).for_each(|i| {
+            bytes[i] = self.read_byte(bus, shared, addr + i as u32);
+        });
+        bytes
+    }
+
+    pub fn write_bulk(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: Vec<u8>) {
+        (0..value.len()).for_each(|i| {
+            self.write_byte(bus, shared, addr + i as u32, value[i]);
+        });
+    }
+
+    #[inline(always)]
+    fn read_slice<const T: usize>(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> [u8; T] {
+        let addr = addr as usize / T * T;
+        let mut bytes = [0; T];
+
+        match Bus::kind() {
+            ArmKind::ARM9 => match addr {
+                0x00000000..=0x00007FFF => {
+                    bytes.copy_from_slice(&self.inst_tcm[addr..addr + T]);
+                    bytes
+                }
+                0x00800000..=0x00803FFF => {
+                    let addr = addr - 0x00800000;
+                    bytes.copy_from_slice(&self.data_tcm[addr..addr + T]);
+                    bytes
+                }
+                _ => bus.read_slice::<T>(shared, addr as u32),
+            },
+            ArmKind::ARM7 => match addr {
+                0x03800000..=0x0380FFFF => {
+                    let addr = addr - 0x03800000;
+                    bytes.copy_from_slice(&self.wram7[addr..addr + T]);
+                    bytes
+                }
+                _ => bus.read_slice::<T>(shared, addr as u32),
+            },
+        }
+    }
+
+    #[inline(always)]
+    fn write_slice<const T: usize>(
+        &mut self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        addr: u32,
+        value: [u8; T],
+    ) {
+        let addr = addr as usize / T * T;
+
+        match Bus::kind() {
+            ArmKind::ARM9 => match addr {
+                0x00800000..=0x00803FFF => {
+                    let addr = addr - 0x00800000;
+                    self.data_tcm[addr..addr + T].copy_from_slice(&value);
+                }
+                _ => bus.write_slice::<T>(shared, addr as u32, value),
+            },
+            ArmKind::ARM7 => match addr {
+                0x03800000..=0x0380FFFF => {
+                    let addr = addr - 0x03800000;
+                    self.wram7[addr..addr + T].copy_from_slice(&value);
+                }
+                _ => bus.write_slice::<T>(shared, addr as u32, value),
+            },
+        };
+    }
 }
 
 pub struct FakeArm {
@@ -299,7 +425,7 @@ impl FakeArm {
     }
 }
 
-impl ArmTrait for FakeArm {
+impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
     fn r(&self) -> &Registers {
         &self.r
     }
@@ -336,4 +462,17 @@ impl ArmTrait for FakeArm {
         _copy_cpsr_to_spsr: bool,
     ) {
     }
+
+    fn read_byte(&self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32) -> u8 {
+        0
+    }
+    fn read_halfword(&self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32) -> u16 {
+        0
+    }
+    fn read_word(&self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32) -> u32 {
+        0
+    }
+    fn write_byte(&mut self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32, _value: u8) {}
+    fn write_halfword(&mut self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32, _value: u16) {}
+    fn write_word(&mut self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32, _value: u32) {}
 }

@@ -1,5 +1,6 @@
 use crate::nds::cpu::arm::{
     arm::ArmTrait,
+    bus::BusTrait,
     models::{Bits, Context, ContextTrait, DisassemblyTrait, Instruction},
 };
 
@@ -206,13 +207,13 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
 }
 
 // "unpredictable" behaviour
-trait Funny {
+trait Funny<Bus: BusTrait> {
     fn eru(&mut self, r: u8) -> u32;
 }
 
-impl<T> Funny for T
+impl<T, Bus: BusTrait> Funny<Bus> for T
 where
-    T: ArmTrait,
+    T: ArmTrait<Bus>,
 {
     fn eru(&mut self, r: u8) -> u32 {
         match r {

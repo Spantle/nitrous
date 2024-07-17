@@ -1,16 +1,14 @@
-use crate::nds::cpu::{
-    arm::{
-        arm::ArmTrait,
-        instructions::classes::load_store::word_or_ubyte::LoadStoreInstruction,
-        models::{Bits, Context, ContextTrait},
-    },
+use crate::nds::cpu::arm::{
+    arm::ArmTrait,
     bus::BusTrait,
+    instructions::classes::load_store::word_or_ubyte::LoadStoreInstruction,
+    models::{Bits, Context, ContextTrait},
 };
 
 // LDR
 #[inline(always)]
 pub fn ldr(ctx: Context<LoadStoreInstruction, impl ContextTrait>, address: u32) -> u32 {
-    let (arm, bus, inst) = (ctx.arm, ctx.bus, ctx.inst);
+    let (arm, inst) = (ctx.arm, ctx.inst);
     let bits = address.get_bits(0, 1); // i have no idea what to call this
     let mut cycles = 1 + (bits != 0) as u32;
 
@@ -22,7 +20,10 @@ pub fn ldr(ctx: Context<LoadStoreInstruction, impl ContextTrait>, address: u32) 
     //     0b11 => bus.read_word(address).rotate_right(24),
     //     _ => unreachable!(),
     // };
-    let value = bus.read_word(address).rotate_right(bits * 8);
+    let value = ctx
+        .bus
+        .read_word(ctx.shared, address)
+        .rotate_right(bits * 8);
 
     if inst.destination_register == 15 {
         // note: this is for armv5

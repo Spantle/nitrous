@@ -10,13 +10,14 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
     inst_set: u16,
     ctx: &mut Context<Instruction, Ctx>,
 ) -> u32 {
-    let mut ctx = Context::<_, Ctx> {
-        inst: LoadStoreInstruction::new::<IS_IMMEDIATE>(inst_set, ctx),
-        arm: ctx.arm,
-        bus: ctx.bus,
-        dis: ctx.dis,
-        logger: ctx.logger,
-    };
+    let mut ctx = Context::new(
+        LoadStoreInstruction::new::<IS_IMMEDIATE>(inst_set, ctx),
+        ctx.arm,
+        ctx.bus,
+        ctx.shared,
+        ctx.dis,
+        ctx.logger,
+    );
     let (arm, inst) = (&mut ctx.arm, &ctx.inst);
     ctx.dis.push_reg_arg(inst.destination_register, None);
 

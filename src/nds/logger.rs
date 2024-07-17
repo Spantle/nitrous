@@ -67,6 +67,7 @@ pub enum LogSource {
     Emu,
     Arm9(u32),
     Arm7(u32),
+    Bus7,
     Bus9,
     Cart,
 }

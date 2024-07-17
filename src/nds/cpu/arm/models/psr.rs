@@ -2,7 +2,7 @@
 
 use bitflags::bitflags;
 
-use super::Bits;
+use crate::nds::Bits;
 
 #[derive(Debug)]
 #[allow(clippy::upper_case_acronyms)]

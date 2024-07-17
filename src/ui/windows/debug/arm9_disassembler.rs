@@ -1,10 +1,12 @@
 use crate::{
     nds::{
-        cpu::{
-            arm::{self, models::Disassembly, ArmBool},
+        cpu::arm::{
+            self,
             bus::{self, BusTrait},
+            models::Disassembly,
+            ArmBool,
         },
-        logger,
+        logger, shared,
     },
     ui::{NitrousGUI, NitrousUI, NitrousWindow},
 };
@@ -22,21 +24,27 @@ impl NitrousGUI {
     }
 
     fn render_instructions(&mut self, ui: &mut egui::Ui) {
+        let mut fake_bus = bus::FakeBus;
+        let mut fake_shared = shared::Shared::new_fake();
+
         ui.make_monospace();
 
-        let bus = &self.emulator.bus;
-        let mem = if bus.cart.arm9_size == 0 {
+        let (arm9_load_address, arm9_size) = (
+            self.emulator.shared.cart.arm9_load_address,
+            self.emulator.shared.cart.arm9_size,
+        );
+        let mem = if arm9_size == 0 {
             vec![]
         } else {
             self.emulator
-                .bus
-                .read_bulk(bus.cart.arm9_load_address, bus.cart.arm9_size)
+                .bus9
+                .read_bulk(&mut self.emulator.shared, arm9_load_address, arm9_size)
         };
 
         let pc = self.emulator.arm9.r[15] as usize;
         let height = ui.text_style_height(&egui::TextStyle::Monospace);
         let total_rows = mem.len() / 4;
-        let arm9_load_address = bus.cart.arm9_load_address as usize;
+        let arm9_load_address = arm9_load_address as usize;
         let mut table_builder = egui_extras::TableBuilder::new(ui)
             .striped(true)
             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
@@ -79,7 +87,8 @@ impl NitrousGUI {
                         &mut arm::models::Context::new(
                             inst.into(),
                             &mut arm::FakeArm::new(address as u32),
-                            &mut bus::FakeBus,
+                            &mut fake_bus,
+                            &mut fake_shared,
                             &mut disassembly,
                             &mut logger::FakeLogger,
                         ),

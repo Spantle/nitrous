@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use super::Bits;
+use crate::nds::Bits;
 
 #[allow(clippy::upper_case_acronyms)]
 pub struct KEYINPUT(u16);

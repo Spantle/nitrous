@@ -10,13 +10,14 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
     inst_set: u16,
     ctx: &mut Context<Instruction, Ctx>,
 ) -> u32 {
-    let mut ctx = Context::<_, Ctx> {
-        inst: DataProcessingInstruction::new::<IS_IMMEDIATE>(ctx),
-        arm: ctx.arm,
-        bus: ctx.bus,
-        dis: ctx.dis,
-        logger: ctx.logger,
-    };
+    let mut ctx = Context::new(
+        DataProcessingInstruction::new::<IS_IMMEDIATE>(ctx),
+        ctx.arm,
+        ctx.bus,
+        ctx.shared,
+        ctx.dis,
+        ctx.logger,
+    );
 
     // cycles are the same for all data-processing instructions
     let cycles = 1 + (!IS_IMMEDIATE) as u32 + ((ctx.inst.destination_register == 15) as u32 * 2);

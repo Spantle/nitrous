@@ -244,7 +244,7 @@ impl eframe::App for NitrousGUI {
                             .size(egui_extras::Size::exact(256.0))
                             .horizontal(|mut strip| {
                                 strip.cell(|ui| {
-                                    let image = self.emulator.bus.gpu2d_a.render();
+                                    let image = self.emulator.shared.gpu2d_a.render();
                                     let texture = ui.ctx().load_texture(
                                         "top_screen",
                                         image,

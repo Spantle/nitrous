@@ -4,13 +4,14 @@ use super::{instructions, LoadStoreMultipleInstruction};
 
 #[inline(always)]
 pub fn lookup<Ctx: ContextTrait>(inst_set: u16, ctx: &mut Context<Instruction, Ctx>) -> u32 {
-    let ctx = Context::<_, Ctx> {
-        inst: LoadStoreMultipleInstruction::new(inst_set, ctx),
-        arm: ctx.arm,
-        bus: ctx.bus,
-        dis: ctx.dis,
-        logger: ctx.logger,
-    };
+    let ctx = Context::new(
+        LoadStoreMultipleInstruction::new(inst_set, ctx),
+        ctx.arm,
+        ctx.bus,
+        ctx.shared,
+        ctx.dis,
+        ctx.logger,
+    );
 
     let s = inst_set >> 2 & 1 == 1; // S
     let is_load = inst_set & 1 == 1; // L
