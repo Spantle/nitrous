@@ -9,11 +9,11 @@ pub trait BusTrait {
     fn read_halfword(&self, shared: &mut Shared, addr: u32) -> u16;
     fn read_word(&self, shared: &mut Shared, addr: u32) -> u32;
     fn read_bulk(&self, shared: &mut Shared, addr: u32, len: u32) -> Vec<u8> {
-        let mut data = Vec::with_capacity(len as usize);
+        let mut bytes = vec![0; len as usize];
         for i in 0..len {
-            data.push(self.read_byte(shared, addr + i));
+            bytes.push(self.read_byte(shared, addr + i));
         }
-        data
+        bytes
     }
     fn read_slice<const T: usize>(&self, shared: &mut Shared, addr: u32) -> [u8; T];
 
@@ -21,9 +21,9 @@ pub trait BusTrait {
     fn write_halfword(&mut self, shared: &mut Shared, addr: u32, value: u16);
     fn write_word(&mut self, shared: &mut Shared, addr: u32, value: u32);
     fn write_bulk(&mut self, shared: &mut Shared, addr: u32, data: Vec<u8>) {
-        for (i, &value) in data.iter().enumerate() {
-            self.write_byte(shared, addr + i as u32, value);
-        }
+        (0..data.len()).for_each(|i| {
+            self.write_byte(shared, addr + i as u32, data[i]);
+        });
     }
     fn write_slice<const T: usize>(&mut self, shared: &mut Shared, addr: u32, value: [u8; T]);
 }

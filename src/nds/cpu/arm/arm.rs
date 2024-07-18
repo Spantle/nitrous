@@ -339,17 +339,17 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
 }
 
 impl<Bus: BusTrait> Arm<Bus> {
-    pub fn read_bulk(&self, bus: &mut Bus, shared: &mut Shared, addr: u32, size: usize) -> Vec<u8> {
-        let mut bytes = vec![0; size];
-        (0..size).for_each(|i| {
-            bytes[i] = self.read_byte(bus, shared, addr + i as u32);
-        });
+    pub fn read_bulk(&self, bus: &mut Bus, shared: &mut Shared, addr: u32, len: u32) -> Vec<u8> {
+        let mut bytes = vec![0; len as usize];
+        for i in 0..len {
+            bytes.push(self.read_byte(bus, shared, addr + i));
+        }
         bytes
     }
 
-    pub fn write_bulk(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: Vec<u8>) {
-        (0..value.len()).for_each(|i| {
-            self.write_byte(bus, shared, addr + i as u32, value[i]);
+    pub fn write_bulk(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, data: Vec<u8>) {
+        (0..data.len()).for_each(|i| {
+            self.write_byte(bus, shared, addr + i as u32, data[i]);
         });
     }
 
