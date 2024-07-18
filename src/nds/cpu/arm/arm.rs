@@ -340,7 +340,7 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
 
 impl<Bus: BusTrait> Arm<Bus> {
     pub fn read_bulk(&self, bus: &mut Bus, shared: &mut Shared, addr: u32, len: u32) -> Vec<u8> {
-        let mut bytes = vec![0; len as usize];
+        let mut bytes = vec![];
         for i in 0..len {
             bytes.push(self.read_byte(bus, shared, addr + i));
         }
@@ -354,8 +354,13 @@ impl<Bus: BusTrait> Arm<Bus> {
     }
 
     #[inline(always)]
-    fn read_slice<const T: usize>(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> [u8; T] {
-        let addr = addr as usize / T * T;
+    fn read_slice<const T: usize>(
+        &self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        orig_addr: u32,
+    ) -> [u8; T] {
+        let addr = orig_addr as usize / T * T;
         let mut bytes = [0; T];
 
         match Bus::kind() {
@@ -369,7 +374,7 @@ impl<Bus: BusTrait> Arm<Bus> {
                     bytes.copy_from_slice(&self.data_tcm[addr..addr + T]);
                     bytes
                 }
-                _ => bus.read_slice::<T>(shared, addr as u32),
+                _ => bus.read_slice::<T>(shared, orig_addr),
             },
             ArmKind::ARM7 => match addr {
                 0x03800000..=0x0380FFFF => {
@@ -377,7 +382,7 @@ impl<Bus: BusTrait> Arm<Bus> {
                     bytes.copy_from_slice(&self.wram7[addr..addr + T]);
                     bytes
                 }
-                _ => bus.read_slice::<T>(shared, addr as u32),
+                _ => bus.read_slice::<T>(shared, orig_addr),
             },
         }
     }
@@ -387,10 +392,10 @@ impl<Bus: BusTrait> Arm<Bus> {
         &mut self,
         bus: &mut Bus,
         shared: &mut Shared,
-        addr: u32,
+        orig_addr: u32,
         value: [u8; T],
     ) {
-        let addr = addr as usize / T * T;
+        let addr = orig_addr as usize / T * T;
 
         match Bus::kind() {
             ArmKind::ARM9 => match addr {
@@ -398,14 +403,14 @@ impl<Bus: BusTrait> Arm<Bus> {
                     let addr = addr - 0x00800000;
                     self.data_tcm[addr..addr + T].copy_from_slice(&value);
                 }
-                _ => bus.write_slice::<T>(shared, addr as u32, value),
+                _ => bus.write_slice::<T>(shared, orig_addr, value),
             },
             ArmKind::ARM7 => match addr {
                 0x03800000..=0x0380FFFF => {
                     let addr = addr - 0x03800000;
                     self.wram7[addr..addr + T].copy_from_slice(&value);
                 }
-                _ => bus.write_slice::<T>(shared, addr as u32, value),
+                _ => bus.write_slice::<T>(shared, orig_addr, value),
             },
         };
     }

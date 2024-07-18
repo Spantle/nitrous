@@ -9,7 +9,7 @@ pub trait BusTrait {
     fn read_halfword(&self, shared: &mut Shared, addr: u32) -> u16;
     fn read_word(&self, shared: &mut Shared, addr: u32) -> u32;
     fn read_bulk(&self, shared: &mut Shared, addr: u32, len: u32) -> Vec<u8> {
-        let mut bytes = vec![0; len as usize];
+        let mut bytes = vec![];
         for i in 0..len {
             bytes.push(self.read_byte(shared, addr + i));
         }
