@@ -51,7 +51,6 @@ impl NitrousGUI {
             ),
         };
         let mem = if arm_size == 0 {
-            println!("COCK ALERT");
             vec![]
         } else {
             match ARM_BOOL {
