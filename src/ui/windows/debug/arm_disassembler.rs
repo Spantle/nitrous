@@ -1,11 +1,6 @@
 use crate::{
     nds::{
-        cpu::arm::{
-            self,
-            bus::{self, BusTrait},
-            models::Disassembly,
-            ArmBool,
-        },
+        cpu::arm::{self, bus, models::Disassembly, ArmBool},
         logger, shared,
     },
     ui::{NitrousGUI, NitrousUI, NitrousWindow},
