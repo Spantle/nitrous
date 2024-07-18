@@ -3,7 +3,7 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use egui::load::SizedTexture;
 use web_time::{Duration, Instant};
 
-use crate::nds::{logger, Emulator};
+use crate::nds::{cpu::arm::ArmBool, logger, Emulator};
 
 use super::windows::file::preferences::PreferencesPanel;
 
@@ -59,6 +59,8 @@ pub struct NitrousGUI {
     // Debug
     pub arm9_disassembler: bool,
     pub arm9_info: bool,
+    pub arm7_disassembler: bool,
+    pub arm7_info: bool,
     pub emulation_log: bool,
     pub memory_viewer: bool,
     pub register_viewer: bool,
@@ -105,6 +107,8 @@ impl Default for NitrousGUI {
 
             arm9_disassembler: false,
             arm9_info: false,
+            arm7_disassembler: false,
+            arm7_info: false,
             emulation_log: false,
             memory_viewer: false,
             register_viewer: false,
@@ -273,7 +277,8 @@ impl eframe::App for NitrousGUI {
         });
 
         // Debug
-        self.show_arm9_disassembler(ctx);
+        self.show_arm_disassembler::<{ ArmBool::ARM9 }>(ctx);
+        self.show_arm_disassembler::<{ ArmBool::ARM7 }>(ctx);
         self.show_arm9_info(ctx);
         self.show_emulation_log(ctx);
         self.show_memory_viewer(ctx);

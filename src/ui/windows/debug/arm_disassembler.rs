@@ -12,39 +12,71 @@ use crate::{
 };
 
 impl NitrousGUI {
-    pub fn show_arm9_disassembler(&mut self, ctx: &egui::Context) {
-        let mut arm9_disassembler = self.arm9_disassembler;
-        egui::Window::new_nitrous("ARM9 Disassembler", ctx)
-            .open(&mut arm9_disassembler)
+    pub fn show_arm_disassembler<const ARM_BOOL: bool>(&mut self, ctx: &egui::Context) {
+        let mut arm_disassembler = match ARM_BOOL {
+            ArmBool::ARM9 => self.arm9_disassembler,
+            ArmBool::ARM7 => self.arm7_disassembler,
+        };
+        let title = match ARM_BOOL {
+            ArmBool::ARM9 => "ARM9 Disassembler",
+            ArmBool::ARM7 => "ARM7 Disassembler",
+        };
+
+        egui::Window::new_nitrous(title, ctx)
+            .open(&mut arm_disassembler)
             .show(ctx, |ui| {
-                self.render_instructions(ui);
+                self.render_instructions::<ARM_BOOL>(ui);
             });
 
-        self.arm9_disassembler = arm9_disassembler;
+        match ARM_BOOL {
+            ArmBool::ARM9 => self.arm9_disassembler = arm_disassembler,
+            ArmBool::ARM7 => self.arm7_disassembler = arm_disassembler,
+        };
     }
 
-    fn render_instructions(&mut self, ui: &mut egui::Ui) {
+    fn render_instructions<const ARM_BOOL: bool>(&mut self, ui: &mut egui::Ui) {
         let mut fake_bus = bus::FakeBus;
         let mut fake_shared = shared::Shared::new_fake();
 
         ui.make_monospace();
 
-        let (arm9_load_address, arm9_size) = (
-            self.emulator.shared.cart.arm9_load_address,
-            self.emulator.shared.cart.arm9_size,
-        );
-        let mem = if arm9_size == 0 {
+        let (arm_load_address, arm_size) = match ARM_BOOL {
+            ArmBool::ARM9 => (
+                self.emulator.shared.cart.arm9_load_address,
+                self.emulator.shared.cart.arm9_size,
+            ),
+            ArmBool::ARM7 => (
+                self.emulator.shared.cart.arm7_load_address,
+                self.emulator.shared.cart.arm7_size,
+            ),
+        };
+        let mem = if arm_size == 0 {
+            println!("COCK ALERT");
             vec![]
         } else {
-            self.emulator
-                .bus9
-                .read_bulk(&mut self.emulator.shared, arm9_load_address, arm9_size)
+            match ARM_BOOL {
+                ArmBool::ARM9 => self.emulator.arm9.read_bulk(
+                    &mut self.emulator.bus9,
+                    &mut self.emulator.shared,
+                    arm_load_address,
+                    arm_size,
+                ),
+                ArmBool::ARM7 => self.emulator.arm7.read_bulk(
+                    &mut self.emulator.bus7,
+                    &mut self.emulator.shared,
+                    arm_load_address,
+                    arm_size,
+                ),
+            }
         };
 
-        let pc = self.emulator.arm9.r[15] as usize;
+        let pc = match ARM_BOOL {
+            ArmBool::ARM9 => self.emulator.arm9.r[15],
+            ArmBool::ARM7 => self.emulator.arm7.r[15],
+        } as usize;
         let height = ui.text_style_height(&egui::TextStyle::Monospace);
         let total_rows = mem.len() / 4;
-        let arm9_load_address = arm9_load_address as usize;
+        let arm_load_address = arm_load_address as usize;
         let mut table_builder = egui_extras::TableBuilder::new(ui)
             .striped(true)
             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
@@ -53,7 +85,7 @@ impl NitrousGUI {
             .column(egui_extras::Column::auto());
 
         if self.emulator.is_running() {
-            let pc_row = (pc - arm9_load_address) / 4;
+            let pc_row = (pc - arm_load_address) / 4;
             table_builder = table_builder.scroll_to_row(pc_row, None);
         }
 
@@ -72,7 +104,7 @@ impl NitrousGUI {
             .body(|body| {
                 body.rows(height, total_rows, |mut row| {
                     let start = row.index() * 4;
-                    let address = arm9_load_address + start;
+                    let address = arm_load_address + start;
                     let inst = u32::from_le_bytes([
                         mem[start],
                         mem[start + 1],
