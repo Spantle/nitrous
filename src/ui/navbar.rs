@@ -86,7 +86,9 @@ impl NitrousGUI {
     fn debug_menu(&mut self, ui: &mut egui::Ui) -> bool {
         ui.checkbox(&mut self.arm9_disassembler, "ARM9 Disassembler");
         ui.checkbox(&mut self.arm7_disassembler, "ARM7 Disassembler");
+        ui.checkbox(&mut self.arm9_info_legacy, "(Legacy) ARM9 Info");
         ui.checkbox(&mut self.arm9_info, "ARM9 Info");
+        ui.checkbox(&mut self.arm7_info, "ARM7 Info");
         ui.checkbox(&mut self.emulation_log, "Emulation Log");
         ui.checkbox(&mut self.memory_viewer, "Memory Viewer");
         ui.checkbox(&mut self.register_viewer, "Register Viewer");

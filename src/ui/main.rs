@@ -59,8 +59,11 @@ pub struct NitrousGUI {
     // Debug
     pub arm9_disassembler: bool,
     pub arm9_info: bool,
+    pub arm9_info_legacy: bool,
+
     pub arm7_disassembler: bool,
     pub arm7_info: bool,
+
     pub emulation_log: bool,
     pub memory_viewer: bool,
     pub register_viewer: bool,
@@ -70,9 +73,9 @@ pub struct NitrousGUI {
     pub preferences: bool,
 
     #[serde(skip)]
-    pub arm9_info_selected: Option<(String, usize)>,
+    pub arm9_info_legacy_selected: Option<(String, usize)>,
     #[serde(skip)]
-    pub arm9_info_selected_pending_value: String,
+    pub arm9_info_legacy_selected_pending_value: String,
 
     #[serde(skip)]
     pub memory_viewer_selected: Option<usize>,
@@ -107,8 +110,11 @@ impl Default for NitrousGUI {
 
             arm9_disassembler: false,
             arm9_info: false,
+            arm9_info_legacy: false,
+
             arm7_disassembler: false,
             arm7_info: false,
+
             emulation_log: false,
             memory_viewer: false,
             register_viewer: false,
@@ -116,8 +122,8 @@ impl Default for NitrousGUI {
 
             preferences: false,
 
-            arm9_info_selected: None,
-            arm9_info_selected_pending_value: String::new(),
+            arm9_info_legacy_selected: None,
+            arm9_info_legacy_selected_pending_value: String::new(),
 
             memory_viewer_selected: None,
             memory_viewer_selected_pending_value: None,
@@ -279,7 +285,9 @@ impl eframe::App for NitrousGUI {
         // Debug
         self.show_arm_disassembler::<{ ArmBool::ARM9 }>(ctx);
         self.show_arm_disassembler::<{ ArmBool::ARM7 }>(ctx);
-        self.show_arm9_info(ctx);
+        self.show_arm_info::<{ ArmBool::ARM9 }>(ctx);
+        self.show_arm_info::<{ ArmBool::ARM7 }>(ctx);
+        self.show_arm9_info_legacy(ctx);
         self.show_emulation_log(ctx);
         self.show_memory_viewer(ctx);
         self.show_register_viewer(ctx);

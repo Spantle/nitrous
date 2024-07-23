@@ -22,6 +22,22 @@ bitflags! {
     }
 }
 
+impl std::fmt::Display for ProcessorMode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mode = match *self {
+            ProcessorMode::SYS => "SYS".to_string(),
+            ProcessorMode::UND => "UND".to_string(),
+            ProcessorMode::ABT => "ABT".to_string(),
+            ProcessorMode::SVC => "SVC".to_string(),
+            ProcessorMode::IRQ => "IRQ".to_string(),
+            ProcessorMode::FIQ => "FIQ".to_string(),
+            ProcessorMode::USR => "USR".to_string(),
+            _ => format!("{:05X}", self.bits()),
+        };
+        write!(f, "{}", mode)
+    }
+}
+
 impl Default for PSR {
     fn default() -> PSR {
         PSR(ProcessorMode::SYS.bits())
