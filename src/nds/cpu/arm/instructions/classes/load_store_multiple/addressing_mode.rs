@@ -25,7 +25,7 @@ pub fn parse(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -
             // increment after
             ctx.dis.set_inst_suffix("IA");
             let start_address = rn;
-            let end_address = rn.wrapping_add(number_of_set_bits * 4) - 4;
+            let end_address = rn.wrapping_add(number_of_set_bits * 4).wrapping_sub(4);
             let writeback = if is_writeback {
                 rn.wrapping_add(number_of_set_bits * 4)
             } else {
@@ -48,7 +48,7 @@ pub fn parse(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -
         (false, false) => {
             // decrement after
             ctx.dis.set_inst_suffix("DA");
-            let start_address = rn.wrapping_sub(number_of_set_bits * 4) + 4;
+            let start_address = rn.wrapping_sub(number_of_set_bits * 4).wrapping_add(4);
             let end_address = rn;
             let writeback = if is_writeback {
                 rn.wrapping_sub(number_of_set_bits * 4)
