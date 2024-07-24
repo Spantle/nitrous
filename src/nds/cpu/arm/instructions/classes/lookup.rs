@@ -54,7 +54,13 @@ pub fn lookup_instruction_class(
         }
         0b101 => {
             // Branch
-            branch::lookup(inst_set, ctx)
+            // bits 28-31
+            if inst_set >> 8 & 0b1111 == 0b1111 {
+                // Branch with link and change to Thumb (BLX (1))
+                branch::instructions::b::<true, true>(ctx)
+            } else {
+                branch::lookup(inst_set, ctx)
+            }
         }
         _ => {
             ctx.logger
@@ -145,7 +151,7 @@ fn lookup_miscellaneous_instructions(
             // bit 22
             if inst_set >> 2 & 1 == 0 {
                 // Branch/exchange instruction set
-                branch::instructions::bx(ctx)
+                branch::instructions::bx::<false>(ctx)
             } else {
                 // Count leading zeroes
                 ctx.logger
@@ -154,10 +160,8 @@ fn lookup_miscellaneous_instructions(
             }
         }
         0b0011 => {
-            // Branch and link/exchange instruction set
-            ctx.logger
-                .log_warn("branch and link/exchange instruction set instruction not implemented");
-            0
+            // Branch and link/exchange instruction set (BLX (2))
+            branch::instructions::bx::<true>(ctx)
         }
         0b0101 => {
             // Enhanced DSP add/subtracts

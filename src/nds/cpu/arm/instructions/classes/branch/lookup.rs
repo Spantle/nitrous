@@ -7,10 +7,8 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
     let l = ((inst_set >> 4) & 1) != 0; // L bit
 
     if l {
-        ctx.dis.set_inst("BL");
-        instructions::b::<true>(ctx)
+        instructions::b::<true, false>(ctx)
     } else {
-        ctx.dis.set_inst("B");
-        instructions::b::<false>(ctx)
+        instructions::b::<false, false>(ctx)
     }
 }
