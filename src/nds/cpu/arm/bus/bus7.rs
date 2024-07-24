@@ -45,6 +45,11 @@ impl BusTrait for Bus7 {
                 let addr = (addr - 0x03000000) % 0x8000;
                 bytes.copy_from_slice(&shared.wram[addr..addr + T]);
             }
+            0x04000180..=0x04000183 => {
+                let value = shared.ipcsync.value(false).to_le_bytes();
+                let len = T.min(value.len());
+                bytes[..len].copy_from_slice(&value[..len]);
+            }
             _ => {
                 logger::warn(
                     logger::LogSource::Bus7,
@@ -68,6 +73,12 @@ impl BusTrait for Bus7 {
                 let addr = (addr - 0x03000000) % 0x8000;
                 shared.wram[addr..addr + T].copy_from_slice(&value);
             }
+            0x04000180..=0x04000183 => {
+                shared.ipcsync.set(
+                    false,
+                    self.update_reg_value(shared.ipcsync.value(false), value),
+                );
+            }
             _ => {
                 logger::warn(
                     logger::LogSource::Bus7,
@@ -75,5 +86,16 @@ impl BusTrait for Bus7 {
                 );
             }
         };
+    }
+}
+
+impl Bus7 {
+    #[inline(always)]
+    fn update_reg_value<const T: usize>(&mut self, reg_value: u32, new_value: [u8; T]) -> u32 {
+        // TODO: check if this is cursed
+        let len = T.min(4);
+        let mut dispcnt = reg_value.to_le_bytes();
+        dispcnt[..len].copy_from_slice(&new_value[..len]);
+        u32::from_le_bytes(dispcnt)
     }
 }

@@ -79,6 +79,9 @@ impl NitrousGUI {
             .column(egui_extras::Column::auto());
 
         if self.emulator.is_running() {
+            if pc < arm_load_address || pc >= arm_load_address + arm_size as usize {
+                return;
+            }
             let pc_row = (pc - arm_load_address) / 4;
             table_builder = table_builder.scroll_to_row(pc_row, None);
         }

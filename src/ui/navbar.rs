@@ -94,6 +94,7 @@ impl NitrousGUI {
             ui.checkbox(&mut self.arm7_info, "ARM7 Info");
         });
         ui.checkbox(&mut self.emulation_log, "Emulation Log");
+        ui.checkbox(&mut self.ipcsync_log, "IPCSYNC Log");
         ui.checkbox(&mut self.memory_viewer, "Memory Viewer");
         ui.checkbox(&mut self.register_viewer, "Register Viewer");
         ui.checkbox(&mut self.test_window, "Test Window");

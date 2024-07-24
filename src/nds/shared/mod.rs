@@ -1,4 +1,4 @@
-use models::{KEYINPUT, POWCNT1};
+use models::{IPCSYNC, KEYINPUT, POWCNT1};
 
 use super::{cartridge::Cartridge, gpu::gpu2d::Gpu2d};
 
@@ -10,6 +10,7 @@ pub struct Shared {
 
     pub keyinput: KEYINPUT, // 0x04000130
     pub vramcnt: [u8; 10],  // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
+    pub ipcsync: IPCSYNC,   // 0x04000180
     pub powcnt1: POWCNT1,   // 0x04000304
 }
 
@@ -23,6 +24,7 @@ impl Default for Shared {
 
             keyinput: KEYINPUT::default(),
             vramcnt: [0; 10],
+            ipcsync: IPCSYNC::default(),
             powcnt1: POWCNT1::default(),
         }
     }
@@ -38,9 +40,10 @@ impl Shared {
 
             keyinput: KEYINPUT::default(),
             vramcnt: [0; 10],
+            ipcsync: IPCSYNC::default(),
             powcnt1: POWCNT1::default(),
         }
     }
 }
 
-mod models;
+pub mod models;

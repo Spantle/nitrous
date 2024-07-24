@@ -65,6 +65,7 @@ pub struct NitrousGUI {
     pub arm7_info: bool,
 
     pub emulation_log: bool,
+    pub ipcsync_log: bool,
     pub memory_viewer: bool,
     pub register_viewer: bool,
     pub test_window: bool,
@@ -116,6 +117,7 @@ impl Default for NitrousGUI {
             arm7_info: false,
 
             emulation_log: false,
+            ipcsync_log: false,
             memory_viewer: false,
             register_viewer: false,
             test_window: false,
@@ -289,6 +291,7 @@ impl eframe::App for NitrousGUI {
         self.show_arm_info::<{ ArmBool::ARM7 }>(ctx);
         self.show_arm9_info_legacy(ctx);
         self.show_emulation_log(ctx);
+        self.show_ipcsync_log(ctx);
         self.show_memory_viewer(ctx);
         self.show_register_viewer(ctx);
         self.show_test_window(ctx);

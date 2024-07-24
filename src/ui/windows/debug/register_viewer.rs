@@ -47,7 +47,7 @@ impl NitrousGUI {
             })
     }
 
-    fn names(&self) -> [&str; 15] {
+    fn names(&self) -> [&str; 16] {
         [
             "DISPCNT",
             "DISPSTAT",
@@ -63,11 +63,12 @@ impl NitrousGUI {
             "WRAMCNT",
             "VRAMCNT_H",
             "VRAMCNT_I",
+            "IPCSYNC",
             "POWCNT1",
         ]
     }
 
-    fn values(&self) -> [u32; 15] {
+    fn values(&self) -> [u32; 16] {
         [
             self.emulator.shared.gpu2d_a.dispcnt.value(),
             self.emulator.shared.gpu2d_a.dispstat.value() as u32,
@@ -83,6 +84,7 @@ impl NitrousGUI {
             self.emulator.shared.vramcnt[7] as u32,
             self.emulator.shared.vramcnt[8] as u32,
             self.emulator.shared.vramcnt[9] as u32,
+            self.emulator.shared.ipcsync.value_quiet(),
             self.emulator.shared.powcnt1.value(),
         ]
     }
