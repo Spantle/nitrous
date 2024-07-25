@@ -3,7 +3,10 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 use egui::load::SizedTexture;
 use web_time::{Duration, Instant};
 
-use crate::nds::{cpu::arm::ArmBool, logger, Emulator};
+use crate::nds::{
+    cpu::arm::{bus::BusTrait, ArmBool},
+    logger, Emulator,
+};
 
 use super::windows::file::preferences::PreferencesPanel;
 
@@ -306,6 +309,7 @@ impl eframe::App for NitrousGUI {
 
                 if !self.preferences_arm9_bios_path.is_empty() {
                     self.emulator
+                        .bus9
                         .load_bios_from_path(&self.preferences_arm9_bios_path);
                 }
             }
@@ -319,6 +323,7 @@ impl eframe::App for NitrousGUI {
                 {
                     self.preferences_arm9_bios_path = content;
                     self.emulator
+                        .bus9
                         .load_bios_from_path(&self.preferences_arm9_bios_path);
                 }
 

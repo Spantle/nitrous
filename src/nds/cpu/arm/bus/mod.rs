@@ -5,6 +5,8 @@ use super::ArmKind;
 pub trait BusTrait {
     fn kind() -> ArmKind;
 
+    fn load_bios_from_path(&mut self, path: &str);
+
     fn read_byte(&self, shared: &mut Shared, addr: u32) -> u8;
     fn read_halfword(&self, shared: &mut Shared, addr: u32) -> u16;
     fn read_word(&self, shared: &mut Shared, addr: u32) -> u32;
@@ -34,6 +36,8 @@ impl BusTrait for FakeBus {
     fn kind() -> ArmKind {
         ArmKind::ARM9
     }
+
+    fn load_bios_from_path(&mut self, _path: &str) {}
 
     fn read_byte(&self, _shared: &mut Shared, _addr: u32) -> u8 {
         0

@@ -3,11 +3,29 @@ use crate::nds::{cpu::arm::ArmKind, logger, shared::Shared};
 use super::BusTrait;
 
 #[derive(Default)]
-pub struct Bus9 {}
+pub struct Bus9 {
+    pub bios: Vec<u8>,
+}
 
 impl BusTrait for Bus9 {
     fn kind() -> ArmKind {
         ArmKind::ARM9
+    }
+
+    fn load_bios_from_path(&mut self, path: &str) {
+        let file = std::fs::read(path);
+        match file {
+            Ok(bios) => {
+                logger::info(logger::LogSource::Arm9(0), "Successfully loaded BIOS");
+                self.bios = bios;
+            }
+            Err(e) => {
+                logger::error(
+                    logger::LogSource::Arm9(0),
+                    format!("Failed to load BIOS: {}", e),
+                );
+            }
+        };
     }
 
     fn read_byte(&self, shared: &mut Shared, addr: u32) -> u8 {
@@ -66,6 +84,10 @@ impl BusTrait for Bus9 {
                 let len = T.min(value.len());
                 bytes[..len].copy_from_slice(&value[..len]);
             }
+            0xFFFF0000..=0xFFFF7FFF => {
+                let addr = addr - 0xFFFF0000;
+                bytes.copy_from_slice(&self.bios[addr..addr + T]);
+            }
             _ => {
                 logger::warn(
                     logger::LogSource::Bus9,
@@ -106,6 +128,10 @@ impl BusTrait for Bus9 {
             0x06800000..=0x068A4000 => {
                 let addr = addr - 0x06800000;
                 shared.gpu2d_a.vram_lcdc_alloc[addr..addr + T].copy_from_slice(&value);
+            }
+            0xFFFF0000..=0xFFFF7FFF => {
+                let addr = addr - 0xFFFF0000;
+                self.bios[addr..addr + T].copy_from_slice(&value);
             }
             _ => {
                 logger::warn(

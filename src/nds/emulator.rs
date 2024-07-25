@@ -1,11 +1,10 @@
-use std::{fs, sync::atomic::AtomicBool};
+use std::sync::atomic::AtomicBool;
 
 use super::{
     cpu::arm::{
         bus::{bus7::Bus7, bus9::Bus9},
         Arm,
     },
-    logger,
     shared::Shared,
 };
 
@@ -75,23 +74,6 @@ impl Emulator {
             arm7_bin,
         );
         self.arm7.r[15] = self.shared.cart.arm7_entry_address;
-    }
-
-    pub fn load_bios(&mut self, _bios: Vec<u8>) {
-        // self.bus.arm9_bios = bios;
-    }
-
-    pub fn load_bios_from_path(&mut self, arm9_bios_path: &String) {
-        let arm9 = fs::read(arm9_bios_path);
-        match arm9 {
-            Ok(arm9) => self.load_bios(arm9),
-            Err(e) => {
-                logger::error(
-                    logger::LogSource::Emu,
-                    format!("Failed to load ARM9 BIOS: {}", e),
-                );
-            }
-        };
     }
 
     pub fn start(&mut self) {
