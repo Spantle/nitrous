@@ -55,8 +55,8 @@ impl BusTrait for Bus9 {
         let addr = addr as usize / T * T;
         let mut bytes = [0; T];
         match addr {
-            0x02000000..=0x023FFFFF => {
-                let addr = addr - 0x02000000;
+            0x02000000..=0x02FFFFFF => {
+                let addr = (addr - 0x02000000) % 400000;
                 bytes.copy_from_slice(&shared.psram[addr..addr + T]);
             }
             0x04000000..=0x04000003 => {
@@ -103,8 +103,8 @@ impl BusTrait for Bus9 {
     fn write_slice<const T: usize>(&mut self, shared: &mut Shared, addr: u32, value: [u8; T]) {
         let addr = addr as usize / T * T;
         match addr {
-            0x02000000..=0x023FFFFF => {
-                let addr = addr - 0x02000000;
+            0x02000000..=0x02FFFFFF => {
+                let addr = (addr - 0x02000000) % 400000;
                 shared.psram[addr..addr + T].copy_from_slice(&value);
             }
             0x04000000..=0x04000003 => {

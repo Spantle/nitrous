@@ -422,8 +422,8 @@ impl<Bus: BusTrait> Arm<Bus> {
                 bus.read_slice::<T>(shared, orig_addr)
             }
             ArmKind::ARM7 => match addr {
-                0x03800000..=0x0380FFFF => {
-                    let addr = addr - 0x03800000;
+                0x03800000..=0x03FFFFFF => {
+                    let addr = (addr - 0x03800000) % 10000;
                     bytes.copy_from_slice(&self.wram7[addr..addr + T]);
                     bytes
                 }
@@ -467,8 +467,8 @@ impl<Bus: BusTrait> Arm<Bus> {
                 bus.write_slice::<T>(shared, orig_addr, value)
             }
             ArmKind::ARM7 => match addr {
-                0x03800000..=0x0380FFFF => {
-                    let addr = addr - 0x03800000;
+                0x03800000..=0x03FFFFFF => {
+                    let addr = (addr - 0x03800000) % 10000;
                     self.wram7[addr..addr + T].copy_from_slice(&value);
                 }
                 _ => bus.write_slice::<T>(shared, orig_addr, value),
