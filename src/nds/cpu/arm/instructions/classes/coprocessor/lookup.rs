@@ -12,8 +12,7 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
         if inst_set & 1 == 0 {
             instructions::mcr(ctx)
         } else {
-            ctx.logger.log_warn("MRC instruction not implemented");
-            1
+            instructions::mrc(ctx)
         }
     } else {
         // Coprocessor data processing
