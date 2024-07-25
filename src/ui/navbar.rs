@@ -76,11 +76,17 @@ impl NitrousGUI {
         let running = self.emulator.is_running();
         let started = ui.enabled_button(!running, "Start emulation", || self.emulator.start());
         let paused = ui.enabled_button(running, "Pause emulation", || self.emulator.pause());
+        let reset = if ui.button("Reset emulator").clicked() {
+            self.emulator.reset();
+            true
+        } else {
+            false
+        };
         if ui.button("Step emulation").clicked() {
             self.emulator.step();
         }
 
-        started || paused
+        started || paused || reset
     }
 
     fn debug_menu(&mut self, ui: &mut egui::Ui) -> bool {

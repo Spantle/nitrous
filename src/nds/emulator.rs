@@ -40,17 +40,18 @@ impl Default for Emulator {
 
 impl Emulator {
     pub fn load_rom(&mut self, rom: Vec<u8>) {
-        // TODO: do some other resetting/initializing stuff here in the future
+        self.reset();
+
         let shared = &mut self.shared;
         let success = shared.cart.load(rom);
         if !success {
             return;
         }
 
-        shared.psram = vec![0; 1024 * 1024 * 4];
-        self.arm9 = Arm::default();
-        self.arm7 = Arm::default();
+        self.load_binary();
+    }
 
+    pub fn load_binary(&mut self) {
         let arm9_load_address = self.shared.cart.arm9_load_address;
         let arm9_bin = self.shared.cart.rom[self.shared.cart.arm9_rom_offset as usize
             ..(self.shared.cart.arm9_rom_offset + self.shared.cart.arm9_size) as usize]
@@ -74,6 +75,22 @@ impl Emulator {
             arm7_bin,
         );
         self.arm7.r[15] = self.shared.cart.arm7_entry_address;
+    }
+
+    pub fn reset(&mut self) {
+        let was_running = self.is_running();
+        self.pause();
+
+        self.arm9 = Arm::default();
+        self.arm7 = Arm::default();
+
+        self.shared.reset();
+
+        self.load_binary();
+
+        if was_running {
+            self.start();
+        }
     }
 
     pub fn start(&mut self) {
