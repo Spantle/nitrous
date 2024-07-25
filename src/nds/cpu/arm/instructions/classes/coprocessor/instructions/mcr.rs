@@ -68,15 +68,29 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             let region_base = rd.get_bits(12, 31);
             arm.cp15_mut().data_tcm_base = region_base;
             arm.cp15_mut().data_tcm_size = virtual_size;
+
+            ctx.logger.log_debug(format!(
+                "Data TCM moved: 0x{:08X}-0x{:08X}, size: 0x{:08X}",
+                region_base,
+                region_base + virtual_size,
+                virtual_size
+            ));
         }
         (9, 1, 1) => {
             // Instruction TCM Base and Virtual Size
-            // Instruction TCM Base is FIXED
+            // Instruction TCM Base is FIXED but w/e
             let rd = arm.er(rd);
             let virtual_size = 512 << rd.get_bits(1, 5);
-            // let region_base = rd.get_bits(12, 31);
-            // arm.cp15_mut().inst_tcm_base = region_base;
+            let region_base = rd.get_bits(12, 31);
+            arm.cp15_mut().inst_tcm_base = region_base;
             arm.cp15_mut().inst_tcm_size = virtual_size;
+
+            ctx.logger.log_debug(format!(
+                "Instruction TCM moved: 0x{:08X}-0x{:08X}, size: 0x{:08X}",
+                region_base,
+                region_base + virtual_size,
+                virtual_size
+            ));
         }
         _ => {
             ctx.logger.log_warn(format!(
