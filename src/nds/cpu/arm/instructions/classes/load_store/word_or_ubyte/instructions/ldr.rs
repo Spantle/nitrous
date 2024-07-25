@@ -1,6 +1,5 @@
 use crate::nds::cpu::arm::{
     arm::ArmTrait,
-    bus::BusTrait,
     instructions::classes::load_store::word_or_ubyte::LoadStoreInstruction,
     models::{Bits, Context, ContextTrait},
 };
@@ -8,7 +7,6 @@ use crate::nds::cpu::arm::{
 // LDR
 #[inline(always)]
 pub fn ldr(ctx: Context<LoadStoreInstruction, impl ContextTrait>, address: u32) -> u32 {
-    let (arm, inst) = (ctx.arm, ctx.inst);
     let bits = address.get_bits(0, 1); // i have no idea what to call this
     let mut cycles = 1 + (bits != 0) as u32;
 
@@ -21,17 +19,17 @@ pub fn ldr(ctx: Context<LoadStoreInstruction, impl ContextTrait>, address: u32) 
     //     _ => unreachable!(),
     // };
     let value = ctx
-        .bus
-        .read_word(ctx.shared, address)
+        .arm
+        .read_word(ctx.bus, ctx.shared, address)
         .rotate_right(bits * 8);
 
-    if inst.destination_register == 15 {
+    if ctx.inst.destination_register == 15 {
         // note: this is for armv5
-        arm.set_r(15, value & 0xFFFFFFFE);
-        arm.cpsr_mut().set_thumb(value.get_bit(0));
+        ctx.arm.set_r(15, value & 0xFFFFFFFE);
+        ctx.arm.cpsr_mut().set_thumb(value.get_bit(0));
         cycles += 4;
     } else {
-        arm.set_r(inst.destination_register, value);
+        ctx.arm.set_r(ctx.inst.destination_register, value);
     }
 
     cycles
