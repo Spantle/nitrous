@@ -73,7 +73,7 @@ pub fn lookup_instruction_class(
             } else {
                 // Software interrupt
                 // technically also possibly an undefined instruction based on the cond or something iirc
-                exceptions::swi(ctx)
+                exceptions::instructions::swi(ctx)
             }
         }
         _ => {
