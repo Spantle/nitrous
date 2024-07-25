@@ -7,7 +7,7 @@ use crate::nds::{
 };
 
 use super::{
-    branch, coprocessor, data_processing, exceptions, load_store, load_store_multiple,
+    branch, coprocessor, data_processing, exceptions, load_store, load_store_multiple, misc,
     status_register_access,
 };
 
@@ -168,9 +168,7 @@ fn lookup_miscellaneous_instructions(
                 branch::instructions::bx::<false>(ctx)
             } else {
                 // Count leading zeroes
-                ctx.logger
-                    .log_warn("count leading zeroes instruction not implemented");
-                1
+                misc::instructions::clz(ctx)
             }
         }
         0b0011 => {
