@@ -46,7 +46,6 @@ impl LoggerTrait for FakeLogger {
     fn log_error<T: Into<String> + Display>(&self, _content: T) {}
 }
 
-#[derive(Debug)]
 pub struct Log {
     pub kind: LogKind,
     pub source: LogSource,
@@ -62,7 +61,7 @@ pub enum LogKind {
     Error,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum LogSource {
     Emu,
     Arm9(u32),
@@ -72,12 +71,37 @@ pub enum LogSource {
     Cart,
 }
 
+impl Display for LogSource {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            LogSource::Emu => write!(f, "Emu"),
+            LogSource::Arm9(instruction) => {
+                if *instruction == 0 {
+                    write!(f, "Arm9")
+                } else {
+                    write!(f, "Arm9({:08X})", instruction)
+                }
+            }
+            LogSource::Arm7(instruction) => {
+                if *instruction == 0 {
+                    write!(f, "Arm7")
+                } else {
+                    write!(f, "Arm7({:08X})", instruction)
+                }
+            }
+            LogSource::Bus7 => write!(f, "Bus7"),
+            LogSource::Bus9 => write!(f, "Bus9"),
+            LogSource::Cart => write!(f, "Cart"),
+        }
+    }
+}
+
 fn now() -> String {
     chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
 }
 
 pub fn debug<T: Into<String> + Display>(source: LogSource, content: T) {
-    debug!("[{:?}] {}", source, &content);
+    debug!("[{}] {}", source, &content);
     let mut logs = LOGS.lock().unwrap();
     logs.push(Log {
         kind: LogKind::Debug,
@@ -88,7 +112,7 @@ pub fn debug<T: Into<String> + Display>(source: LogSource, content: T) {
 }
 
 pub fn info<T: Into<String> + Display>(source: LogSource, content: T) {
-    info!("[{:?}] {}", source, &content);
+    info!("[{}] {}", source, &content);
     LOGS.lock().unwrap().push(Log {
         kind: LogKind::Info,
         source,
@@ -102,7 +126,7 @@ pub fn warn<T: Into<String> + Display>(source: LogSource, content: T) {
         set_emulator_running(false);
     }
 
-    warn!("[{:?}] {}", source, &content);
+    warn!("[{}] {}", source, &content);
     LOGS.lock().unwrap().push(Log {
         kind: LogKind::Warn,
         source,
@@ -114,7 +138,7 @@ pub fn warn<T: Into<String> + Display>(source: LogSource, content: T) {
 pub fn error<T: Into<String> + Display>(source: LogSource, content: T) {
     set_emulator_running(false);
 
-    error!("[{:?}] {}", source, &content);
+    error!("[{}] {}", source, &content);
     LOGS.lock().unwrap().push(Log {
         kind: LogKind::Error,
         source,

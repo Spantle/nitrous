@@ -64,7 +64,7 @@ impl NitrousGUI {
                                         &line.kind, &line.timestamp
                                     ));
 
-                                    ui.colored_label(color, format!("[{:?}]", &line.source));
+                                    ui.colored_label(color, format!("[{}]", &line.source));
 
                                     ui.colored_label(color, &line.content);
                                 });
