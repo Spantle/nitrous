@@ -1,4 +1,4 @@
-use crate::nds::cpu::arm::models::{Context, ContextTrait, DisassemblyTrait, Instruction};
+use crate::nds::cpu::arm::models::{Context, ContextTrait, Instruction};
 
 use super::instructions;
 
