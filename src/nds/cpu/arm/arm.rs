@@ -61,6 +61,8 @@ pub trait ArmTrait<Bus: BusTrait> {
     fn set_r(&mut self, r: u8, value: u32);
     fn er(&self, r: u8) -> u32;
     fn eru(&self, r: u8) -> u32;
+    fn mode_r(&self, mode: ProcessorMode, r: u8) -> u32;
+    fn set_mode_r(&mut self, mode: ProcessorMode, r: u8, value: u32);
 
     fn cpsr(&self) -> &PSR;
     fn cpsr_mut(&mut self) -> &mut PSR;
@@ -210,6 +212,28 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
                 self.r[15] // NOTE: this might need to be + 8?
             }
             _ => self.r[r],
+        }
+    }
+
+    fn mode_r(&self, mode: ProcessorMode, r: u8) -> u32 {
+        match mode {
+            ProcessorMode::FIQ => self.r_fiq[r as usize],
+            ProcessorMode::IRQ => self.r_irq[r as usize],
+            ProcessorMode::SVC => self.r_svc[r as usize],
+            ProcessorMode::ABT => self.r_abt[r as usize],
+            ProcessorMode::UND => self.r_und[r as usize],
+            _ => self.r[r],
+        }
+    }
+
+    fn set_mode_r(&mut self, mode: ProcessorMode, r: u8, value: u32) {
+        match mode {
+            ProcessorMode::FIQ => self.r_fiq[r as usize] = value,
+            ProcessorMode::IRQ => self.r_irq[r as usize] = value,
+            ProcessorMode::SVC => self.r_svc[r as usize] = value,
+            ProcessorMode::ABT => self.r_abt[r as usize] = value,
+            ProcessorMode::UND => self.r_und[r as usize] = value,
+            _ => self.r[r] = value,
         }
     }
 
@@ -484,6 +508,14 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
 
     fn eru(&self, r: u8) -> u32 {
         self.r[r]
+    }
+
+    fn mode_r(&self, _mode: ProcessorMode, r: u8) -> u32 {
+        self.r[r]
+    }
+
+    fn set_mode_r(&mut self, _mode: ProcessorMode, r: u8, value: u32) {
+        self.r[r] = value;
     }
 
     fn cpsr(&self) -> &PSR {

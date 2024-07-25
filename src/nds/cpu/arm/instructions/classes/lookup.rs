@@ -7,7 +7,8 @@ use crate::nds::{
 };
 
 use super::{
-    branch, coprocessor, data_processing, load_store, load_store_multiple, status_register_access,
+    branch, coprocessor, data_processing, exceptions, load_store, load_store_multiple,
+    status_register_access,
 };
 
 #[inline(always)]
@@ -71,10 +72,8 @@ pub fn lookup_instruction_class(
                 coprocessor::lookup(inst_set, ctx)
             } else {
                 // Software interrupt
-                // technically also possibly an undefined instruction
-                ctx.logger
-                    .log_warn("software interrupt instruction not implemented");
-                1
+                // technically also possibly an undefined instruction based on the cond or something iirc
+                exceptions::swi(ctx)
             }
         }
         _ => {
