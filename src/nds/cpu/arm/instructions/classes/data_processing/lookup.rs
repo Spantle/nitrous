@@ -49,6 +49,12 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
         (0b0010, true) => {
             instructions::sub::<true>(&mut ctx);
         }
+        (0b0011, true) => {
+            instructions::rsb::<true>(&mut ctx);
+        }
+        (0b0011, false) => {
+            instructions::rsb::<false>(&mut ctx);
+        }
         (0b0100, false) => {
             instructions::add::<false>(&mut ctx);
         }
