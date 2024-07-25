@@ -6,7 +6,9 @@ use crate::nds::{
     logger::LoggerTrait,
 };
 
-use super::{branch, data_processing, load_store, load_store_multiple, status_register_access};
+use super::{
+    branch, coprocessor, data_processing, load_store, load_store_multiple, status_register_access,
+};
 
 #[inline(always)]
 pub fn lookup_instruction_class(
@@ -60,6 +62,19 @@ pub fn lookup_instruction_class(
                 branch::instructions::b::<true, true>(ctx)
             } else {
                 branch::lookup(inst_set, ctx)
+            }
+        }
+        0b111 => {
+            // bit 24
+            if inst_set >> 4 & 1 == 0 {
+                // Coprocessor data processing
+                coprocessor::lookup(inst_set, ctx)
+            } else {
+                // Software interrupt
+                // technically also possibly an undefined instruction
+                ctx.logger
+                    .log_warn("software interrupt instruction not implemented");
+                1
             }
         }
         _ => {

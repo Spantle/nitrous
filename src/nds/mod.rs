@@ -1,5 +1,6 @@
 mod bits;
 mod cartridge;
+mod cp15;
 pub mod cpu;
 mod emulator;
 pub mod gpu;

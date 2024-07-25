@@ -1,6 +1,8 @@
 use core::mem::swap;
 
-use crate::nds::{cpu::arm::instructions::lookup_instruction_set, logger, shared::Shared};
+use crate::nds::{
+    cp15::CP15, cpu::arm::instructions::lookup_instruction_set, logger, shared::Shared,
+};
 
 use super::{
     bus::BusTrait,
@@ -45,8 +47,7 @@ pub struct Arm<Bus: BusTrait> {
     // TODO: do this better
     // it's 2am i cannot be bothered
     // arm9 exclusives
-    pub inst_tcm: Vec<u8>, // 32kb
-    pub data_tcm: Vec<u8>, // 16kb
+    pub cp15: CP15,
     // arm7 exlusives
     pub wram7: Vec<u8>, // 64kb
 
@@ -71,6 +72,9 @@ pub trait ArmTrait<Bus: BusTrait> {
         copy_cpsr_to_spsr: bool,
     );
 
+    fn cp15(&self) -> &CP15;
+    fn cp15_mut(&mut self) -> &mut CP15;
+
     fn read_byte(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u8;
     fn read_halfword(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u16;
     fn read_word(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u32;
@@ -93,8 +97,7 @@ impl<Bus: BusTrait> Default for Arm<Bus> {
             r_und: [0, 0, 0],
             cpsr: PSR::default(),
 
-            inst_tcm: vec![0; 1024 * 32],
-            data_tcm: vec![0; 1024 * 16],
+            cp15: CP15::default(),
             wram7: vec![0; 1024 * 64],
 
             pipeline_state: PipelineState::Fetch,
@@ -315,6 +318,14 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
         self.cpsr.set_mode(new_mode);
     }
 
+    fn cp15(&self) -> &CP15 {
+        &self.cp15
+    }
+
+    fn cp15_mut(&mut self) -> &mut CP15 {
+        &mut self.cp15
+    }
+
     fn read_byte(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u8 {
         self.read_slice::<1>(bus, shared, addr)[0]
     }
@@ -363,19 +374,29 @@ impl<Bus: BusTrait> Arm<Bus> {
         let addr = orig_addr as usize / T * T;
         let mut bytes = [0; T];
 
+        let (data_tcm_base, data_tcm_size, inst_tcm_base, inst_tcm_size) = (
+            self.cp15.data_tcm_base as usize,
+            self.cp15.data_tcm_size as usize,
+            self.cp15.inst_tcm_base as usize,
+            self.cp15.inst_tcm_size as usize,
+        );
+        let (data_tcm_end, inst_tcm_end) =
+            (data_tcm_base + data_tcm_size, inst_tcm_base + inst_tcm_size);
         match Bus::kind() {
-            ArmKind::ARM9 => match addr {
-                0x00000000..=0x00007FFF => {
-                    bytes.copy_from_slice(&self.inst_tcm[addr..addr + T]);
-                    bytes
+            ArmKind::ARM9 => {
+                if addr > inst_tcm_base && addr < inst_tcm_end {
+                    let addr = addr - inst_tcm_base;
+                    bytes.copy_from_slice(&self.cp15.inst_tcm[addr..addr + T]);
+                    return bytes;
                 }
-                0x00800000..=0x00803FFF => {
-                    let addr = addr - 0x00800000;
-                    bytes.copy_from_slice(&self.data_tcm[addr..addr + T]);
-                    bytes
+                if addr > data_tcm_base && addr < data_tcm_end {
+                    let addr = addr - data_tcm_base;
+                    bytes.copy_from_slice(&self.cp15.data_tcm[addr..addr + T]);
+                    return bytes;
                 }
-                _ => bus.read_slice::<T>(shared, orig_addr),
-            },
+
+                bus.read_slice::<T>(shared, orig_addr)
+            }
             ArmKind::ARM7 => match addr {
                 0x03800000..=0x0380FFFF => {
                     let addr = addr - 0x03800000;
@@ -398,13 +419,29 @@ impl<Bus: BusTrait> Arm<Bus> {
         let addr = orig_addr as usize / T * T;
 
         match Bus::kind() {
-            ArmKind::ARM9 => match addr {
-                0x00800000..=0x00803FFF => {
-                    let addr = addr - 0x00800000;
-                    self.data_tcm[addr..addr + T].copy_from_slice(&value);
+            ArmKind::ARM9 => {
+                let (data_tcm_base, data_tcm_size, inst_tcm_base, inst_tcm_size) = (
+                    self.cp15.data_tcm_base as usize,
+                    self.cp15.data_tcm_size as usize,
+                    self.cp15.inst_tcm_base as usize,
+                    self.cp15.inst_tcm_size as usize,
+                );
+                let (data_tcm_end, inst_tcm_end) =
+                    (data_tcm_base + data_tcm_size, inst_tcm_base + inst_tcm_size);
+
+                if addr > inst_tcm_base && addr < inst_tcm_end {
+                    let addr = addr - inst_tcm_base;
+                    self.cp15.inst_tcm[addr..addr + T].copy_from_slice(&value);
+                    return;
                 }
-                _ => bus.write_slice::<T>(shared, orig_addr, value),
-            },
+                if addr > data_tcm_base && addr < data_tcm_end {
+                    let addr = addr - data_tcm_base;
+                    self.cp15.data_tcm[addr..addr + T].copy_from_slice(&value);
+                    return;
+                }
+
+                bus.write_slice::<T>(shared, orig_addr, value)
+            }
             ArmKind::ARM7 => match addr {
                 0x03800000..=0x0380FFFF => {
                     let addr = addr - 0x03800000;
@@ -419,6 +456,7 @@ impl<Bus: BusTrait> Arm<Bus> {
 pub struct FakeArm {
     r: Registers,
     cpsr: PSR,
+    cp15: CP15,
 }
 
 impl FakeArm {
@@ -426,6 +464,7 @@ impl FakeArm {
         FakeArm {
             r: Registers::new(r15 + 8),
             cpsr: PSR::default(),
+            cp15: CP15::default(),
         }
     }
 }
@@ -466,6 +505,14 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
         _mode: ProcessorMode,
         _copy_cpsr_to_spsr: bool,
     ) {
+    }
+
+    fn cp15(&self) -> &CP15 {
+        &self.cp15
+    }
+
+    fn cp15_mut(&mut self) -> &mut CP15 {
+        &mut self.cp15
     }
 
     fn read_byte(&self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32) -> u8 {
