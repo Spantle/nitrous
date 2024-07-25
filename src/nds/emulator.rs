@@ -115,6 +115,7 @@ impl Emulator {
         if self.flipflop {
             self.arm7.clock(&mut self.bus7, &mut self.shared);
             self.shared.gpu2d_a.clock();
+            self.shared.gpu2d_b.clock();
         } else {
             self.arm9.clock(&mut self.bus9, &mut self.shared);
         }

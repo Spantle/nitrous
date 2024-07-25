@@ -69,6 +69,16 @@ impl BusTrait for Bus9 {
                 let len = T.min(value.len());
                 bytes[..len].copy_from_slice(&value[..len]);
             }
+            0x04001000..=0x04001003 => {
+                let value = shared.gpu2d_b.dispcnt.value().to_le_bytes();
+                let len = T.min(value.len());
+                bytes[..len].copy_from_slice(&value[..len]);
+            }
+            0x04001004..=0x04001005 => {
+                let value = shared.gpu2d_b.dispstat.value().to_le_bytes();
+                let len = T.min(value.len());
+                bytes[..len].copy_from_slice(&value[..len]);
+            }
             0x04000130..=0x04000131 => {
                 let value = shared.keyinput.value().to_le_bytes();
                 let len = T.min(value.len());
@@ -112,6 +122,11 @@ impl BusTrait for Bus9 {
                     .update_reg_value(shared.gpu2d_a.dispcnt.value(), value)
                     .into();
             }
+            0x04001000..=0x04001003 => {
+                shared.gpu2d_b.dispcnt = self
+                    .update_reg_value(shared.gpu2d_b.dispcnt.value(), value)
+                    .into();
+            }
             0x04000180..=0x04000183 => {
                 shared.ipcsync.set(
                     true,
@@ -127,7 +142,7 @@ impl BusTrait for Bus9 {
             }
             0x06800000..=0x068A4000 => {
                 let addr = addr - 0x06800000;
-                shared.gpu2d_a.vram_lcdc_alloc[addr..addr + T].copy_from_slice(&value);
+                shared.vram_lcdc_alloc[addr..addr + T].copy_from_slice(&value);
             }
             0xFFFF0000..=0xFFFF7FFF => {
                 let addr = addr - 0xFFFF0000;

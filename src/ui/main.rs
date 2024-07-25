@@ -259,7 +259,8 @@ impl eframe::App for NitrousGUI {
                             .size(egui_extras::Size::exact(256.0))
                             .horizontal(|mut strip| {
                                 strip.cell(|ui| {
-                                    let image = self.emulator.shared.gpu2d_a.render();
+                                    let image =
+                                        self.emulator.shared.gpu2d_a.render(&self.emulator.shared);
                                     let texture = ui.ctx().load_texture(
                                         "top_screen",
                                         image,
@@ -276,11 +277,16 @@ impl eframe::App for NitrousGUI {
                             .size(egui_extras::Size::exact(256.0))
                             .horizontal(|mut strip| {
                                 strip.cell(|ui| {
-                                    ui.painter().rect_filled(
-                                        ui.available_rect_before_wrap(),
-                                        0.0,
-                                        egui::Color32::from_rgb(0, 0, 100),
+                                    let image =
+                                        self.emulator.shared.gpu2d_b.render(&self.emulator.shared);
+                                    let texture = ui.ctx().load_texture(
+                                        "bottom_screen",
+                                        image,
+                                        Default::default(),
                                     );
+                                    ui.add(egui::Image::from_texture(SizedTexture::from_handle(
+                                        &texture,
+                                    )));
                                 });
                             });
                     })
