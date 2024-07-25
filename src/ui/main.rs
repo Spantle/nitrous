@@ -329,7 +329,7 @@ impl eframe::App for NitrousGUI {
 
                 #[cfg(target_arch = "wasm32")]
                 {
-                    self.emulator.load_bios(content);
+                    self.emulator.bus9.load_bios(content);
                 }
             }
         }

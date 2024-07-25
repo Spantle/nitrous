@@ -12,19 +12,19 @@ impl BusTrait for Bus9 {
         ArmKind::ARM9
     }
 
+    fn load_bios(&mut self, bios: Vec<u8>) {
+        logger::info(logger::LogSource::Arm9(0), "Successfully loaded BIOS");
+        self.bios = bios;
+    }
+
     fn load_bios_from_path(&mut self, path: &str) {
         let file = std::fs::read(path);
         match file {
-            Ok(bios) => {
-                logger::info(logger::LogSource::Arm9(0), "Successfully loaded BIOS");
-                self.bios = bios;
-            }
-            Err(e) => {
-                logger::error(
-                    logger::LogSource::Arm9(0),
-                    format!("Failed to load BIOS: {}", e),
-                );
-            }
+            Ok(bios) => self.load_bios(bios),
+            Err(e) => logger::error(
+                logger::LogSource::Arm9(0),
+                format!("Failed to load BIOS: {}", e),
+            ),
         };
     }
 

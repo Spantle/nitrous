@@ -10,8 +10,14 @@ impl BusTrait for Bus7 {
         ArmKind::ARM7
     }
 
-    fn load_bios_from_path(&mut self, _path: &str) {
+    fn load_bios(&mut self, _bios: Vec<u8>) {
         logger::warn(logger::LogSource::Bus7, "BIOS loading not implemented");
+    }
+    fn load_bios_from_path(&mut self, _path: &str) {
+        logger::warn(
+            logger::LogSource::Bus7,
+            "BIOS loading (path) not implemented",
+        );
     }
 
     fn read_byte(&self, shared: &mut Shared, addr: u32) -> u8 {
