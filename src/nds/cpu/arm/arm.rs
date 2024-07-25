@@ -408,12 +408,12 @@ impl<Bus: BusTrait> Arm<Bus> {
             (data_tcm_base + data_tcm_size, inst_tcm_base + inst_tcm_size);
         match Bus::kind() {
             ArmKind::ARM9 => {
-                if addr > inst_tcm_base && addr < inst_tcm_end {
+                if addr >= inst_tcm_base && addr < inst_tcm_end {
                     let addr = addr - inst_tcm_base;
                     bytes.copy_from_slice(&self.cp15.inst_tcm[addr..addr + T]);
                     return bytes;
                 }
-                if addr > data_tcm_base && addr < data_tcm_end {
+                if addr >= data_tcm_base && addr < data_tcm_end {
                     let addr = addr - data_tcm_base;
                     bytes.copy_from_slice(&self.cp15.data_tcm[addr..addr + T]);
                     return bytes;
@@ -453,12 +453,12 @@ impl<Bus: BusTrait> Arm<Bus> {
                 let (data_tcm_end, inst_tcm_end) =
                     (data_tcm_base + data_tcm_size, inst_tcm_base + inst_tcm_size);
 
-                if addr > inst_tcm_base && addr < inst_tcm_end {
+                if addr >= inst_tcm_base && addr < inst_tcm_end {
                     let addr = addr - inst_tcm_base;
                     self.cp15.inst_tcm[addr..addr + T].copy_from_slice(&value);
                     return;
                 }
-                if addr > data_tcm_base && addr < data_tcm_end {
+                if addr >= data_tcm_base && addr < data_tcm_end {
                     let addr = addr - data_tcm_base;
                     self.cp15.data_tcm[addr..addr + T].copy_from_slice(&value);
                     return;
