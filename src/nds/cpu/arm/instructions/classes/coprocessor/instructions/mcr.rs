@@ -38,13 +38,12 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             // Control Register
             arm.cp15_mut().control_register = arm.er(rd);
         }
-        // TODO: when rust 1.80.0 releases, change "_" to 0..7
-        (6, _, 0) => {
+        (6, 0..7, 0) => {
             // Protection Unit Data/Unified Region
             ctx.logger
                 .log_warn("MCR: unimplemented \"Protection Unit Data/Unified Region\"");
         }
-        (6, _, 1) => {
+        (6, 0..7, 1) => {
             // Protection Unit Instruction Region
             ctx.logger
                 .log_warn("MCR: unimplemented \"Protection Unit Instruction Region\"");

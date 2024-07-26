@@ -87,14 +87,13 @@ pub fn mrc(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             );
             None
         }
-        // TODO: when rust 1.80.0 releases, change "_" to 0..7
-        (6, _, 0) => {
+        (6, 0..7, 0) => {
             // PU Protection Unit Data/Unified Region
             ctx.logger
                 .log_warn("MRC: unimplemented \"Protection Unit Data/Unified Region\"");
             None
         }
-        (6, _, 1) => {
+        (6, 0..7, 1) => {
             // PU Protection Unit Instruction Region
             ctx.logger
                 .log_warn("MRC: unimplemented \"Protection Unit Instruction Region\"");
