@@ -29,7 +29,6 @@ impl ArmBool {
     pub const ARM7: bool = false;
 }
 
-#[derive(Debug)]
 pub struct Arm<Bus: BusTrait> {
     _phantom: std::marker::PhantomData<Bus>,
 
@@ -408,13 +407,19 @@ impl<Bus: BusTrait> Arm<Bus> {
             (data_tcm_base + data_tcm_size, inst_tcm_base + inst_tcm_size);
         match Bus::kind() {
             ArmKind::ARM9 => {
-                if addr >= inst_tcm_base && addr < inst_tcm_end {
-                    let addr = addr - inst_tcm_base;
+                if !self.cp15.control_register.get_instruction_tcm_load_mode()
+                    && addr >= inst_tcm_base
+                    && addr < inst_tcm_end
+                {
+                    let addr = (addr - inst_tcm_base) % self.cp15.inst_tcm.len();
                     bytes.copy_from_slice(&self.cp15.inst_tcm[addr..addr + T]);
                     return bytes;
                 }
-                if addr >= data_tcm_base && addr < data_tcm_end {
-                    let addr = addr - data_tcm_base;
+                if !self.cp15.control_register.get_data_tcm_load_mode()
+                    && addr >= data_tcm_base
+                    && addr < data_tcm_end
+                {
+                    let addr = (addr - data_tcm_base) % self.cp15.data_tcm.len();
                     bytes.copy_from_slice(&self.cp15.data_tcm[addr..addr + T]);
                     return bytes;
                 }
@@ -454,12 +459,12 @@ impl<Bus: BusTrait> Arm<Bus> {
                     (data_tcm_base + data_tcm_size, inst_tcm_base + inst_tcm_size);
 
                 if addr >= inst_tcm_base && addr < inst_tcm_end {
-                    let addr = addr - inst_tcm_base;
+                    let addr = (addr - inst_tcm_base) % self.cp15.inst_tcm.len();
                     self.cp15.inst_tcm[addr..addr + T].copy_from_slice(&value);
                     return;
                 }
                 if addr >= data_tcm_base && addr < data_tcm_end {
-                    let addr = addr - data_tcm_base;
+                    let addr = (addr - data_tcm_base) % self.cp15.data_tcm.len();
                     self.cp15.data_tcm[addr..addr + T].copy_from_slice(&value);
                     return;
                 }

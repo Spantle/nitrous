@@ -36,7 +36,12 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     match (crn, crm, opcode_2) {
         (1, 0, 0) => {
             // Control Register
-            arm.cp15_mut().control_register = arm.er(rd);
+            arm.cp15_mut().control_register = arm.er(rd).into();
+
+            ctx.logger.log_debug(format!(
+                "CP15 Control Register updated: 0x{:08X}",
+                arm.cp15_mut().control_register.value(),
+            ));
         }
         (6, 0..7, 0) => {
             // Protection Unit Data/Unified Region
@@ -64,7 +69,8 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             // Data TCM Base and Virtual Size
             let rd = arm.er(rd);
             let virtual_size = 512 << rd.get_bits(1, 5);
-            let region_base = rd.get_bits(12, 31);
+            let region_base = rd.get_bits(12, 31) << 12;
+            arm.cp15_mut().data_tcm_reg = rd;
             arm.cp15_mut().data_tcm_base = region_base;
             arm.cp15_mut().data_tcm_size = virtual_size;
 
@@ -80,7 +86,8 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             // Instruction TCM Base is FIXED but w/e
             let rd = arm.er(rd);
             let virtual_size = 512 << rd.get_bits(1, 5);
-            let region_base = rd.get_bits(12, 31);
+            let region_base = rd.get_bits(12, 31) << 12;
+            arm.cp15_mut().inst_tcm_reg = rd;
             arm.cp15_mut().inst_tcm_base = region_base;
             arm.cp15_mut().inst_tcm_size = virtual_size;
 

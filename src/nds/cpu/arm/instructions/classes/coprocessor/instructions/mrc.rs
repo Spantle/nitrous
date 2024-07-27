@@ -36,7 +36,7 @@ pub fn mrc(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let value = match (crn, crm, opcode_2) {
         (1, 0, 0) => {
             // Control Register
-            Some(arm.cp15().control_register)
+            Some(arm.cp15().control_register.value())
         }
         (2, 0, 0) => {
             // PU Cachability Bits for Data/Unified Protection Region
@@ -116,6 +116,14 @@ pub fn mrc(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             ctx.logger
                 .log_warn("MRC: unimplemented \"Cache Instruction Lockdown\"");
             None
+        }
+        (9, 1, 0) => {
+            // TCM Data TCM Base and Virtual Size
+            Some(arm.cp15().data_tcm_reg)
+        }
+        (9, 1, 1) => {
+            // Instruction TCM Size/Base
+            Some(arm.cp15().inst_tcm_reg)
         }
         _ => {
             ctx.logger.log_warn(format!(

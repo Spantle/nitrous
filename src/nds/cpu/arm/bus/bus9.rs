@@ -59,6 +59,10 @@ impl BusTrait for Bus9 {
                 let addr = (addr - 0x02000000) % 400000;
                 bytes.copy_from_slice(&shared.psram[addr..addr + T]);
             }
+            0x03000000..=0x037FFFFF => {
+                let addr = (addr - 0x03000000) % 0x8000;
+                bytes.copy_from_slice(&shared.wram[addr..addr + T]);
+            }
             0x04000000..=0x04000003 => {
                 let value = shared.gpu2d_a.dispcnt.value().to_le_bytes();
                 let len = T.min(value.len());
@@ -116,6 +120,10 @@ impl BusTrait for Bus9 {
             0x02000000..=0x02FFFFFF => {
                 let addr = (addr - 0x02000000) % 400000;
                 shared.psram[addr..addr + T].copy_from_slice(&value);
+            }
+            0x03000000..=0x037FFFFF => {
+                let addr = (addr - 0x03000000) % 0x8000;
+                shared.wram[addr..addr + T].copy_from_slice(&value);
             }
             0x04000000..=0x04000003 => {
                 shared.gpu2d_a.dispcnt = self.update_reg_value(value).into();
