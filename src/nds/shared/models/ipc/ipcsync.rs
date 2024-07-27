@@ -1,40 +1,47 @@
 #![allow(dead_code)]
 
-use std::sync::Mutex;
-
-use once_cell::sync::Lazy;
-
 use crate::nds::Bits;
 
 #[derive(Default)]
 #[allow(clippy::upper_case_acronyms)]
-pub struct IPCSYNC(u32);
+pub struct IPCSYNC {
+    value: u32,
+
+    pub log: Vec<IpcsyncLog>,
+    pub logging_enabled: bool,
+}
 
 impl From<u32> for IPCSYNC {
     fn from(value: u32) -> Self {
-        Self(value)
+        Self {
+            value,
+            log: Vec::new(),
+            logging_enabled: false,
+        }
     }
 }
 
 impl IPCSYNC {
     pub fn value_quiet(&self) -> u32 {
-        self.0
+        self.value
     }
 
-    pub fn value(&self, is_arm9: bool) -> u32 {
-        let mut logs = IPCSYNC_LOG.lock().unwrap();
-        logs.push(IpcsyncLog::Read(is_arm9, self.0));
+    pub fn value(&mut self, is_arm9: bool) -> u32 {
+        if self.logging_enabled {
+            self.log.push(IpcsyncLog::Read(is_arm9, self.value));
+        }
 
-        self.0
+        self.value
     }
 
     pub fn set(&mut self, is_arm9: bool, value: u32) {
-        let mut logs = IPCSYNC_LOG.lock().unwrap();
-        logs.push(IpcsyncLog::Write(is_arm9, value));
+        if self.logging_enabled {
+            self.log.push(IpcsyncLog::Write(is_arm9, value));
+        }
 
-        self.0 = value;
-        let input = self.0.get_bits(8, 11);
-        self.0.set_bits(0, 3, input);
+        self.value = value;
+        let input = self.value.get_bits(8, 11);
+        self.value.set_bits(0, 3, input);
     }
 }
 
@@ -43,5 +50,3 @@ pub enum IpcsyncLog {
     Read(bool, u32),
     Write(bool, u32),
 }
-
-pub static IPCSYNC_LOG: Lazy<Mutex<Vec<IpcsyncLog>>> = Lazy::new(|| Mutex::new(Vec::new()));

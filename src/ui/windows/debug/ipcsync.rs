@@ -1,15 +1,25 @@
 use crate::{
-    nds::shared::models::{IpcsyncLog, IPCSYNC_LOG},
+    nds::shared::models::IpcsyncLog,
     ui::{NitrousGUI, NitrousUI, NitrousWindow},
 };
 
 impl NitrousGUI {
     pub fn show_ipcsync_log(&mut self, ctx: &egui::Context) {
+        self.emulator.shared.ipcsync.logging_enabled = self.ipcsync_log;
+
         egui::Window::new_nitrous("IPCSYNC Log", ctx)
             .default_width(100.0)
             .open(&mut self.ipcsync_log)
             .show(ctx, |ui| {
-                let log = IPCSYNC_LOG.lock().unwrap();
+                egui::TopBottomPanel::top("ipcsync_log_navbar").show_inside(ui, |ui| {
+                    ui.horizontal(|ui| {
+                        if ui.button("Clear").clicked() {
+                            self.emulator.shared.ipcsync.log = Vec::new();
+                        }
+                    });
+                });
+
+                let log = &self.emulator.shared.ipcsync.log;
                 let text_style = egui::TextStyle::Monospace;
                 let height = ui.text_style_height(&text_style);
                 egui::ScrollArea::vertical()
