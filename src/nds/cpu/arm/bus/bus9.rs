@@ -118,23 +118,16 @@ impl BusTrait for Bus9 {
                 shared.psram[addr..addr + T].copy_from_slice(&value);
             }
             0x04000000..=0x04000003 => {
-                shared.gpu2d_a.dispcnt = self
-                    .update_reg_value(shared.gpu2d_a.dispcnt.value(), value)
-                    .into();
+                shared.gpu2d_a.dispcnt = self.update_reg_value(value).into();
             }
             0x04001000..=0x04001003 => {
-                shared.gpu2d_b.dispcnt = self
-                    .update_reg_value(shared.gpu2d_b.dispcnt.value(), value)
-                    .into();
+                shared.gpu2d_b.dispcnt = self.update_reg_value(value).into();
             }
             0x04000180..=0x04000183 => {
-                shared.ipcsync.set(
-                    true,
-                    self.update_reg_value(shared.ipcsync.value(true), value),
-                );
+                shared.ipcsync.set(true, self.update_reg_value(value));
             }
             0x04000304..=0x04000307 => {
-                shared.powcnt1 = self.update_reg_value(shared.powcnt1.value(), value).into();
+                shared.powcnt1 = self.update_reg_value(value).into();
             }
             0x04000240..=0x04000249 => {
                 let len = T.min(shared.vramcnt.len());
@@ -160,11 +153,11 @@ impl BusTrait for Bus9 {
 
 impl Bus9 {
     #[inline(always)]
-    fn update_reg_value<const T: usize>(&mut self, reg_value: u32, new_value: [u8; T]) -> u32 {
+    fn update_reg_value<const T: usize>(&mut self, new_value: [u8; T]) -> u32 {
         // TODO: check if this is cursed
         let len = T.min(4);
-        let mut dispcnt = reg_value.to_le_bytes();
-        dispcnt[..len].copy_from_slice(&new_value[..len]);
-        u32::from_le_bytes(dispcnt)
+        let mut bytes = [0; 4];
+        bytes[..len].copy_from_slice(&new_value[..len]);
+        u32::from_le_bytes(bytes)
     }
 }
