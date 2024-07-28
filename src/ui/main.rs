@@ -1,6 +1,7 @@
 use std::sync::mpsc::{channel, Receiver, Sender};
 
 use egui::load::SizedTexture;
+use regex::Regex;
 use web_time::{Duration, Instant};
 
 use crate::nds::{
@@ -82,6 +83,11 @@ pub struct NitrousGUI {
     pub arm9_info_legacy_selected_pending_value: String,
 
     #[serde(skip)]
+    pub ipcsync_log_search: String,
+    #[serde(skip)]
+    pub ipcsync_log_search_regex: Regex,
+
+    #[serde(skip)]
     pub memory_viewer_selected: Option<usize>,
     #[serde(skip)]
     pub memory_viewer_selected_pending_value: Option<u8>,
@@ -129,6 +135,9 @@ impl Default for NitrousGUI {
 
             arm9_info_legacy_selected: None,
             arm9_info_legacy_selected_pending_value: String::new(),
+
+            ipcsync_log_search: String::new(),
+            ipcsync_log_search_regex: Regex::new("").unwrap(),
 
             memory_viewer_selected: None,
             memory_viewer_selected_pending_value: None,
