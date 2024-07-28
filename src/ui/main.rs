@@ -16,7 +16,7 @@ pub fn init(emulator: Emulator) -> Result<(), eframe::Error> {
         viewport: egui::ViewportBuilder::default().with_min_inner_size(egui::vec2(272.0, 427.0)),
         ..Default::default()
     };
-    eframe::run_native("Nitrous", options, Box::new(|cc| creator(cc, emulator)))
+    eframe::run_native("Nitrous", options, Box::new(|cc| Ok(creator(cc, emulator))))
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -24,7 +24,7 @@ pub fn init(emulator: Emulator) -> Result<(), eframe::Error> {
     let options = eframe::WebOptions::default();
     wasm_bindgen_futures::spawn_local(async {
         eframe::WebRunner::new()
-            .start("nitrous", options, Box::new(|cc| creator(cc, emulator)))
+            .start("nitrous", options, Box::new(|cc| Ok(creator(cc, emulator))))
             .await
             .expect("Failed to run web app"); // TODO: can we pass this error out somehow?
     });
