@@ -87,13 +87,13 @@ pub fn mrc(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             );
             None
         }
-        (6, 0..7, 0) => {
+        (6, 0..=7, 0) => {
             // PU Protection Unit Data/Unified Region
             ctx.logger
                 .log_warn("MRC: unimplemented \"Protection Unit Data/Unified Region\"");
             None
         }
-        (6, 0..7, 1) => {
+        (6, 0..=7, 1) => {
             // PU Protection Unit Instruction Region
             ctx.logger
                 .log_warn("MRC: unimplemented \"Protection Unit Instruction Region\"");
