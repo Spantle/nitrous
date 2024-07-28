@@ -10,6 +10,12 @@ use super::{
 
 static IS_EMULATOR_RUNNING: AtomicBool = AtomicBool::new(false);
 
+enum CycleState {
+    Arm9_1,
+    Arm9_2,
+    Arm7,
+}
+
 pub struct Emulator {
     pub arm9: Arm<Bus9>,
     pub arm7: Arm<Bus7>,
@@ -19,7 +25,7 @@ pub struct Emulator {
 
     pub shared: Shared,
 
-    flipflop: bool,
+    cycle_state: CycleState,
 }
 
 impl Default for Emulator {
@@ -33,7 +39,7 @@ impl Default for Emulator {
 
             shared: Shared::default(),
 
-            flipflop: true,
+            cycle_state: CycleState::Arm9_1,
         }
     }
 }
@@ -111,13 +117,21 @@ impl Emulator {
         }
 
         // TODO: use cycles properly lol
-        self.flipflop = !self.flipflop;
-        if self.flipflop {
-            self.arm7.clock(&mut self.bus7, &mut self.shared);
-            self.shared.gpu2d_a.clock();
-            self.shared.gpu2d_b.clock();
-        } else {
-            self.arm9.clock(&mut self.bus9, &mut self.shared);
+        match self.cycle_state {
+            CycleState::Arm9_1 => {
+                self.arm9.clock(&mut self.bus9, &mut self.shared);
+                self.cycle_state = CycleState::Arm9_2;
+            }
+            CycleState::Arm9_2 => {
+                self.arm9.clock(&mut self.bus9, &mut self.shared);
+                self.cycle_state = CycleState::Arm7;
+            }
+            CycleState::Arm7 => {
+                self.arm7.clock(&mut self.bus7, &mut self.shared);
+                self.shared.gpu2d_a.clock();
+                self.shared.gpu2d_b.clock();
+                self.cycle_state = CycleState::Arm9_1;
+            }
         }
     }
 
