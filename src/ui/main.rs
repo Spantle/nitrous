@@ -59,6 +59,8 @@ pub struct NitrousGUI {
     #[cfg(target_arch = "wasm32")]
     pub load_arm9_bios_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
 
+    pub fps_info: bool,
+
     // Debug
     pub arm9_disassembler: bool,
     pub arm9_info: bool,
@@ -111,6 +113,8 @@ impl Default for NitrousGUI {
 
             load_rom_channel: channel(),
             load_arm9_bios_channel: channel(),
+
+            fps_info: false,
 
             arm9_disassembler: false,
             arm9_info: false,
@@ -238,7 +242,9 @@ impl eframe::App for NitrousGUI {
         self.ui_times.rotate_left(1);
         self.ui_times[59] = ui_micros;
 
-        self.show_navbar(
+        self.show_navbar(ctx, estimated_fps);
+
+        self.show_fps_info(
             ctx,
             FpsInfo {
                 estimated_compute_time,

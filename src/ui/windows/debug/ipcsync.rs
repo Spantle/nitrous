@@ -17,7 +17,11 @@ impl NitrousGUI {
                             self.emulator.shared.ipcsync.log = Vec::new();
                         }
                     });
+
+                    ui.add_space(4.0);
                 });
+
+                ui.add_space(4.0);
 
                 let log = &self.emulator.shared.ipcsync.log;
                 let text_style = egui::TextStyle::Monospace;

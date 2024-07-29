@@ -1,14 +1,12 @@
-use super::{FpsInfo, NitrousGUI, NitrousUI};
+use super::{NitrousGUI, NitrousUI};
 
 impl NitrousGUI {
-    pub fn show_navbar(&mut self, ctx: &egui::Context, fps_info: FpsInfo) {
+    pub fn show_navbar(&mut self, ctx: &egui::Context, estimated_fps: u128) {
         egui::TopBottomPanel::top("navbar").show(ctx, |ui| {
             ui.horizontal(|ui| {
-                if ui.button("Organize").clicked() {
-                    ui.ctx().memory_mut(|mem| mem.reset_areas());
-                }
-
                 ui.menu_button("File", |ui| {
+                    ui.set_width(150.0);
+
                     let close = Self::file_menu(self, ui);
 
                     if close {
@@ -17,6 +15,8 @@ impl NitrousGUI {
                 });
 
                 ui.menu_button("Emulation", |ui| {
+                    ui.set_width(150.0);
+
                     let close = Self::emulation_menu(self, ui);
 
                     if close {
@@ -25,6 +25,8 @@ impl NitrousGUI {
                 });
 
                 ui.menu_button("Debug", |ui| {
+                    ui.set_width(150.0);
+
                     let close = Self::debug_menu(self, ui);
 
                     if close {
@@ -34,12 +36,12 @@ impl NitrousGUI {
                 });
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    ui.label(format!(
-                        "FPS: {} ({}+{}ms)",
-                        fps_info.estimated_fps,
-                        fps_info.idle_time / 1000,
-                        fps_info.ui_time / 1000,
-                    ));
+                    if ui
+                        .selectable_label(self.fps_info, format!("FPS: {}", estimated_fps))
+                        .clicked()
+                    {
+                        self.fps_info = !self.fps_info;
+                    }
                 });
             });
         });
@@ -69,6 +71,10 @@ impl NitrousGUI {
 
         ui.checkbox(&mut self.preferences, "Preferences");
 
+        if ui.button("Organize windows").clicked() {
+            ui.ctx().memory_mut(|mem| mem.reset_areas());
+        }
+
         false
     }
 
@@ -91,11 +97,15 @@ impl NitrousGUI {
 
     fn debug_menu(&mut self, ui: &mut egui::Ui) -> bool {
         ui.menu_button("ARM9", |ui| {
+            ui.set_width(150.0);
+
             ui.checkbox(&mut self.arm9_disassembler, "ARM9 Disassembler");
             ui.checkbox(&mut self.arm9_info, "ARM9 Info");
             ui.checkbox(&mut self.arm9_info_legacy, "(Legacy) ARM9 Info");
         });
         ui.menu_button("ARM7", |ui| {
+            ui.set_width(150.0);
+
             ui.checkbox(&mut self.arm7_disassembler, "ARM7 Disassembler");
             ui.checkbox(&mut self.arm7_info, "ARM7 Info");
         });

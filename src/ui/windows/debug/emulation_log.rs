@@ -22,7 +22,11 @@ impl NitrousGUI {
                             set_pause_on_warn(pause_on_warn);
                         }
                     });
+
+                    ui.add_space(4.0);
                 });
+
+                ui.add_space(4.0);
 
                 let log = logger::LOGS.lock().unwrap();
                 let text_style = egui::TextStyle::Monospace;
