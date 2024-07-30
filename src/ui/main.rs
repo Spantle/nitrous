@@ -4,7 +4,7 @@ use egui::load::SizedTexture;
 use web_time::{Duration, Instant};
 
 use crate::nds::{
-    cpu::arm::{bus::BusTrait, ArmBool},
+    arm::{bus::BusTrait, ArmBool},
     logger, Emulator,
 };
 

@@ -1,5 +1,5 @@
 use crate::{
-    nds::cpu::arm::{models::PSR, ArmBool},
+    nds::arm::{models::PSR, ArmBool},
     ui::{NitrousGUI, NitrousUI, NitrousWindow},
 };
 

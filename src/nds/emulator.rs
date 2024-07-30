@@ -1,7 +1,7 @@
 use std::sync::atomic::AtomicBool;
 
 use super::{
-    cpu::arm::{
+    arm::{
         bus::{bus7::Bus7, bus9::Bus9},
         Arm,
     },

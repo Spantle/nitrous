@@ -1,4 +1,4 @@
-use crate::nds::cpu::arm;
+use crate::nds::arm;
 use crate::ui::{NitrousGUI, NitrousUI, NitrousWindow};
 
 // this code is absolutely horrendous and i'm sorry (i just wanna write the emulator not this important useful crap i'm gonna be using 24/7 lol)
