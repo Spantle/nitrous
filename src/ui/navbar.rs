@@ -1,7 +1,7 @@
 use super::{NitrousGUI, NitrousUI};
 
 impl NitrousGUI {
-    pub fn show_navbar(&mut self, ctx: &egui::Context, estimated_fps: u128) {
+    pub fn show_navbar(&mut self, ctx: &egui::Context, estimated_fps: u32) {
         egui::TopBottomPanel::top("navbar").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.menu_button("File", |ui| {
@@ -89,7 +89,7 @@ impl NitrousGUI {
             false
         };
         if ui.button("Step emulation").clicked() {
-            self.emulator.step();
+            self.emulator.clock();
         }
 
         started || paused || reset

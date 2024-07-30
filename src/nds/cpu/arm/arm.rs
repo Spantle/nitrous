@@ -108,17 +108,17 @@ impl<Bus: BusTrait> Default for Arm<Bus> {
 }
 
 impl<Bus: BusTrait> Arm<Bus> {
-    pub fn clock(&mut self, bus: &mut Bus, shared: &mut Shared) -> bool {
+    pub fn clock(&mut self, bus: &mut Bus, shared: &mut Shared) -> u32 {
         match self.pipeline_state {
             PipelineState::Fetch => {
                 // logger::debug(logger::LogSource::Arm9, "fetching instruction");
                 self.pipeline_state = PipelineState::Decode;
-                false
+                1
             }
             PipelineState::Decode => {
                 // logger::debug(logger::LogSource::Arm9, "decoding instruction");
                 self.pipeline_state = PipelineState::Execute;
-                false
+                1
             }
             PipelineState::Execute => {
                 // get 4 bytes
@@ -162,15 +162,7 @@ impl<Bus: BusTrait> Arm<Bus> {
                     self.pipeline_state = PipelineState::Fetch;
                 }
 
-                true
-            }
-        }
-    }
-
-    pub fn step(&mut self, bus: &mut Bus, shared: &mut Shared) {
-        loop {
-            if self.clock(bus, shared) {
-                break;
+                cycles
             }
         }
     }

@@ -97,9 +97,11 @@ pub struct NitrousGUI {
     #[serde(skip)]
     idle_times: [u128; 60],
     #[serde(skip)]
+    emulation_times: [u128; 60],
+    #[serde(skip)]
     ui_times: [u128; 60],
     #[serde(skip)]
-    last_ui_time: Duration,
+    last_time_ui: Duration,
     #[serde(skip)]
     last_frame_end: Instant,
 }
@@ -142,8 +144,9 @@ impl Default for NitrousGUI {
 
             fps_outliers: 0,
             idle_times: [0; 60],
+            emulation_times: [0; 60],
             ui_times: [0; 60],
-            last_ui_time: Duration::default(),
+            last_time_ui: Duration::default(),
             last_frame_end: Instant::now(),
         }
     }
@@ -169,89 +172,89 @@ impl eframe::App for NitrousGUI {
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let idle_time = self.last_frame_end.elapsed();
-
-        // logger::debug(
-        //     logger::LogSource::Emu,
-        //     format!(
-        //         "{:?} : {:?}",
-        //         idle_time.as_millis(),
-        //         self.last_ui_time.as_millis()
-        //     ),
-        // );
+        let last_time_idle = self.last_frame_end.elapsed();
 
         self.handle_input(ctx);
 
-        let start_ui = Instant::now();
+        let start_time_emulation = Instant::now();
 
-        let idle_time_sum = self.idle_times.iter().sum::<u128>();
-        let frame_time_sum = self.ui_times.iter().sum::<u128>() + idle_time_sum;
-        let estimated_compute_time = idle_time_sum / 60;
-        let estimated_fps = 1_000_000 / (frame_time_sum / 60).max(1);
-        let max_cycles = 66_000_000 / estimated_fps;
-
-        // logger::debug(
-        //     logger::LogSource::Emu,
-        //     format!(
-        //         "Estimated Compute Time: {} Estimated FPS: {} Max Cycles: {}",
-        //         estimated_compute_time, estimated_fps, max_cycles
-        //     ),
-        // );
+        let time_sum_idle = self.idle_times.iter().sum::<u128>();
+        let time_sum_emulation = self.emulation_times.iter().sum::<u128>();
+        let time_sum_total =
+            self.ui_times.iter().sum::<u128>() + time_sum_idle + time_sum_emulation;
+        let time_micros_total = time_sum_total / 60;
+        let target_emulation_time =
+            ((((time_sum_idle / 60) + (time_sum_emulation / 60)) as f64) * 0.75).round() as u128;
+        let estimated_fps = (1_000_000 / time_micros_total.max(1)) as u32;
+        let target_cycles_per_frame = 99_000_000 / estimated_fps;
+        let mut cycles_run = 0;
 
         if self.emulator.is_running() {
             let start_time = Instant::now();
-            for _ in 0..max_cycles {
+            while cycles_run < target_cycles_per_frame {
                 if !self.emulator.is_running() {
                     break;
                 }
 
-                if start_time.elapsed().as_micros() > estimated_compute_time {
+                if start_time.elapsed().as_micros() >= target_emulation_time {
                     break;
                 }
 
-                self.emulator.clock();
+                let cycles = self.emulator.clock();
+
+                cycles_run += cycles;
             }
         }
 
-        let idle_micros = idle_time.as_micros();
+        let last_micros_idle = last_time_idle.as_micros();
         // (estimated_compute_time / 1000) != 0 can be removed, it's just to reduce debug logs
-        if (estimated_compute_time / 1000) != 0 && idle_micros > estimated_compute_time * 10 {
+        if (target_emulation_time / 1000) != 0 && last_micros_idle > target_emulation_time * 10 {
             logger::debug(
                 logger::LogSource::Emu,
                 format!(
                     "FPS Outlier detected ({}ms/{}ms)",
-                    idle_micros / 1000,
-                    estimated_compute_time / 1000
+                    last_micros_idle / 1000,
+                    target_emulation_time / 1000
                 ),
             );
 
             if self.fps_outliers >= 3 {
                 logger::debug(logger::LogSource::Emu, "Too many outliers".to_string());
                 self.idle_times.rotate_left(1);
-                self.idle_times[59] = idle_micros;
+                self.idle_times[59] = last_micros_idle;
             } else {
                 self.fps_outliers += 1;
             }
         } else {
             self.idle_times.rotate_left(1);
-            self.idle_times[59] = idle_micros;
+            self.idle_times[59] = last_micros_idle;
             self.fps_outliers = 0;
         }
 
-        let ui_micros = self.last_ui_time.as_micros();
+        let last_time_emulation = start_time_emulation.elapsed();
+        let last_micros_emulation = last_time_emulation.as_micros();
+        self.emulation_times.rotate_left(1);
+        self.emulation_times[59] = last_micros_emulation;
+
+        let start_time_ui = Instant::now();
+
+        let last_micros_ui = self.last_time_ui.as_micros();
         self.ui_times.rotate_left(1);
-        self.ui_times[59] = ui_micros;
+        self.ui_times[59] = last_micros_ui;
 
         self.show_navbar(ctx, estimated_fps);
 
         self.show_fps_info(
             ctx,
             FpsInfo {
-                estimated_compute_time,
                 estimated_fps,
-                max_cycles,
-                idle_time: idle_micros,
-                ui_time: ui_micros,
+                target_emulation_time,
+                target_cycles_per_frame,
+                cycles_run,
+                last_micros_idle,
+                last_micros_emulation,
+                last_micros_ui,
+                total_micros_frame: time_micros_total,
             },
         );
 
@@ -346,7 +349,7 @@ impl eframe::App for NitrousGUI {
             }
         }
 
-        self.last_ui_time = start_ui.elapsed();
+        self.last_time_ui = start_time_ui.elapsed();
         self.last_frame_end = Instant::now();
 
         ctx.request_repaint();
@@ -354,9 +357,12 @@ impl eframe::App for NitrousGUI {
 }
 
 pub struct FpsInfo {
-    pub estimated_compute_time: u128,
-    pub estimated_fps: u128,
-    pub max_cycles: u128,
-    pub idle_time: u128,
-    pub ui_time: u128,
+    pub estimated_fps: u32,
+    pub target_emulation_time: u128,
+    pub target_cycles_per_frame: u32,
+    pub cycles_run: u32,
+    pub last_micros_idle: u128,
+    pub last_micros_emulation: u128,
+    pub last_micros_ui: u128,
+    pub total_micros_frame: u128,
 }

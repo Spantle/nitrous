@@ -111,33 +111,26 @@ impl Emulator {
         is_emulator_running()
     }
 
-    pub fn clock(&mut self) {
-        if !self.is_running() {
-            return;
-        }
-
-        // TODO: use cycles properly lol
+    pub fn clock(&mut self) -> u32 {
         match self.cycle_state {
             CycleState::Arm9_1 => {
-                self.arm9.clock(&mut self.bus9, &mut self.shared);
+                let cycles = self.arm9.clock(&mut self.bus9, &mut self.shared);
                 self.cycle_state = CycleState::Arm9_2;
+                cycles
             }
             CycleState::Arm9_2 => {
-                self.arm9.clock(&mut self.bus9, &mut self.shared);
+                let cycles = self.arm9.clock(&mut self.bus9, &mut self.shared);
                 self.cycle_state = CycleState::Arm7;
+                cycles
             }
             CycleState::Arm7 => {
-                self.arm7.clock(&mut self.bus7, &mut self.shared);
+                let cycles = self.arm7.clock(&mut self.bus7, &mut self.shared);
                 self.shared.gpu2d_a.clock();
                 self.shared.gpu2d_b.clock();
                 self.cycle_state = CycleState::Arm9_1;
+                cycles
             }
         }
-    }
-
-    pub fn step(&mut self) {
-        self.arm9.step(&mut self.bus9, &mut self.shared);
-        self.arm7.step(&mut self.bus7, &mut self.shared);
     }
 }
 
