@@ -190,19 +190,25 @@ impl eframe::App for NitrousGUI {
         let mut cycles_run = 0;
 
         if self.emulator.is_running() {
-            let start_time = Instant::now();
             while cycles_run < target_cycles_per_frame {
                 if !self.emulator.is_running() {
                     break;
                 }
 
-                if start_time.elapsed().as_micros() >= target_emulation_time {
-                    break;
-                }
-
-                let cycles = self.emulator.clock();
-
-                cycles_run += cycles;
+                cycles_run += self
+                    .emulator
+                    .arm9
+                    .clock(&mut self.emulator.bus9, &mut self.emulator.shared);
+                cycles_run += self
+                    .emulator
+                    .arm9
+                    .clock(&mut self.emulator.bus9, &mut self.emulator.shared);
+                cycles_run += self
+                    .emulator
+                    .arm7
+                    .clock(&mut self.emulator.bus7, &mut self.emulator.shared);
+                self.emulator.shared.gpu2d_a.clock();
+                self.emulator.shared.gpu2d_b.clock();
             }
         }
 

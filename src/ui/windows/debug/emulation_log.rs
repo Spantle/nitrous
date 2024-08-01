@@ -64,7 +64,7 @@ impl NitrousGUI {
                                     };
 
                                     icon.on_hover_text(format!(
-                                        "({:?}) {}",
+                                        "({}) {}",
                                         &line.kind, &line.timestamp
                                     ));
 

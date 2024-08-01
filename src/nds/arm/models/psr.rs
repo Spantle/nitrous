@@ -4,7 +4,6 @@ use bitflags::bitflags;
 
 use crate::nds::Bits;
 
-#[derive(Debug)]
 #[allow(clippy::upper_case_acronyms)]
 pub struct PSR(pub u32);
 
