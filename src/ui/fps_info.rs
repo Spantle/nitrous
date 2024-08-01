@@ -9,8 +9,17 @@ impl NitrousGUI {
         egui::Area::new(egui::Id::new("fps_info"))
             .anchor(egui::Align2::RIGHT_TOP, egui::vec2(-10.0, 32.0))
             .show(ctx, |ui| {
+                let window_fill = ui.style().visuals.window_fill();
+                let fill = egui::Color32::from_rgba_unmultiplied(
+                    window_fill.r(),
+                    window_fill.g(),
+                    window_fill.b(),
+                    150,
+                );
+
                 egui::Frame::popup(ui.style())
                     .shadow(egui::Shadow::NONE)
+                    .fill(fill)
                     .show(ui, |ui| {
                         ui.make_monospace();
                         ui.set_min_width(250.0);
