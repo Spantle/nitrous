@@ -1,4 +1,4 @@
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 pub struct Registers(pub [u32; 16]);
 
 impl Default for Registers {

@@ -2,7 +2,6 @@ use std::fmt;
 
 use crate::nds::Bits;
 
-#[derive(Debug)]
 pub struct Instruction(u32);
 
 impl From<u32> for Instruction {

@@ -12,10 +12,3 @@ pub use disassembly::*;
 pub use instruction::*;
 pub use psr::*;
 pub use registers::*;
-
-#[derive(Debug)]
-pub enum PipelineState {
-    Fetch,
-    Decode,
-    Execute,
-}

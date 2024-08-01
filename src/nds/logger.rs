@@ -53,7 +53,6 @@ pub struct Log {
     pub timestamp: String,
 }
 
-#[derive(Debug)]
 pub enum LogKind {
     Debug,
     Info,
@@ -69,6 +68,17 @@ pub enum LogSource {
     Bus7,
     Bus9,
     Cart,
+}
+
+impl Display for LogKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            LogKind::Debug => write!(f, "Debug"),
+            LogKind::Info => write!(f, "Info"),
+            LogKind::Warn => write!(f, "Warn"),
+            LogKind::Error => write!(f, "Error"),
+        }
+    }
 }
 
 impl Display for LogSource {

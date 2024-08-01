@@ -6,10 +6,10 @@ use crate::nds::{
 
 use super::{
     bus::BusTrait,
-    models::{Context, FakeDisassembly, PipelineState, ProcessorMode, Registers, PSR},
+    models::{Context, FakeDisassembly, ProcessorMode, Registers, PSR},
 };
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 pub enum ArmKind {
     ARM9,
     ARM7,
@@ -51,7 +51,6 @@ pub struct Arm<Bus: BusTrait> {
     pub wram7: Vec<u8>, // 64kb
 
     // emulator variables
-    pub pipeline_state: PipelineState,
     pub pc_changed: bool,
 }
 
@@ -101,70 +100,56 @@ impl<Bus: BusTrait> Default for Arm<Bus> {
             cp15: CP15::default(),
             wram7: vec![0; 1024 * 64],
 
-            pipeline_state: PipelineState::Fetch,
-            pc_changed: false,
+            pc_changed: true,
         }
     }
 }
 
 impl<Bus: BusTrait> Arm<Bus> {
     pub fn clock(&mut self, bus: &mut Bus, shared: &mut Shared) -> u32 {
-        match self.pipeline_state {
-            PipelineState::Fetch => {
-                // logger::debug(logger::LogSource::Arm9, "fetching instruction");
-                self.pipeline_state = PipelineState::Decode;
-                1
-            }
-            PipelineState::Decode => {
-                // logger::debug(logger::LogSource::Arm9, "decoding instruction");
-                self.pipeline_state = PipelineState::Execute;
-                1
-            }
-            PipelineState::Execute => {
-                // get 4 bytes
-                let inst = self.read_word(bus, shared, self.r[15]);
-                // print as binary
-                // if Bus::kind() == ArmKind::ARM7 {
-                //     logger::debug(
-                //         logger::LogSource::Arm7(self.r[15]),
-                //         format!("executing instruction: {:#010X} ({:032b})", inst, inst),
-                //     );
-                // } else {
-                //     logger::debug(
-                //         logger::LogSource::Arm9(self.r[15]),
-                //         format!("executing instruction: {:#010X} ({:032b})", inst, inst),
-                //     );
-                // }
+        // get 4 bytes
+        let inst = self.read_word(bus, shared, self.r[15]);
+        // print as binary
+        // if Bus::kind() == ArmKind::ARM7 {
+        //     logger::debug(
+        //         logger::LogSource::Arm7(self.r[15]),
+        //         format!("executing instruction: {:#010X} ({:032b})", inst, inst),
+        //     );
+        // } else {
+        //     logger::debug(
+        //         logger::LogSource::Arm9(self.r[15]),
+        //         format!("executing instruction: {:#010X} ({:032b})", inst, inst),
+        //     );
+        // }
 
-                let cycles = match Bus::kind() {
-                    ArmKind::ARM9 => lookup_instruction_set::<true>(&mut Context::new(
-                        inst.into(),
-                        self,
-                        bus,
-                        shared,
-                        &mut FakeDisassembly,
-                        &mut logger::Logger(logger::LogSource::Arm9(inst)),
-                    )),
-                    ArmKind::ARM7 => lookup_instruction_set::<false>(&mut Context::new(
-                        inst.into(),
-                        self,
-                        bus,
-                        shared,
-                        &mut FakeDisassembly,
-                        &mut logger::Logger(logger::LogSource::Arm7(inst)),
-                    )),
-                };
+        let mut cycles = match Bus::kind() {
+            ArmKind::ARM9 => lookup_instruction_set::<true>(&mut Context::new(
+                inst.into(),
+                self,
+                bus,
+                shared,
+                &mut FakeDisassembly,
+                &mut logger::Logger(logger::LogSource::Arm9(inst)),
+            )),
+            ArmKind::ARM7 => lookup_instruction_set::<false>(&mut Context::new(
+                inst.into(),
+                self,
+                bus,
+                shared,
+                &mut FakeDisassembly,
+                &mut logger::Logger(logger::LogSource::Arm7(inst)),
+            )),
+        };
 
-                if !self.pc_changed {
-                    self.r[15] += 4;
-                } else {
-                    self.pc_changed = false;
-                    self.pipeline_state = PipelineState::Fetch;
-                }
-
-                cycles
-            }
+        if !self.pc_changed {
+            self.r[15] += 4;
+        } else {
+            cycles += 2;
         }
+
+        self.pc_changed = false;
+
+        cycles
     }
 }
 

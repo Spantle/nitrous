@@ -111,6 +111,7 @@ impl Emulator {
         is_emulator_running()
     }
 
+    // NOTE: do not use this in a loop, it is slow
     pub fn clock(&mut self) -> u32 {
         match self.cycle_state {
             CycleState::Arm9_1 => {
