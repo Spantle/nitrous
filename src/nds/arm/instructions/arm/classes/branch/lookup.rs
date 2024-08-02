@@ -1,4 +1,7 @@
-use crate::nds::arm::models::{Context, ContextTrait, Instruction};
+use crate::nds::arm::{
+    instructions::arm::Instruction,
+    models::{Context, ContextTrait},
+};
 
 use super::instructions;
 

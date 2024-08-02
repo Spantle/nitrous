@@ -1,7 +1,7 @@
 use crate::nds::arm::{
     arm::ArmTrait,
-    instructions::arm::classes::branch::sign_extend_24_to_32,
-    models::{Context, ContextTrait, DisassemblyTrait, Instruction},
+    instructions::arm::{classes::branch::sign_extend_24_to_32, Instruction},
+    models::{Context, ContextTrait, DisassemblyTrait},
 };
 
 // B, BL, BLX (1)

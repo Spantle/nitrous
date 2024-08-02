@@ -1,11 +1,10 @@
 use core::mem::swap;
 
-use crate::nds::{
-    arm::instructions::arm::lookup_instruction_set, cp15::CP15, logger, shared::Shared,
-};
+use crate::nds::{cp15::CP15, logger, shared::Shared};
 
 use super::{
     bus::BusTrait,
+    instructions::lookup_instruction_set,
     models::{Context, FakeDisassembly, ProcessorMode, Registers, PSR},
 };
 
@@ -124,7 +123,7 @@ impl<Bus: BusTrait> Arm<Bus> {
 
         let mut cycles = match Bus::kind() {
             ArmKind::ARM9 => lookup_instruction_set::<true>(&mut Context::new(
-                inst.into(),
+                inst,
                 self,
                 bus,
                 shared,
@@ -132,7 +131,7 @@ impl<Bus: BusTrait> Arm<Bus> {
                 &mut logger::Logger(logger::LogSource::Arm9(inst)),
             )),
             ArmKind::ARM7 => lookup_instruction_set::<false>(&mut Context::new(
-                inst.into(),
+                inst,
                 self,
                 bus,
                 shared,

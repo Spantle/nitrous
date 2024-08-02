@@ -1,4 +1,7 @@
-use crate::nds::arm::models::{Bits, Context, ContextTrait, DisassemblyTrait, Instruction};
+use crate::nds::arm::{
+    instructions::arm::Instruction,
+    models::{Bits, Context, ContextTrait, DisassemblyTrait},
+};
 
 use super::{instructions, LoadStoreMultipleInstruction};
 

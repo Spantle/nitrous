@@ -1,6 +1,7 @@
 use crate::nds::{
     arm::{
-        models::{Context, ContextTrait, DisassemblyTrait, Instruction},
+        instructions::arm::Instruction,
+        models::{Context, ContextTrait, DisassemblyTrait},
         ArmKind,
     },
     // logger::LoggerTrait,
@@ -9,7 +10,7 @@ use crate::nds::{
 use super::{classes::lookup_instruction_class, conditions::calculate_cond};
 
 #[cfg(not(feature = "epic"))]
-pub fn run_instruction_set<const ARM_BOOL: bool>(
+pub fn run_instruction<const ARM_BOOL: bool>(
     inst_set: u16,
     ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {
@@ -27,7 +28,7 @@ pub fn run_instruction_set<const ARM_BOOL: bool>(
 }
 
 #[cfg(feature = "epic")]
-pub fn run_instruction_set<const ARM_BOOL: bool, const INST_SET: u16>(
+pub fn run_instruction<const ARM_BOOL: bool, const INST_SET: u16>(
     ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {
     let cond_result = calculate_cond(INST_SET, ctx);

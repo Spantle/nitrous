@@ -1,7 +1,8 @@
 use crate::nds::arm::{
     arm::ArmTrait,
     bus::BusTrait,
-    models::{Bits, Context, ContextTrait, DisassemblyTrait, Instruction},
+    instructions::arm::Instruction,
+    models::{Bits, Context, ContextTrait, DisassemblyTrait},
 };
 
 // AKA the addressing mode

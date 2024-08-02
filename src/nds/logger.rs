@@ -11,6 +11,8 @@ pub static LOGS: Lazy<Mutex<Vec<Log>>> = Lazy::new(|| Mutex::new(Vec::new()));
 static PAUSE_ON_WARN: AtomicBool = AtomicBool::new(false);
 
 pub trait LoggerTrait {
+    fn set_source(&mut self, source: LogSource);
+
     fn log_debug<T: Into<String> + Display>(&self, content: T);
     fn log_info<T: Into<String> + Display>(&self, content: T);
     fn log_warn<T: Into<String> + Display>(&self, content: T);
@@ -22,6 +24,10 @@ pub struct Logger(pub LogSource);
 pub struct FakeLogger;
 
 impl LoggerTrait for Logger {
+    fn set_source(&mut self, source: LogSource) {
+        self.0 = source;
+    }
+
     fn log_debug<T: Into<String> + Display>(&self, content: T) {
         debug(self.0, content);
     }
@@ -40,6 +46,7 @@ impl LoggerTrait for Logger {
 }
 
 impl LoggerTrait for FakeLogger {
+    fn set_source(&mut self, _source: LogSource) {}
     fn log_debug<T: Into<String> + Display>(&self, _content: T) {}
     fn log_info<T: Into<String> + Display>(&self, _content: T) {}
     fn log_warn<T: Into<String> + Display>(&self, _content: T) {}
@@ -65,6 +72,8 @@ pub enum LogSource {
     Emu,
     Arm9(u32),
     Arm7(u32),
+    Arm9T(u16),
+    Arm7T(u16),
     Bus7,
     Bus9,
     Cart,
@@ -97,6 +106,20 @@ impl Display for LogSource {
                     write!(f, "Arm7")
                 } else {
                     write!(f, "Arm7({:08X})", instruction)
+                }
+            }
+            LogSource::Arm9T(instruction) => {
+                if *instruction == 0 {
+                    write!(f, "Arm9T")
+                } else {
+                    write!(f, "Arm9T({:04X})", instruction)
+                }
+            }
+            LogSource::Arm7T(instruction) => {
+                if *instruction == 0 {
+                    write!(f, "Arm7T")
+                } else {
+                    write!(f, "Arm7T({:04X})", instruction)
                 }
             }
             LogSource::Bus7 => write!(f, "Bus7"),

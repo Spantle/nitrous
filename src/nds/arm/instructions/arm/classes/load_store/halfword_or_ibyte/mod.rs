@@ -4,7 +4,10 @@ mod lookup;
 
 pub use lookup::lookup;
 
-use crate::nds::arm::models::{Context, ContextTrait, DisassemblyTrait, Instruction};
+use crate::nds::arm::{
+    instructions::arm::Instruction,
+    models::{Context, ContextTrait, DisassemblyTrait},
+};
 
 pub struct LoadStoreInstruction {
     pub is_signed: bool,   // S bit (signed or unsigned)

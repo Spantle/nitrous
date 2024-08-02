@@ -1,6 +1,7 @@
 use crate::nds::arm::{
     arm::ArmTrait,
-    models::{Bits, Context, ContextTrait, DisassemblyTrait, Instruction},
+    instructions::arm::Instruction,
+    models::{Bits, Context, ContextTrait, DisassemblyTrait},
 };
 
 #[inline(always)]

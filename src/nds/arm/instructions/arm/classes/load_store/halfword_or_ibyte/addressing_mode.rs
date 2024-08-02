@@ -4,7 +4,8 @@
 
 use crate::nds::arm::{
     arm::ArmTrait,
-    models::{Context, ContextTrait, DisassemblyTrait, Instruction},
+    instructions::arm::Instruction,
+    models::{Context, ContextTrait, DisassemblyTrait},
 };
 
 #[inline(always)]

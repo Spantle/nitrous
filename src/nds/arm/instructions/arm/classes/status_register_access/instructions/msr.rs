@@ -1,6 +1,7 @@
 use crate::nds::arm::{
     arm::ArmTrait,
-    models::{Bits, Context, ContextTrait, DisassemblyTrait, Instruction, ProcessorMode},
+    instructions::arm::Instruction,
+    models::{Bits, Context, ContextTrait, DisassemblyTrait, ProcessorMode},
 };
 
 // MSR

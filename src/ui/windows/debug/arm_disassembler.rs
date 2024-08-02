@@ -1,6 +1,6 @@
 use crate::{
     nds::{
-        arm::{self, bus, models::Disassembly, ArmBool},
+        arm::{self, bus, instructions, models::Disassembly, ArmBool},
         logger, shared,
     },
     ui::{NitrousGUI, NitrousUI, NitrousWindow},
@@ -112,7 +112,7 @@ impl NitrousGUI {
                     row.set_selected(address == pc);
 
                     let mut disassembly = Disassembly::default();
-                    arm::lookup_instruction_set::<{ ArmBool::ARM9 }>(
+                    instructions::arm::lookup_instruction::<{ ArmBool::ARM9 }>(
                         &mut arm::models::Context::new(
                             inst.into(),
                             &mut arm::FakeArm::new(address as u32),

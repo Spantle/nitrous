@@ -1,6 +1,7 @@
 use crate::nds::arm::{
     arm::ArmTrait,
-    models::{Context, ContextTrait, DisassemblyTrait, Instruction, ProcessorMode},
+    instructions::arm::Instruction,
+    models::{Context, ContextTrait, DisassemblyTrait, ProcessorMode},
 };
 
 // SWI
