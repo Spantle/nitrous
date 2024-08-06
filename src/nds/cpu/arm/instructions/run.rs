@@ -19,7 +19,7 @@ pub fn run_instruction_set<const ARM_BOOL: bool>(
         //     "condition failed {:#06X} ({:016b})",
         //     inst_set, inst_set
         // ));
-        return 0;
+        return 1;
     }
 
     // also runs it ignore the name
