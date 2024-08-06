@@ -24,33 +24,70 @@ impl NitrousGUI {
                         ui.make_monospace();
                         ui.set_min_width(250.0);
 
-                        ui.label(format!("Estimated FPS: {}", fps_info.estimated_fps));
-                        ui.label(format!(
-                            "Last Frame Idle Time: {}ms",
-                            fps_info.last_micros_idle / 1000
-                        ));
-                        ui.label(format!(
-                            "Last Frame Emulation Time: {}ms",
-                            fps_info.last_micros_emulation / 1000
-                        ));
-                        ui.label(format!(
-                            "Last Frame UI Draw Time: {}ms",
-                            fps_info.last_micros_ui / 1000
-                        ));
-                        ui.label(format!(
-                            "Total Frame Time: {}ms",
-                            fps_info.total_micros_frame / 1000
-                        ));
-                        ui.label(format!(
-                            "Target Emulation Time: {}ms",
-                            fps_info.target_emulation_time / 1000
-                        ));
-                        ui.label(format!(
-                            "Target Cycles Per Frame: {}",
-                            fps_info.target_cycles_per_frame
-                        ));
-                        ui.label(format!("Cycles Run: {}", fps_info.cycles_run));
+                        let table = egui_extras::TableBuilder::new(ui)
+                            .striped(true)
+                            .column(egui_extras::Column::exact(150.0))
+                            .column(egui_extras::Column::remainder());
+
+                        table.body(|mut body| {
+                            row(
+                                &mut body,
+                                "Measured FPS",
+                                &format!("{}", fps_info.measured_fps),
+                            );
+                            row(
+                                &mut body,
+                                "Emulation Frame Time",
+                                &format!("{}ms", fps_info.emulation_time),
+                            );
+                            row(
+                                &mut body,
+                                "UI Last Frame Time",
+                                &format!("{}ms", fps_info.last_ui_time),
+                            );
+                            row(
+                                &mut body,
+                                "Idle Last Frame Time",
+                                &format!("{}ms", fps_info.last_idle_time),
+                            );
+                            row(
+                                &mut body,
+                                "ARM9 Last Cycles Ran",
+                                &format!("{}", fps_info.last_cycles_ran_arm9),
+                            );
+                            row(
+                                &mut body,
+                                "ARM9 Target Cycles",
+                                &format!("{}", fps_info.target_cycles_arm9),
+                            );
+                            row(
+                                &mut body,
+                                "ARM9 Cycles Ran",
+                                &format!("{}", fps_info.cycles_ran_arm9),
+                            );
+                            row(
+                                &mut body,
+                                "ARM7 Cycles Ran",
+                                &format!("{}", fps_info.cycles_ran_arm7),
+                            );
+                            row(
+                                &mut body,
+                                "GPU Cycles Ran",
+                                &format!("{}", fps_info.cycles_ran_gpu),
+                            );
+                        });
                     });
             });
     }
+}
+
+fn row(body: &mut egui_extras::TableBody, label: &str, value: &str) {
+    body.row(20.0, |mut row| {
+        row.col(|ui| {
+            ui.strong(label);
+        });
+        row.col(|ui| {
+            ui.label(value);
+        });
+    });
 }
