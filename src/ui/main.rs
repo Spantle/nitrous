@@ -1,14 +1,19 @@
-use std::sync::mpsc::{channel, Receiver, Sender};
+use std::{
+    collections::VecDeque,
+    sync::mpsc::{channel, Receiver, Sender},
+};
 
 use egui::load::SizedTexture;
 use web_time::{Duration, Instant};
 
 use crate::nds::{
     arm::{bus::BusTrait, ArmBool},
-    logger, Emulator,
+    Emulator,
 };
 
 use super::windows::file::preferences::PreferencesPanel;
+
+// this whole file needs a good clean
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn init(emulator: Emulator) -> Result<(), eframe::Error> {
@@ -93,17 +98,18 @@ pub struct NitrousGUI {
     pub preferences_arm9_bios_path: String,
 
     #[serde(skip)]
-    fps_outliers: u8,
+    fps_counter: FpsCounter,
     #[serde(skip)]
-    idle_times: [u128; 60],
+    last_cycle_count: u64,
     #[serde(skip)]
-    emulation_times: [u128; 60],
+    last_frame_cycles_execution_time: Duration,
     #[serde(skip)]
-    ui_times: [u128; 60],
+    last_cycle_arm7_discrepency: i32,
+
     #[serde(skip)]
-    last_time_ui: Duration,
+    last_end_instant: Instant,
     #[serde(skip)]
-    last_frame_end: Instant,
+    last_ui_time: Duration,
 }
 
 impl Default for NitrousGUI {
@@ -142,12 +148,13 @@ impl Default for NitrousGUI {
             preferences_selected: PreferencesPanel::Emulation,
             preferences_arm9_bios_path: String::new(),
 
-            fps_outliers: 0,
-            idle_times: [0; 60],
-            emulation_times: [0; 60],
-            ui_times: [0; 60],
-            last_time_ui: Duration::default(),
-            last_frame_end: Instant::now(),
+            fps_counter: FpsCounter::new(),
+            last_cycle_count: 0,
+            last_frame_cycles_execution_time: Duration::ZERO,
+            last_cycle_arm7_discrepency: 0,
+
+            last_end_instant: Instant::now(),
+            last_ui_time: Duration::ZERO,
         }
     }
 }
@@ -172,95 +179,99 @@ impl eframe::App for NitrousGUI {
     }
 
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        let last_time_idle = self.last_frame_end.elapsed();
+        let idle_time = self.last_end_instant.elapsed();
+
+        let emulation_start_time = Instant::now();
 
         self.handle_input(ctx);
 
-        let start_time_emulation = Instant::now();
+        self.fps_counter.push_current_time();
+        let measured_fps = self.fps_counter.average_fps();
 
-        let time_sum_idle = self.idle_times.iter().sum::<u128>();
-        let time_sum_emulation = self.emulation_times.iter().sum::<u128>();
-        let time_sum_total =
-            self.ui_times.iter().sum::<u128>() + time_sum_idle + time_sum_emulation;
-        let time_micros_total = time_sum_total / 60;
-        let target_emulation_time =
-            ((((time_sum_idle / 60) + (time_sum_emulation / 60)) as f64) * 0.75).round() as u128;
-        let estimated_fps = (1_000_000 / time_micros_total.max(1)) as u32;
-        let target_cycles_per_frame = 99_000_000 / estimated_fps;
-        let mut cycles_run = 0;
+        let target_frame_time_secs = 1.0 / measured_fps as f64;
+        let target_frame_cycle_execution_time_secs = target_frame_time_secs * 0.75;
+
+        let measured_fps_min_capped = measured_fps.max(10.0); // For when the window is minimized, to recover easier
+        let mut target_cycles_current_frame = (66_000_000.0 / measured_fps_min_capped) as u64;
+
+        if self.last_frame_cycles_execution_time != Duration::ZERO && self.last_cycle_count != 0 {
+            let measured_nanoseconds_per_instruction =
+                self.last_frame_cycles_execution_time.as_nanos() as f64
+                    / self.last_cycle_count as f64;
+
+            let target_frame_cycle_execution_time_nanos =
+                target_frame_cycle_execution_time_secs * 1_000_000_000.0;
+            let max_cycles_allowed_for_target_frame_time =
+                target_frame_cycle_execution_time_nanos / measured_nanoseconds_per_instruction;
+
+            target_cycles_current_frame =
+                target_cycles_current_frame.min(max_cycles_allowed_for_target_frame_time as u64);
+        }
+
+        let frame_cycles_start = Instant::now();
+
+        let target_cycles_arm9 = target_cycles_current_frame;
+
+        let mut cycles_ran_arm9 = 0;
+        let mut cycles_ran_arm7 = self.last_cycle_arm7_discrepency as u64;
+        let mut cycles_ran_gpu = 0;
 
         if self.emulator.is_running() {
-            while cycles_run < target_cycles_per_frame {
+            while cycles_ran_arm9 < target_cycles_arm9 {
                 if !self.emulator.is_running() {
                     break;
                 }
 
-                cycles_run += self
+                let arm9_cycles = self
                     .emulator
                     .arm9
                     .clock(&mut self.emulator.bus9, &mut self.emulator.shared);
-                cycles_run += self
-                    .emulator
-                    .arm9
-                    .clock(&mut self.emulator.bus9, &mut self.emulator.shared);
-                cycles_run += self
-                    .emulator
-                    .arm7
-                    .clock(&mut self.emulator.bus7, &mut self.emulator.shared);
-                self.emulator.shared.gpu2d_a.clock();
-                self.emulator.shared.gpu2d_b.clock();
+
+                cycles_ran_arm9 += arm9_cycles as u64;
+
+                let target_cycles_arm7 = cycles_ran_arm9 / 2;
+                let target_cycles_gpu = cycles_ran_arm9 / 2;
+
+                while cycles_ran_arm7 < target_cycles_arm7 {
+                    let arm7_cycles = self
+                        .emulator
+                        .arm7
+                        .clock(&mut self.emulator.bus7, &mut self.emulator.shared);
+                    cycles_ran_arm7 += arm7_cycles as u64;
+                }
+
+                while cycles_ran_gpu < target_cycles_gpu {
+                    self.emulator.shared.gpu2d_a.clock();
+                    self.emulator.shared.gpu2d_b.clock();
+                    cycles_ran_gpu += 1;
+                }
             }
         }
 
-        let last_micros_idle = last_time_idle.as_micros();
-        // (estimated_compute_time / 1000) != 0 can be removed, it's just to reduce debug logs
-        if (target_emulation_time / 1000) != 0 && last_micros_idle > target_emulation_time * 10 {
-            logger::debug(
-                logger::LogSource::Emu,
-                format!(
-                    "FPS Outlier detected ({}ms/{}ms)",
-                    last_micros_idle / 1000,
-                    target_emulation_time / 1000
-                ),
-            );
+        let arm7_discrepency = (cycles_ran_arm7 as i32) - (cycles_ran_arm9 / 2) as i32;
+        self.last_cycle_arm7_discrepency = arm7_discrepency;
 
-            if self.fps_outliers >= 3 {
-                logger::debug(logger::LogSource::Emu, "Too many outliers".to_string());
-                self.idle_times.rotate_left(1);
-                self.idle_times[59] = last_micros_idle;
-            } else {
-                self.fps_outliers += 1;
-            }
-        } else {
-            self.idle_times.rotate_left(1);
-            self.idle_times[59] = last_micros_idle;
-            self.fps_outliers = 0;
-        }
+        self.last_cycle_count = cycles_ran_arm9;
+        self.last_frame_cycles_execution_time = frame_cycles_start.elapsed();
 
-        let last_time_emulation = start_time_emulation.elapsed();
-        let last_micros_emulation = last_time_emulation.as_micros();
-        self.emulation_times.rotate_left(1);
-        self.emulation_times[59] = last_micros_emulation;
+        let emulation_time = emulation_start_time.elapsed();
 
-        let start_time_ui = Instant::now();
+        let ui_start_time = Instant::now();
 
-        let last_micros_ui = self.last_time_ui.as_micros();
-        self.ui_times.rotate_left(1);
-        self.ui_times[59] = last_micros_ui;
-
-        self.show_navbar(ctx, estimated_fps);
+        self.show_navbar(ctx, measured_fps as u32);
 
         self.show_fps_info(
             ctx,
             FpsInfo {
-                estimated_fps,
-                target_emulation_time,
-                target_cycles_per_frame,
-                cycles_run,
-                last_micros_idle,
-                last_micros_emulation,
-                last_micros_ui,
-                total_micros_frame: time_micros_total,
+                measured_fps: measured_fps as u32,
+                emulation_time: emulation_time.as_millis() as u32,
+                last_ui_time: self.last_ui_time.as_millis() as u32,
+                last_idle_time: idle_time.as_millis() as u32,
+                target_cycles_arm9,
+                cycles_ran_arm9,
+                cycles_ran_arm7,
+                cycles_ran_gpu,
+                last_cycles_ran_arm9: self.last_cycle_count,
             },
         );
 
@@ -355,20 +366,89 @@ impl eframe::App for NitrousGUI {
             }
         }
 
-        self.last_time_ui = start_time_ui.elapsed();
-        self.last_frame_end = Instant::now();
-
         ctx.request_repaint();
+
+        self.last_ui_time = ui_start_time.elapsed();
+        self.last_end_instant = Instant::now();
     }
 }
 
 pub struct FpsInfo {
-    pub estimated_fps: u32,
-    pub target_emulation_time: u128,
-    pub target_cycles_per_frame: u32,
-    pub cycles_run: u32,
-    pub last_micros_idle: u128,
-    pub last_micros_emulation: u128,
-    pub last_micros_ui: u128,
-    pub total_micros_frame: u128,
+    pub measured_fps: u32,
+    pub emulation_time: u32,
+    pub last_ui_time: u32,
+    pub last_idle_time: u32,
+    pub last_cycles_ran_arm9: u64,
+    pub target_cycles_arm9: u64,
+    pub cycles_ran_arm9: u64,
+    pub cycles_ran_arm7: u64,
+    pub cycles_ran_gpu: u64,
 }
+
+struct FpsCounter {
+    last_frame_times: VecDeque<Instant>,
+}
+
+impl FpsCounter {
+    pub fn new() -> Self {
+        FpsCounter {
+            last_frame_times: VecDeque::new(),
+        }
+    }
+
+    pub fn push_current_time(&mut self) {
+        // Strip times that are over 500ms old, always keep the last one
+        let now = Instant::now();
+        while self.last_frame_times.len() > 1 {
+            let second_last_time = self.last_frame_times[1];
+            if now.duration_since(second_last_time) > Duration::from_millis(500) {
+                self.last_frame_times.pop_front();
+            } else {
+                break;
+            }
+        }
+
+        // Push current time
+        self.last_frame_times.push_back(now);
+    }
+
+    pub fn average_fps(&self) -> f32 {
+        // Calculate the average duration between pairs
+        let mut total_duration = Duration::ZERO;
+        for i in 1..self.last_frame_times.len() {
+            total_duration += self.last_frame_times[i].duration_since(self.last_frame_times[i - 1]);
+        }
+
+        let frame_time = total_duration.as_secs_f32() / (self.last_frame_times.len() - 1) as f32;
+        1.0 / frame_time
+    }
+}
+
+// struct RollingAverageTime {
+//     past_times: VecDeque<Duration>,
+// }
+
+// impl RollingAverageTime {
+//     pub fn new() -> Self {
+//         RollingAverageTime {
+//             past_times: VecDeque::new(),
+//         }
+//     }
+
+//     pub fn push_time(&mut self, time: Duration) {
+//         self.past_times.push_back(time);
+
+//         while self.past_times.len() > 60 {
+//             self.past_times.pop_front();
+//         }
+//     }
+
+//     pub fn average_time(&self) -> Duration {
+//         let mut total_time = Duration::ZERO;
+//         for time in &self.past_times {
+//             total_time += *time;
+//         }
+
+//         total_time / self.past_times.len() as u32
+//     }
+// }

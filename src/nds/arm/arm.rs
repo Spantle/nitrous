@@ -122,14 +122,16 @@ impl<Bus: BusTrait> Arm<Bus> {
         // }
 
         let mut cycles = match Bus::kind() {
-            ArmKind::ARM9 => lookup_instruction_set::<true>(&mut Context::new(
-                inst,
-                self,
-                bus,
-                shared,
-                &mut FakeDisassembly,
-                &mut logger::Logger(logger::LogSource::Arm9(inst)),
-            )),
+            ArmKind::ARM9 => {
+                lookup_instruction_set::<true>(&mut Context::new(
+                    inst,
+                    self,
+                    bus,
+                    shared,
+                    &mut FakeDisassembly,
+                    &mut logger::Logger(logger::LogSource::Arm9(inst)),
+                )) + 2
+            }
             ArmKind::ARM7 => lookup_instruction_set::<false>(&mut Context::new(
                 inst,
                 self,
