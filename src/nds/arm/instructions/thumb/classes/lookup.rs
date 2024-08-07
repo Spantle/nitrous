@@ -7,6 +7,8 @@ use crate::nds::{
     logger::LoggerTrait,
 };
 
+use super::data_processing;
+
 #[inline(always)]
 pub fn lookup_instruction_class(
     arm_kind: ArmKind,
@@ -16,10 +18,14 @@ pub fn lookup_instruction_class(
     let class = (inst_set >> 7) & 0b111;
 
     match class {
+        0b001 => {
+            // Add/subtract/compare/move immediate
+            data_processing::ascm_immediate_lookup(inst_set, ctx)
+        }
         _ => {
             ctx.logger
                 .log_warn(format!("unknown instruction class {:03b}", class));
-            1
+            10000
         }
     }
 }

@@ -24,11 +24,16 @@ impl Instruction {
 
     #[inline(always)]
     pub fn get_byte(&self, offset: u32, to: u32) -> u8 {
-        self.get_halfword(offset, to) as u8
+        self.get_word(offset, to) as u8
     }
 
     #[inline(always)]
     pub fn get_halfword(&self, offset: u32, to: u32) -> u16 {
-        (self.0 >> offset) & ((1 << (to - offset + 1)) - 1)
+        self.get_word(offset, to) as u16
+    }
+
+    #[inline(always)]
+    pub fn get_word(&self, offset: u32, to: u32) -> u32 {
+        ((self.0 >> offset) & ((1 << (to - offset + 1)) - 1)) as u32
     }
 }
