@@ -19,7 +19,7 @@ pub fn ldr_3(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.dis.push_str_end_arg(" * 4", None);
     ctx.dis.push_str_end_arg("", Some("]"));
 
-    let pc = ctx.arm.r()[15]; // might need to be + 2?
+    let pc = ctx.arm.r()[15] + 4;
     let address = (pc.get_bits(2, 31) << 2) + immed_8;
     ctx.arm
         .set_r(rd, ctx.arm.read_word(ctx.bus, ctx.shared, address));
