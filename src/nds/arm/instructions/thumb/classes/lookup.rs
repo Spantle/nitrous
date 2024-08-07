@@ -35,6 +35,16 @@ pub fn lookup_instruction_class(
                 return load_store::instructions::ldr_3(ctx);
             }
 
+            if (inst_set >> 2) & 0b111 == 0b111 {
+                // Branch/exchange instruction set
+                let l = ((inst_set >> 1) & 0b1) == 1;
+                if l {
+                    return branch::instructions::bx::<true>(ctx);
+                } else {
+                    return branch::instructions::bx::<false>(ctx);
+                }
+            }
+
             ctx.logger
                 .log_warn(format!("Unknown 0b010 instruction {:#018b}", inst_set));
             10000
