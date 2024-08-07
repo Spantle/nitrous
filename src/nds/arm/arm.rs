@@ -106,8 +106,12 @@ impl<Bus: BusTrait> Default for Arm<Bus> {
 
 impl<Bus: BusTrait> Arm<Bus> {
     pub fn clock(&mut self, bus: &mut Bus, shared: &mut Shared) -> u32 {
-        // get 4 bytes
-        let inst = self.read_word(bus, shared, self.r[15]);
+        let is_thumb = self.cpsr.get_thumb();
+        let inst = if is_thumb {
+            self.read_halfword(bus, shared, self.r[15]) as u32
+        } else {
+            self.read_word(bus, shared, self.r[15])
+        };
         // print as binary
         // if Bus::kind() == ArmKind::ARM7 {
         //     logger::debug(
@@ -143,7 +147,11 @@ impl<Bus: BusTrait> Arm<Bus> {
         };
 
         if !self.pc_changed {
-            self.r[15] += 4;
+            if is_thumb {
+                self.r[15] += 2;
+            } else {
+                self.r[15] += 4;
+            };
         } else {
             cycles += 2;
         }
