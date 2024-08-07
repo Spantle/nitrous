@@ -7,7 +7,7 @@ use crate::nds::{
     logger::LoggerTrait,
 };
 
-use super::data_processing;
+use super::{branch, data_processing};
 
 #[inline(always)]
 pub fn lookup_instruction_class(
@@ -21,6 +21,10 @@ pub fn lookup_instruction_class(
         0b001 => {
             // Add/subtract/compare/move immediate
             data_processing::ascm_immediate_lookup(inst_set, ctx)
+        }
+        0b111 => {
+            // branching shenanigans
+            branch::lookup(arm_kind, inst_set, ctx)
         }
         _ => {
             ctx.logger
