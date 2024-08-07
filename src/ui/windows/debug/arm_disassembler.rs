@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::{
     nds::{
         arm::{self, bus, instructions, models::Disassembly, ArmBool},
@@ -5,6 +7,23 @@ use crate::{
     },
     ui::{NitrousGUI, NitrousUI, NitrousWindow},
 };
+
+#[derive(PartialEq)]
+pub enum DisassemblerInstructionSet {
+    Follow,
+    ARM,
+    THUMB,
+}
+
+impl Display for DisassemblerInstructionSet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DisassemblerInstructionSet::Follow => write!(f, "Follow CPU"),
+            DisassemblerInstructionSet::ARM => write!(f, "ARM"),
+            DisassemblerInstructionSet::THUMB => write!(f, "THUMB"),
+        }
+    }
+}
 
 impl NitrousGUI {
     pub fn show_arm_disassembler<const ARM_BOOL: bool>(&mut self, ctx: &egui::Context) {
@@ -20,6 +39,7 @@ impl NitrousGUI {
         egui::Window::new_nitrous(title, ctx)
             .open(&mut arm_disassembler)
             .show(ctx, |ui| {
+                self.render_navbar::<ARM_BOOL>(ui);
                 self.render_instructions::<ARM_BOOL>(ui);
             });
 
@@ -27,6 +47,79 @@ impl NitrousGUI {
             ArmBool::ARM9 => self.arm9_disassembler = arm_disassembler,
             ArmBool::ARM7 => self.arm7_disassembler = arm_disassembler,
         };
+    }
+
+    fn render_navbar<const ARM_BOOL: bool>(&mut self, ui: &mut egui::Ui) {
+        let id = match ARM_BOOL {
+            ArmBool::ARM9 => "arm9_disassembler_navbar",
+            ArmBool::ARM7 => "arm7_disassembler_navbar",
+        };
+        let selected_instruction_set = match ARM_BOOL {
+            ArmBool::ARM9 => &mut self.arm9_disassembler_instruction_set,
+            ArmBool::ARM7 => &mut self.arm7_disassembler_instruction_set,
+        };
+        let follow_pc = match ARM_BOOL {
+            ArmBool::ARM9 => &mut self.arm9_disassembler_follow_pc,
+            ArmBool::ARM7 => &mut self.arm7_disassembler_follow_pc,
+        };
+        let jump_value = match ARM_BOOL {
+            ArmBool::ARM9 => &mut self.arm9_disassembler_jump_value,
+            ArmBool::ARM7 => &mut self.arm7_disassembler_jump_value,
+        };
+
+        egui::TopBottomPanel::top(id).show_inside(ui, |ui| {
+            ui.horizontal(|ui| {
+                let label = ui.label("Instruction Set");
+                egui::ComboBox::from_id_source(label.id)
+                    .selected_text(selected_instruction_set.to_string())
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(
+                            selected_instruction_set,
+                            DisassemblerInstructionSet::Follow,
+                            DisassemblerInstructionSet::Follow.to_string(),
+                        );
+                        ui.selectable_value(
+                            selected_instruction_set,
+                            DisassemblerInstructionSet::ARM,
+                            DisassemblerInstructionSet::ARM.to_string(),
+                        );
+                        ui.selectable_value(
+                            selected_instruction_set,
+                            DisassemblerInstructionSet::THUMB,
+                            DisassemblerInstructionSet::THUMB.to_string(),
+                        );
+                    });
+
+                ui.checkbox(follow_pc, "Follow PC");
+            });
+
+            ui.horizontal(|ui| {
+                ui.label("Jump to");
+                ui.add(
+                    egui::TextEdit::singleline(jump_value)
+                        .hint_text("FFFFFFFF")
+                        .desired_width(60.0)
+                        .font(egui::TextStyle::Monospace),
+                );
+                if ui.button("Jump").clicked() {
+                    match ARM_BOOL {
+                        ArmBool::ARM9 => self.arm9_disassembler_jump_now = true,
+                        ArmBool::ARM7 => self.arm7_disassembler_jump_now = true,
+                    }
+                }
+                if ui.button("Jump to PC").clicked() {
+                    let pc = match ARM_BOOL {
+                        ArmBool::ARM9 => self.emulator.arm9.r[15],
+                        ArmBool::ARM7 => self.emulator.arm7.r[15],
+                    };
+                    *jump_value = format!("{:08X}", pc);
+                    match ARM_BOOL {
+                        ArmBool::ARM9 => self.arm9_disassembler_jump_now = true,
+                        ArmBool::ARM7 => self.arm7_disassembler_jump_now = true,
+                    }
+                }
+            });
+        });
     }
 
     fn render_instructions<const ARM_BOOL: bool>(&mut self, ui: &mut egui::Ui) {
@@ -64,27 +157,65 @@ impl NitrousGUI {
             }
         };
 
+        let instruction_set = match ARM_BOOL {
+            ArmBool::ARM9 => &self.arm9_disassembler_instruction_set,
+            ArmBool::ARM7 => &self.arm7_disassembler_instruction_set,
+        };
+        let is_thumb = match instruction_set {
+            DisassemblerInstructionSet::Follow => {
+                let is_thumb = match ARM_BOOL {
+                    ArmBool::ARM9 => self.emulator.arm9.cpsr.get_thumb(),
+                    ArmBool::ARM7 => self.emulator.arm7.cpsr.get_thumb(),
+                };
+                is_thumb
+            }
+            DisassemblerInstructionSet::ARM => false,
+            DisassemblerInstructionSet::THUMB => true,
+        };
+        let instruction_width = if is_thumb { 2 } else { 4 };
+
         let pc = match ARM_BOOL {
             ArmBool::ARM9 => self.emulator.arm9.r[15],
             ArmBool::ARM7 => self.emulator.arm7.r[15],
         } as usize;
         let height = ui.text_style_height(&egui::TextStyle::Monospace);
-        let total_rows = mem.len() / 4;
+        let total_rows = mem.len() / instruction_width;
         let arm_load_address = arm_load_address as usize;
         let mut table_builder = egui_extras::TableBuilder::new(ui)
             .striped(true)
             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
             .column(egui_extras::Column::auto())
             .column(egui_extras::Column::auto())
-            .column(egui_extras::Column::auto());
+            .column(egui_extras::Column::remainder());
 
         if self.emulator.is_running() {
             if pc < arm_load_address || pc >= arm_load_address + arm_size as usize {
                 return;
             }
-            let pc_row = (pc - arm_load_address) / 4;
-            table_builder = table_builder.scroll_to_row(pc_row, None);
+            let pc_row = (pc - arm_load_address) / instruction_width;
+
+            let follow_pc = match ARM_BOOL {
+                ArmBool::ARM9 => self.arm9_disassembler_follow_pc,
+                ArmBool::ARM7 => self.arm7_disassembler_follow_pc,
+            };
+            if follow_pc {
+                table_builder = table_builder.scroll_to_row(pc_row, None);
+            };
         }
+
+        let jump_now = match ARM_BOOL {
+            ArmBool::ARM9 => self.arm9_disassembler_jump_now,
+            ArmBool::ARM7 => self.arm7_disassembler_jump_now,
+        };
+        if jump_now {
+            let jump_value = match ARM_BOOL {
+                ArmBool::ARM9 => &self.arm9_disassembler_jump_value,
+                ArmBool::ARM7 => &self.arm7_disassembler_jump_value,
+            };
+            let jump_value = u32::from_str_radix(jump_value, 16).unwrap_or(0);
+            let jump_row = (jump_value as usize - arm_load_address) / instruction_width;
+            table_builder = table_builder.scroll_to_row(jump_row, None);
+        };
 
         table_builder
             .header(height, |mut header| {
@@ -100,33 +231,54 @@ impl NitrousGUI {
             })
             .body(|body| {
                 body.rows(height, total_rows, |mut row| {
-                    let start = row.index() * 4;
+                    let start = row.index() * instruction_width;
                     let address = arm_load_address + start;
-                    let inst = u32::from_le_bytes([
-                        mem[start],
-                        mem[start + 1],
-                        mem[start + 2],
-                        mem[start + 3],
-                    ]);
+                    let inst = if is_thumb {
+                        u16::from_le_bytes([mem[start], mem[start + 1]]) as u32
+                    } else {
+                        u32::from_le_bytes([
+                            mem[start],
+                            mem[start + 1],
+                            mem[start + 2],
+                            mem[start + 3],
+                        ])
+                    };
 
                     row.set_selected(address == pc);
 
                     let mut disassembly = Disassembly::default();
-                    instructions::arm::lookup_instruction::<{ ArmBool::ARM9 }>(
-                        &mut arm::models::Context::new(
-                            inst.into(),
-                            &mut arm::FakeArm::new(address as u32),
-                            &mut fake_bus,
-                            &mut fake_shared,
-                            &mut disassembly,
-                            &mut logger::FakeLogger,
-                        ),
-                    );
+                    if is_thumb {
+                        instructions::thumb::lookup_instruction::<{ ARM_BOOL }>(
+                            &mut arm::models::Context::new(
+                                (inst as u16).into(),
+                                &mut arm::FakeArm::new(address as u32),
+                                &mut fake_bus,
+                                &mut fake_shared,
+                                &mut disassembly,
+                                &mut logger::FakeLogger,
+                            ),
+                        )
+                    } else {
+                        instructions::arm::lookup_instruction::<{ ARM_BOOL }>(
+                            &mut arm::models::Context::new(
+                                inst.into(),
+                                &mut arm::FakeArm::new(address as u32),
+                                &mut fake_bus,
+                                &mut fake_shared,
+                                &mut disassembly,
+                                &mut logger::FakeLogger,
+                            ),
+                        )
+                    };
                     row.col(|ui| {
                         ui.label(format!("{:08X}", address));
                     });
                     row.col(|ui| {
-                        ui.label(format!("{:08X}", inst));
+                        if is_thumb {
+                            ui.label(format!("{:04X}", inst as u16));
+                        } else {
+                            ui.label(format!("{:08X}", inst));
+                        }
                     });
                     row.col(|ui| {
                         ui.horizontal(|ui| {

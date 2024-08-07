@@ -11,7 +11,7 @@ use crate::nds::{
     Emulator,
 };
 
-use super::windows::file::preferences::PreferencesPanel;
+use super::windows::{self, file::preferences::PreferencesPanel};
 
 // this whole file needs a good clean
 
@@ -89,6 +89,23 @@ pub struct NitrousGUI {
     pub arm9_info_legacy_selected_pending_value: String,
 
     #[serde(skip)]
+    pub arm9_disassembler_instruction_set:
+        windows::debug::arm_disassembler::DisassemblerInstructionSet,
+    pub arm9_disassembler_follow_pc: bool,
+    #[serde(skip)]
+    pub arm9_disassembler_jump_value: String,
+    #[serde(skip)]
+    pub arm9_disassembler_jump_now: bool,
+    #[serde(skip)]
+    pub arm7_disassembler_instruction_set:
+        windows::debug::arm_disassembler::DisassemblerInstructionSet,
+    pub arm7_disassembler_follow_pc: bool,
+    #[serde(skip)]
+    pub arm7_disassembler_jump_value: String,
+    #[serde(skip)]
+    pub arm7_disassembler_jump_now: bool,
+
+    #[serde(skip)]
     pub memory_viewer_selected: Option<usize>,
     #[serde(skip)]
     pub memory_viewer_selected_pending_value: Option<u8>,
@@ -141,6 +158,17 @@ impl Default for NitrousGUI {
 
             arm9_info_legacy_selected: None,
             arm9_info_legacy_selected_pending_value: String::new(),
+
+            arm9_disassembler_instruction_set:
+                windows::debug::arm_disassembler::DisassemblerInstructionSet::Follow,
+            arm9_disassembler_follow_pc: true,
+            arm9_disassembler_jump_value: String::new(),
+            arm9_disassembler_jump_now: false,
+            arm7_disassembler_instruction_set:
+                windows::debug::arm_disassembler::DisassemblerInstructionSet::Follow,
+            arm7_disassembler_follow_pc: true,
+            arm7_disassembler_jump_value: String::new(),
+            arm7_disassembler_jump_now: false,
 
             memory_viewer_selected: None,
             memory_viewer_selected_pending_value: None,

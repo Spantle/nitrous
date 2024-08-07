@@ -1,5 +1,5 @@
 mod arm9_info;
-mod arm_disassembler;
+pub mod arm_disassembler;
 mod arm_info;
 mod emulation_log;
 mod ipcsync;
