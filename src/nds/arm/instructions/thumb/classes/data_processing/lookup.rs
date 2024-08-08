@@ -87,6 +87,7 @@ pub fn lookup_register(inst_set: u16, ctx: &mut Context<Instruction, impl Contex
     let opcode = inst_set & 0b1111;
     match opcode {
         0b0000 => instructions::and(ctx),
+        0b0001 => instructions::eor(ctx),
         0b1000 => instructions::tst(ctx),
         0b1100 => instructions::orr(ctx),
         _ => {
