@@ -95,6 +95,10 @@ pub fn lookup_special(inst_set: u16, ctx: &mut Context<Instruction, impl Context
             // CMP (3)
             instructions::cmp_3(ctx)
         }
+        0b10 => {
+            // MOV (3)
+            instructions::mov_3(ctx)
+        }
         _ => {
             ctx.logger.log_warn(format!(
                 "unknown special data-processing opcode {:02b}",
