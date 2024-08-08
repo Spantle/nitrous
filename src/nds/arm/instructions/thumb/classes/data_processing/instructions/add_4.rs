@@ -10,8 +10,8 @@ pub fn add_4(ctx: &mut Context<Instruction, impl ContextTrait>) {
 
     let rd = ctx.inst.get_byte(0, 2);
     let rm = ctx.inst.get_byte(3, 5);
-    let h1 = ctx.inst.get_bit(6);
-    let h2 = ctx.inst.get_bit(7);
+    let h1 = ctx.inst.get_bit(7);
+    let h2 = ctx.inst.get_bit(6);
     let rd = ctx.inst.get_rh(h1, rd);
     let rm = ctx.inst.get_rh(h2, rm);
     ctx.dis.push_reg_arg(rd, Some(", "));

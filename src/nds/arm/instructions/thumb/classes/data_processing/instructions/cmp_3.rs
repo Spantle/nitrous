@@ -13,8 +13,8 @@ pub fn cmp_3(ctx: &mut Context<Instruction, impl ContextTrait>) {
 
     let rn = ctx.inst.get_byte(0, 2);
     let rm = ctx.inst.get_byte(3, 5);
-    let h1 = ctx.inst.get_bit(6);
-    let h2 = ctx.inst.get_bit(7);
+    let h1 = ctx.inst.get_bit(7);
+    let h2 = ctx.inst.get_bit(6);
     let rn = ctx.inst.get_rh(h1, rn);
     let rm = ctx.inst.get_rh(h2, rm);
     ctx.dis.push_reg_arg(rn, Some(", "));
