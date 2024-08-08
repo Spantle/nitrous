@@ -71,6 +71,7 @@ pub fn lookup_ascm_immediate(
 pub fn lookup_register(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let opcode = inst_set & 0b1111;
     match opcode {
+        0b0000 => instructions::and(ctx),
         0b1100 => instructions::orr(ctx),
         _ => {
             ctx.logger.log_warn(format!(
