@@ -7,8 +7,8 @@ use crate::nds::{
     Bits,
 };
 
-// MOV
-pub fn mov(ctx: &mut Context<Instruction, impl ContextTrait>) {
+// MOV (1)
+pub fn mov_1(ctx: &mut Context<Instruction, impl ContextTrait>) {
     ctx.dis.set_inst("MOV");
 
     let rd = ctx.inst.get_byte(8, 10);

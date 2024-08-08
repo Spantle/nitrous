@@ -37,7 +37,7 @@ pub fn lookup_ascm_immediate(
     match opcode {
         0b00 => {
             // MOV
-            instructions::mov(ctx)
+            instructions::mov_1(ctx)
         }
         _ => {
             ctx.logger.log_warn(format!(
