@@ -7,9 +7,9 @@ use crate::nds::{
     Bits,
 };
 
-// LSR (1)
-pub fn lsr_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
-    ctx.dis.set_inst("LSR");
+// LSL (1)
+pub fn lsl_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
+    ctx.dis.set_inst("LSL");
 
     let rd = ctx.inst.get_byte(0, 2);
     let rm = ctx.inst.get_byte(3, 5);
@@ -19,16 +19,14 @@ pub fn lsr_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.dis.push_word_end_arg(immed_5, None);
 
     if immed_5 == 0 {
-        ctx.arm.set_r(rd, 0);
-
-        let rd = ctx.arm.r()[rd];
-        ctx.arm.cpsr_mut().set_carry(rd.get_bit(31));
+        let rm = ctx.arm.r()[rm];
+        ctx.arm.set_r(rd, rm);
     } else {
         let rm = ctx.arm.r()[rm];
-        ctx.arm.set_r(rd, rm >> immed_5);
+        ctx.arm.set_r(rd, rm << immed_5);
 
         let rd = ctx.arm.r()[rd];
-        ctx.arm.cpsr_mut().set_carry(rd.get_bit(immed_5 - 1));
+        ctx.arm.cpsr_mut().set_carry(rd.get_bit(32 - immed_5));
     }
 
     let rd = ctx.arm.r()[rd];

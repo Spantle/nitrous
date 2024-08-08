@@ -12,6 +12,10 @@ use super::instructions;
 pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let opcode = (inst_set >> 5) & 0b11;
     match opcode {
+        0b00 => {
+            // LSL (1)
+            instructions::lsl_1(ctx)
+        }
         0b01 => {
             // LSR (1)
             instructions::lsr_1(ctx)
