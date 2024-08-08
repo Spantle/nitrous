@@ -49,6 +49,17 @@ pub fn lookup_instruction_class(
                 .log_warn(format!("Unknown 0b010 instruction {:#018b}", inst_set));
             10000
         }
+        0b100 => {
+            if (inst_set >> 6) & 0b1 == 0 {
+                // Load/store halfword immediate offset
+                load_store::instructions::ldrh_1(ctx)
+            } else {
+                // Load/store to/from stack
+                ctx.logger
+                    .log_warn("Load/store to/from stack not implemented");
+                return 10000;
+            }
+        }
         0b101 => {
             if (inst_set >> 6) & 0b1 == 0 {
                 // Add to SP or PC
