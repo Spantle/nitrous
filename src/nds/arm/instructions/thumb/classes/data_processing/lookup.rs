@@ -20,6 +20,15 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
             // LSR (1)
             instructions::lsr_1(ctx)
         }
+        0b11 => {
+            if (inst_set << 4) & 0b1 == 0 {
+                // ADD (3)
+                instructions::add_3(ctx)
+            } else {
+                // ADD (1)
+                instructions::add_1(ctx)
+            }
+        }
         _ => {
             ctx.logger.log_warn(format!(
                 "unknown data processing lookup opcode {:02b}",

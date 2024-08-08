@@ -1,3 +1,5 @@
+mod add_1;
+mod add_3;
 mod add_4;
 mod cmp_1;
 mod cmp_3;
@@ -5,6 +7,8 @@ mod lsl_1;
 mod lsr_1;
 mod mov_1;
 
+pub use add_1::*;
+pub use add_3::*;
 pub use add_4::*;
 pub use cmp_1::*;
 pub use cmp_3::*;
