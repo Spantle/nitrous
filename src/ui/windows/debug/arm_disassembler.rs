@@ -255,7 +255,7 @@ impl NitrousGUI {
                 ArmBool::ARM7 => self.arm7_disassembler_follow_pc,
             };
             if follow_pc {
-                table_builder = table_builder.scroll_to_row(pc_row, None);
+                table_builder = table_builder.scroll_to_row(pc_row, Some(egui::Align::Center));
             };
         }
 
@@ -270,7 +270,7 @@ impl NitrousGUI {
             };
             let jump_value = u32::from_str_radix(jump_value, 16).unwrap_or(0);
             let jump_row = (jump_value as usize - arm_load_address) / instruction_width;
-            table_builder = table_builder.scroll_to_row(jump_row, None);
+            table_builder = table_builder.scroll_to_row(jump_row, Some(egui::Align::Center));
         };
 
         match ARM_BOOL {
