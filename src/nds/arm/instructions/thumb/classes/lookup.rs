@@ -40,9 +40,7 @@ pub fn lookup_instruction_class(
 
             if (inst_set >> 4) & 0b1 == 0 {
                 // Data-processing register
-                ctx.logger
-                    .log_warn("Data-processing register not implemented");
-                return 10000;
+                return data_processing::lookup_register(inst_set, ctx);
             }
 
             if (inst_set >> 2) & 0b11 == 0b11 {

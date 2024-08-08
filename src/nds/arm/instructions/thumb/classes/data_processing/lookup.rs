@@ -68,6 +68,21 @@ pub fn lookup_ascm_immediate(
 }
 
 #[inline(always)]
+pub fn lookup_register(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
+    let opcode = inst_set & 0b1111;
+    match opcode {
+        0b1100 => instructions::orr(ctx),
+        _ => {
+            ctx.logger.log_warn(format!(
+                "unknown data processing register lookup opcode {:04b}",
+                opcode
+            ));
+            return 10000;
+        }
+    }
+}
+
+#[inline(always)]
 pub fn lookup_special(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let opcode = (inst_set >> 5) & 0b11;
     match opcode {

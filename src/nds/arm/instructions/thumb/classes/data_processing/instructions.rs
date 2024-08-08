@@ -6,6 +6,7 @@ mod cmp_3;
 mod lsl_1;
 mod lsr_1;
 mod mov_1;
+mod orr;
 
 pub use add_1::*;
 pub use add_3::*;
@@ -15,3 +16,4 @@ pub use cmp_3::*;
 pub use lsl_1::*;
 pub use lsr_1::*;
 pub use mov_1::*;
+pub use orr::*;
