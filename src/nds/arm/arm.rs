@@ -56,9 +56,8 @@ pub struct Arm<Bus: BusTrait> {
 pub trait ArmTrait<Bus: BusTrait> {
     fn r(&self) -> &Registers; // TODO: rename this to `registers`
     fn set_r(&mut self, r: u8, value: u32);
-    fn set_rt(&mut self, h: bool, r: u8, value: u32);
     fn er(&self, r: u8) -> u32;
-    fn ert(&self, h: bool, r: u8) -> u32;
+    fn ert(&self, r: u8) -> u32;
     fn eru(&self, r: u8) -> u32;
     fn mode_r(&self, mode: ProcessorMode, r: u8) -> u32;
     fn set_mode_r(&mut self, mode: ProcessorMode, r: u8, value: u32);
@@ -174,15 +173,6 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
         self.r[r] = value;
     }
 
-    fn set_rt(&mut self, h: bool, r: u8, value: u32) {
-        self.pc_changed = self.pc_changed || r == 15;
-        if h {
-            self.r[r + 8] = value;
-        } else {
-            self.r[r] = value;
-        }
-    }
-
     // this stands for "get execute register"
     // when executing instructions, the PC is 8 bytes ahead of the current instruction
     fn er(&self, r: u8) -> u32 {
@@ -193,17 +183,11 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
     }
 
     // this stands for "get execute register thumb"
-    // h is the significant bit frequently stored somewhere else in the instruction
     // when executing instructions, the PC is 4 bytes ahead of the current instruction
-    fn ert(&self, h: bool, r: u8) -> u32 {
-        if h {
-            let r = r + 8;
-            match r {
-                15 => self.r[15] + 4,
-                _ => self.r[r],
-            }
-        } else {
-            self.r[r]
+    fn ert(&self, r: u8) -> u32 {
+        match r {
+            15 => self.r[15] + 4,
+            _ => self.r[r],
         }
     }
 
@@ -519,24 +503,12 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
         self.r[r] = value;
     }
 
-    fn set_rt(&mut self, h: bool, r: u8, value: u32) {
-        if h {
-            self.r[r + 8] = value;
-        } else {
-            self.r[r] = value;
-        }
-    }
-
     fn er(&self, r: u8) -> u32 {
         self.r[r]
     }
 
-    fn ert(&self, h: bool, r: u8) -> u32 {
-        if h {
-            self.r[r + 8]
-        } else {
-            self.r[r]
-        }
+    fn ert(&self, r: u8) -> u32 {
+        self.r[r]
     }
 
     fn eru(&self, r: u8) -> u32 {

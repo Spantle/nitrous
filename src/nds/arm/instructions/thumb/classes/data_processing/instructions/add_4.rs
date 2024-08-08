@@ -12,9 +12,11 @@ pub fn add_4(ctx: &mut Context<Instruction, impl ContextTrait>) {
     let rm = ctx.inst.get_byte(3, 5);
     let h1 = ctx.inst.get_bit(6);
     let h2 = ctx.inst.get_bit(7);
+    let rd = ctx.inst.get_rh(h1, rd);
+    let rm = ctx.inst.get_rh(h2, rm);
     ctx.dis.push_reg_arg(rd, Some(", "));
     ctx.dis.push_reg_arg(rm, None);
 
-    let result = ctx.arm.ert(h1, rd).wrapping_add(ctx.arm.ert(h2, rm));
-    ctx.arm.set_rt(h1, rd, result);
+    let result = ctx.arm.ert(rd).wrapping_add(ctx.arm.ert(rm));
+    ctx.arm.set_r(rd, result);
 }

@@ -36,4 +36,13 @@ impl Instruction {
     pub fn get_word(&self, offset: u32, to: u32) -> u32 {
         ((self.0 >> offset) & ((1 << (to - offset + 1)) - 1)) as u32
     }
+
+    #[inline(always)]
+    pub fn get_rh(&self, h: bool, r: u8) -> u8 {
+        if h {
+            r + 8
+        } else {
+            r
+        }
+    }
 }
