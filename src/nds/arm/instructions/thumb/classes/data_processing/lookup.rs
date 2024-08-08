@@ -85,7 +85,7 @@ pub fn lookup_register(inst_set: u16, ctx: &mut Context<Instruction, impl Contex
 
 #[inline(always)]
 pub fn lookup_special(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
-    let opcode = (inst_set >> 5) & 0b11;
+    let opcode = (inst_set >> 2) & 0b11;
     match opcode {
         0b00 => {
             // ADD (4)
