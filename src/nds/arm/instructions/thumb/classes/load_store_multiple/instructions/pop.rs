@@ -32,7 +32,7 @@ pub fn pop(arm_bool: bool, ctx: &mut Context<Instruction, impl ContextTrait>) {
         if arm_bool {
             ctx.arm.cpsr_mut().set_thumb(value.get_bit(0));
         }
-        // address = address.wrapping_add(4);
+        address = address.wrapping_add(4);
     }
 
     ctx.arm.set_r(13, address);
