@@ -21,12 +21,26 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
             instructions::lsr_1(ctx)
         }
         0b11 => {
-            if (inst_set << 4) & 0b1 == 0 {
-                // ADD (3)
-                instructions::add_3(ctx)
-            } else {
-                // ADD (1)
-                instructions::add_1(ctx)
+            match ((inst_set >> 4) & 0b1, (inst_set >> 3) & 0b1) {
+                (0, 0) => {
+                    // ADD (3)
+                    return instructions::add_3(ctx);
+                }
+                (0, 1) => {
+                    // SUB (3)
+                    ctx.logger.log_warn("SUB (3) not implemented".to_string());
+                    return 1;
+                }
+                (1, 0) => {
+                    // ADD (1)
+                    return instructions::add_1(ctx);
+                }
+                (1, 1) => {
+                    // SUB (1)
+                    ctx.logger.log_warn("SUB (1) not implemented".to_string());
+                    return 1;
+                }
+                _ => unreachable!(),
             }
         }
         _ => {
@@ -36,9 +50,7 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
             ));
             return 10000;
         }
-    };
-
-    1 // TODO: this is wrong
+    }
 }
 
 #[inline(always)]
