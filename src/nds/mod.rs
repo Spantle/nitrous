@@ -8,4 +8,4 @@ pub mod logger;
 pub mod shared;
 
 pub use bits::*;
-pub use emulator::Emulator;
+pub use emulator::{CycleState, Emulator};

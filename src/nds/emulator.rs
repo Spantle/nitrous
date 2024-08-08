@@ -10,7 +10,8 @@ use super::{
 
 static IS_EMULATOR_RUNNING: AtomicBool = AtomicBool::new(false);
 
-enum CycleState {
+#[derive(PartialEq)]
+pub enum CycleState {
     Arm9_1,
     Arm9_2,
     Arm7,
@@ -25,7 +26,7 @@ pub struct Emulator {
 
     pub shared: Shared,
 
-    cycle_state: CycleState,
+    pub cycle_state: CycleState,
 }
 
 impl Default for Emulator {

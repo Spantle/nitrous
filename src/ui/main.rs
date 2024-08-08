@@ -97,6 +97,10 @@ pub struct NitrousGUI {
     #[serde(skip)]
     pub arm9_disassembler_jump_now: bool,
     #[serde(skip)]
+    pub arm9_disassembler_step_amount: String,
+    #[serde(skip)]
+    pub arm9_disassembler_steps_remaining: usize,
+    #[serde(skip)]
     pub arm7_disassembler_instruction_set:
         windows::debug::arm_disassembler::DisassemblerInstructionSet,
     pub arm7_disassembler_follow_pc: bool,
@@ -104,6 +108,10 @@ pub struct NitrousGUI {
     pub arm7_disassembler_jump_value: String,
     #[serde(skip)]
     pub arm7_disassembler_jump_now: bool,
+    #[serde(skip)]
+    pub arm7_disassembler_step_amount: String,
+    #[serde(skip)]
+    pub arm7_disassembler_steps_remaining: usize,
 
     #[serde(skip)]
     pub memory_viewer_selected: Option<usize>,
@@ -164,11 +172,15 @@ impl Default for NitrousGUI {
             arm9_disassembler_follow_pc: true,
             arm9_disassembler_jump_value: String::new(),
             arm9_disassembler_jump_now: false,
+            arm9_disassembler_step_amount: "1".to_string(),
+            arm9_disassembler_steps_remaining: 0,
             arm7_disassembler_instruction_set:
                 windows::debug::arm_disassembler::DisassemblerInstructionSet::Follow,
             arm7_disassembler_follow_pc: true,
             arm7_disassembler_jump_value: String::new(),
             arm7_disassembler_jump_now: false,
+            arm7_disassembler_step_amount: "1".to_string(),
+            arm7_disassembler_steps_remaining: 0,
 
             memory_viewer_selected: None,
             memory_viewer_selected_pending_value: None,

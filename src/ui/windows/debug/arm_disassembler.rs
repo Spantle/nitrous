@@ -3,7 +3,7 @@ use std::fmt::Display;
 use crate::{
     nds::{
         arm::{self, bus, instructions, models::Disassembly, ArmBool},
-        logger, shared,
+        logger, shared, CycleState,
     },
     ui::{NitrousGUI, NitrousUI, NitrousWindow},
 };
@@ -118,6 +118,65 @@ impl NitrousGUI {
                         ArmBool::ARM7 => self.arm7_disassembler_jump_now = true,
                     }
                 }
+
+                let step_amount = match ARM_BOOL {
+                    ArmBool::ARM9 => &mut self.arm9_disassembler_step_amount,
+                    ArmBool::ARM7 => &mut self.arm7_disassembler_step_amount,
+                };
+                ui.add(
+                    egui::TextEdit::singleline(step_amount)
+                        .hint_text("1")
+                        .desired_width(40.0),
+                );
+
+                if ui.button("Step").clicked() {
+                    match ARM_BOOL {
+                        ArmBool::ARM9 => {
+                            self.arm9_disassembler_steps_remaining =
+                                step_amount.parse().unwrap_or(0);
+                        }
+                        ArmBool::ARM7 => {
+                            self.arm7_disassembler_steps_remaining =
+                                step_amount.parse().unwrap_or(0);
+                        }
+                    }
+
+                    loop {
+                        self.emulator.clock();
+
+                        let mut ran = false;
+                        match ARM_BOOL {
+                            ArmBool::ARM9 => {
+                                if self.emulator.cycle_state == CycleState::Arm9_2
+                                    || self.emulator.cycle_state == CycleState::Arm7
+                                {
+                                    ran = true;
+                                }
+                            }
+                            ArmBool::ARM7 => {
+                                if self.emulator.cycle_state == CycleState::Arm9_1 {
+                                    ran = true;
+                                }
+                            }
+                        }
+
+                        if ran {
+                            let steps_remaining = match ARM_BOOL {
+                                ArmBool::ARM9 => self.arm9_disassembler_steps_remaining,
+                                ArmBool::ARM7 => self.arm7_disassembler_steps_remaining,
+                            };
+
+                            if steps_remaining > 0 {
+                                match ARM_BOOL {
+                                    ArmBool::ARM9 => self.arm9_disassembler_steps_remaining -= 1,
+                                    ArmBool::ARM7 => self.arm7_disassembler_steps_remaining -= 1,
+                                };
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
             });
         });
     }
@@ -162,13 +221,10 @@ impl NitrousGUI {
             ArmBool::ARM7 => &self.arm7_disassembler_instruction_set,
         };
         let is_thumb = match instruction_set {
-            DisassemblerInstructionSet::Follow => {
-                let is_thumb = match ARM_BOOL {
-                    ArmBool::ARM9 => self.emulator.arm9.cpsr.get_thumb(),
-                    ArmBool::ARM7 => self.emulator.arm7.cpsr.get_thumb(),
-                };
-                is_thumb
-            }
+            DisassemblerInstructionSet::Follow => match ARM_BOOL {
+                ArmBool::ARM9 => self.emulator.arm9.cpsr.get_thumb(),
+                ArmBool::ARM7 => self.emulator.arm7.cpsr.get_thumb(),
+            },
             DisassemblerInstructionSet::ARM => false,
             DisassemblerInstructionSet::THUMB => true,
         };
