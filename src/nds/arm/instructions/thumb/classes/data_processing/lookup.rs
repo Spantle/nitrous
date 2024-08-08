@@ -54,6 +54,10 @@ pub fn lookup_ascm_immediate(
 pub fn lookup_special(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let opcode = (inst_set >> 5) & 0b11;
     match opcode {
+        0b00 => {
+            // ADD (4)
+            instructions::add_4(ctx)
+        }
         0b01 => {
             // CMP (3)
             instructions::cmp_3(ctx)

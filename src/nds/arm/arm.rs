@@ -56,6 +56,7 @@ pub struct Arm<Bus: BusTrait> {
 pub trait ArmTrait<Bus: BusTrait> {
     fn r(&self) -> &Registers; // TODO: rename this to `registers`
     fn set_r(&mut self, r: u8, value: u32);
+    fn set_rt(&mut self, h: bool, r: u8, value: u32);
     fn er(&self, r: u8) -> u32;
     fn ert(&self, h: bool, r: u8) -> u32;
     fn eru(&self, r: u8) -> u32;
@@ -171,6 +172,15 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
     fn set_r(&mut self, r: u8, value: u32) {
         self.pc_changed = self.pc_changed || r == 15;
         self.r[r] = value;
+    }
+
+    fn set_rt(&mut self, h: bool, r: u8, value: u32) {
+        self.pc_changed = self.pc_changed || r == 15;
+        if h {
+            self.r[r + 8] = value;
+        } else {
+            self.r[r] = value;
+        }
     }
 
     // this stands for "get execute register"
@@ -507,6 +517,14 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
 
     fn set_r(&mut self, r: u8, value: u32) {
         self.r[r] = value;
+    }
+
+    fn set_rt(&mut self, h: bool, r: u8, value: u32) {
+        if h {
+            self.r[r + 8] = value;
+        } else {
+            self.r[r] = value;
+        }
     }
 
     fn er(&self, r: u8) -> u32 {
