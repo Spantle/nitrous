@@ -9,6 +9,24 @@ use crate::nds::{
 use super::instructions;
 
 #[inline(always)]
+pub fn lookup_register_offset(
+    inst_set: u16,
+    ctx: &mut Context<Instruction, impl ContextTrait>,
+) -> u32 {
+    let opcode = (inst_set >> 3) & 0b111;
+    match opcode {
+        0b101 => instructions::ldrh_2(ctx),
+        _ => {
+            ctx.logger.log_warn(format!(
+                "unknown load/store register offset opcode {:03b}",
+                opcode
+            ));
+            return 10000;
+        }
+    }
+}
+
+#[inline(always)]
 pub fn lookup_word_byte_immediate(
     inst_set: u16,
     ctx: &mut Context<Instruction, impl ContextTrait>,

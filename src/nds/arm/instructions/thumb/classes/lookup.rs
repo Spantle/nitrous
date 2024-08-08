@@ -28,9 +28,7 @@ pub fn lookup_instruction_class(
         0b010 => {
             if (inst_set >> 6) & 0b1 == 1 {
                 // Load/store register offset
-                ctx.logger
-                    .log_warn("Load/store register offset not implemented");
-                return 1;
+                return load_store::lookup_register_offset(inst_set, ctx);
             }
 
             if (inst_set >> 5) & 0b1 == 1 {
