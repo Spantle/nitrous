@@ -34,8 +34,8 @@ pub fn lookup(
                 let pc = (lr + (offset_11 << 1)) & 0xFFFFFFFC;
                 ctx.dis.push_word_arg(pc);
 
+                ctx.arm.set_r(14, (ctx.arm.r()[15] + 2) | 1);
                 ctx.arm.set_r(15, pc);
-                ctx.arm.set_r(14, (pc + 2) | 1);
                 ctx.arm.cpsr_mut().set_thumb(false);
                 1 // TODO: this is wrong
             }
@@ -57,8 +57,8 @@ pub fn lookup(
             let pc = lr + (offset_11 << 1);
             ctx.dis.push_word_arg(pc);
 
+            ctx.arm.set_r(14, (ctx.arm.r()[15] + 2) | 1);
             ctx.arm.set_r(15, pc);
-            ctx.arm.set_r(14, (pc + 2) | 1);
             1 // TODO: this is wrong
         }
         _ => unreachable!(),
