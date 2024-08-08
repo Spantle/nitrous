@@ -225,20 +225,14 @@ impl NitrousGUI {
             .column(egui_extras::Column::auto())
             .column(egui_extras::Column::remainder());
 
-        if self.emulator.is_running() {
-            if pc < arm_load_address || pc >= arm_load_address + arm_size as usize {
-                return;
-            }
+        let follow_pc = match ARM_BOOL {
+            ArmBool::ARM9 => self.arm9_disassembler_follow_pc,
+            ArmBool::ARM7 => self.arm7_disassembler_follow_pc,
+        };
+        if follow_pc && !(pc < arm_load_address || pc >= arm_load_address + arm_size as usize) {
             let pc_row = (pc - arm_load_address) / instruction_width;
-
-            let follow_pc = match ARM_BOOL {
-                ArmBool::ARM9 => self.arm9_disassembler_follow_pc,
-                ArmBool::ARM7 => self.arm7_disassembler_follow_pc,
-            };
-            if follow_pc {
-                table_builder = table_builder.scroll_to_row(pc_row, Some(egui::Align::Center));
-            };
-        }
+            table_builder = table_builder.scroll_to_row(pc_row, Some(egui::Align::Center));
+        };
 
         let jump_now = match ARM_BOOL {
             ArmBool::ARM9 => self.arm9_disassembler_jump_now,
