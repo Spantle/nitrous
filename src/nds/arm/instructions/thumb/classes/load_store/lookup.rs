@@ -50,3 +50,18 @@ pub fn lookup_word_byte_immediate(
 
     1 // TODO: this is wrong
 }
+
+#[inline(always)]
+pub fn lookup_halfword_immediate(
+    inst_set: u16,
+    ctx: &mut Context<Instruction, impl ContextTrait>,
+) -> u32 {
+    let l = (inst_set >> 5) & 0b1 == 1;
+    if l {
+        instructions::ldrh_1(ctx);
+    } else {
+        instructions::strh_1(ctx);
+    }
+
+    1 // TODO: this is wrong
+}

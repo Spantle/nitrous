@@ -60,7 +60,7 @@ pub fn lookup_instruction_class(
         0b100 => {
             if (inst_set >> 6) & 0b1 == 0 {
                 // Load/store halfword immediate offset
-                load_store::instructions::ldrh_1(ctx)
+                load_store::lookup_halfword_immediate(inst_set, ctx)
             } else {
                 // Load/store to/from stack
                 ctx.logger
