@@ -39,6 +39,10 @@ pub fn lookup_ascm_immediate(
             // MOV
             instructions::mov_1(ctx)
         }
+        0b01 => {
+            // CMP
+            instructions::cmp_1(ctx)
+        }
         _ => {
             ctx.logger.log_warn(format!(
                 "unknown ascm immediate lookup opcode {:02b}",
