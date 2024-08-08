@@ -57,6 +57,10 @@ pub fn lookup_instruction_class(
 
             data_processing::lookup_special(inst_set, ctx)
         }
+        0b011 => {
+            // Load/store word/byte immediate offset
+            load_store::lookup_word_byte_immediate(inst_set, ctx)
+        }
         0b100 => {
             if (inst_set >> 6) & 0b1 == 0 {
                 // Load/store halfword immediate offset
