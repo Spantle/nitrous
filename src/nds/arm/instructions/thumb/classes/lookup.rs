@@ -18,6 +18,10 @@ pub fn lookup_instruction_class(
     let class = (inst_set >> 7) & 0b111;
 
     match class {
+        0b000 => {
+            // Shift by immediate, add/subtract register, add/subtract immediate
+            data_processing::lookup(inst_set, ctx)
+        }
         0b001 => {
             // Add/subtract/compare/move immediate
             data_processing::ascm_immediate_lookup(inst_set, ctx)
