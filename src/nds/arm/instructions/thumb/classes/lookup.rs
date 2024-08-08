@@ -78,7 +78,7 @@ pub fn lookup_instruction_class(
 
             if (inst_set >> 3) & 0b1 == 0 {
                 // Push/pop registers
-                return load_store_multiple::lookup_push_pop(inst_set, ctx);
+                return load_store_multiple::lookup_push_pop(arm_bool, inst_set, ctx);
             }
 
             // Software breakpoint
