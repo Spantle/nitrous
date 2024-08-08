@@ -1,4 +1,5 @@
 mod add_1;
+mod add_2;
 mod add_3;
 mod add_4;
 mod and;
@@ -9,8 +10,10 @@ mod lsr_1;
 mod mov_1;
 mod mov_3;
 mod orr;
+mod sub_2;
 
 pub use add_1::*;
+pub use add_2::*;
 pub use add_3::*;
 pub use add_4::*;
 pub use and::*;
@@ -21,3 +24,4 @@ pub use lsr_1::*;
 pub use mov_1::*;
 pub use mov_3::*;
 pub use orr::*;
+pub use sub_2::*;

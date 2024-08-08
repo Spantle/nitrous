@@ -56,12 +56,15 @@ pub fn lookup_ascm_immediate(
             // CMP
             instructions::cmp_1(ctx)
         }
-        _ => {
-            ctx.logger.log_warn(format!(
-                "unknown ascm immediate lookup opcode {:02b}",
-                opcode
-            ));
+        0b10 => {
+            // ADD
+            instructions::add_2(ctx)
         }
+        0b11 => {
+            // SUB
+            instructions::sub_2(ctx)
+        }
+        _ => unreachable!(),
     };
 
     1 // TODO: this is wrong
