@@ -23,7 +23,7 @@ pub fn lookup_instruction_class(
         }
         0b001 => {
             // Add/subtract/compare/move immediate
-            data_processing::ascm_immediate_lookup(inst_set, ctx)
+            data_processing::lookup_ascm_immediate(inst_set, ctx)
         }
         0b010 => {
             if (inst_set >> 6) & 0b1 == 1 {
@@ -38,7 +38,14 @@ pub fn lookup_instruction_class(
                 return load_store::instructions::ldr_3(ctx);
             }
 
-            if (inst_set >> 2) & 0b111 == 0b111 {
+            if (inst_set >> 4) & 0b1 == 0 {
+                // Data-processing register
+                ctx.logger
+                    .log_warn("Data-processing register not implemented");
+                return 10000;
+            }
+
+            if (inst_set >> 2) & 0b11 == 0b11 {
                 // Branch/exchange instruction set
                 let l = ((inst_set >> 1) & 0b1) == 1;
                 if l {
@@ -48,9 +55,7 @@ pub fn lookup_instruction_class(
                 }
             }
 
-            ctx.logger
-                .log_warn(format!("Unknown 0b010 instruction {:#018b}", inst_set));
-            10000
+            data_processing::lookup_special(inst_set, ctx)
         }
         0b100 => {
             if (inst_set >> 6) & 0b1 == 0 {

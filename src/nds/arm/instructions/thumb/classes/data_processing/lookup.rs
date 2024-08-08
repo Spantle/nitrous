@@ -18,7 +18,7 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
         }
         _ => {
             ctx.logger.log_warn(format!(
-                "unknown data processing lookup opcode {:03b}",
+                "unknown data processing lookup opcode {:02b}",
                 opcode
             ));
             return 10000;
@@ -29,7 +29,7 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
 }
 
 #[inline(always)]
-pub fn ascm_immediate_lookup(
+pub fn lookup_ascm_immediate(
     inst_set: u16,
     ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {
@@ -41,9 +41,29 @@ pub fn ascm_immediate_lookup(
         }
         _ => {
             ctx.logger.log_warn(format!(
-                "unknown ascm immediate lookup opcode {:03b}",
+                "unknown ascm immediate lookup opcode {:02b}",
                 opcode
             ));
+        }
+    };
+
+    1 // TODO: this is wrong
+}
+
+#[inline(always)]
+pub fn lookup_special(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
+    let opcode = (inst_set >> 5) & 0b11;
+    match opcode {
+        0b01 => {
+            // CMP (3)
+            instructions::cmp_3(ctx)
+        }
+        _ => {
+            ctx.logger.log_warn(format!(
+                "unknown special data-processing opcode {:02b}",
+                opcode
+            ));
+            return 10000;
         }
     };
 
