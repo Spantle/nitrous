@@ -130,17 +130,7 @@ impl NitrousGUI {
                 );
 
                 if ui.button("Step").clicked() {
-                    match ARM_BOOL {
-                        ArmBool::ARM9 => {
-                            self.arm9_disassembler_steps_remaining =
-                                step_amount.parse().unwrap_or(0);
-                        }
-                        ArmBool::ARM7 => {
-                            self.arm7_disassembler_steps_remaining =
-                                step_amount.parse().unwrap_or(0);
-                        }
-                    }
-
+                    let mut steps_remaining = step_amount.parse().unwrap_or(0);
                     loop {
                         self.emulator.clock();
 
@@ -161,17 +151,8 @@ impl NitrousGUI {
                         }
 
                         if ran {
-                            let steps_remaining = match ARM_BOOL {
-                                ArmBool::ARM9 => self.arm9_disassembler_steps_remaining,
-                                ArmBool::ARM7 => self.arm7_disassembler_steps_remaining,
-                            };
-
-                            if steps_remaining > 0 {
-                                match ARM_BOOL {
-                                    ArmBool::ARM9 => self.arm9_disassembler_steps_remaining -= 1,
-                                    ArmBool::ARM7 => self.arm7_disassembler_steps_remaining -= 1,
-                                };
-                            } else {
+                            steps_remaining -= 1;
+                            if steps_remaining <= 0 {
                                 break;
                             }
                         }
