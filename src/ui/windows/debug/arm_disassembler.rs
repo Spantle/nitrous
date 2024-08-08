@@ -217,6 +217,11 @@ impl NitrousGUI {
             table_builder = table_builder.scroll_to_row(jump_row, None);
         };
 
+        match ARM_BOOL {
+            ArmBool::ARM9 => self.arm9_disassembler_jump_now = false,
+            ArmBool::ARM7 => self.arm7_disassembler_jump_now = false,
+        }
+
         table_builder
             .header(height, |mut header| {
                 header.col(|c| {
