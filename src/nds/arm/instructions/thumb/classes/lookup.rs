@@ -2,7 +2,6 @@ use crate::nds::{
     arm::{
         instructions::thumb::Instruction,
         models::{Context, ContextTrait},
-        ArmKind,
     },
     logger::LoggerTrait,
 };
@@ -11,7 +10,7 @@ use super::{branch, data_processing, load_store, load_store_multiple};
 
 #[inline(always)]
 pub fn lookup_instruction_class(
-    arm_kind: ArmKind,
+    arm_bool: bool,
     inst_set: u16,
     ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {
@@ -103,7 +102,7 @@ pub fn lookup_instruction_class(
         }
         0b111 => {
             // branching shenanigans
-            branch::lookup(arm_kind, inst_set, ctx)
+            branch::lookup(arm_bool, inst_set, ctx)
         }
         _ => {
             ctx.logger

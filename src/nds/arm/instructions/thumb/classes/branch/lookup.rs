@@ -3,7 +3,6 @@ use crate::nds::{
         arm::ArmTrait,
         instructions::thumb::Instruction,
         models::{Context, ContextTrait, DisassemblyTrait},
-        ArmKind,
     },
     logger::LoggerTrait,
     Bits,
@@ -11,7 +10,7 @@ use crate::nds::{
 
 #[inline(always)]
 pub fn lookup(
-    arm_kind: ArmKind,
+    arm_bool: bool,
     inst_set: u16,
     ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {
@@ -24,7 +23,7 @@ pub fn lookup(
             1
         }
         0b01 => {
-            if arm_kind == ArmKind::ARM7 {
+            if !arm_bool {
                 // undefined instruction
                 ctx.logger.log_warn("undefined blx variant 01");
                 1

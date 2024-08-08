@@ -2,7 +2,6 @@ use crate::nds::{
     arm::{
         instructions::arm::Instruction,
         models::{Context, ContextTrait, DisassemblyTrait},
-        ArmKind,
     },
     // logger::LoggerTrait,
 };
@@ -25,7 +24,7 @@ pub fn run_instruction<const ARM_BOOL: bool>(
     }
 
     // also runs it ignore the name
-    lookup_instruction_class(ArmKind::from_bool(ARM_BOOL), inst_set, ctx)
+    lookup_instruction_class(ARM_BOOL, inst_set, ctx)
 }
 
 #[cfg(feature = "epic")]
@@ -43,5 +42,5 @@ pub fn run_instruction<const ARM_BOOL: bool, const INST_SET: u16>(
     }
 
     // also runs it ignore the name
-    lookup_instruction_class(ArmKind::from_bool(ARM_BOOL), INST_SET, ctx)
+    lookup_instruction_class(ARM_BOOL, INST_SET, ctx)
 }
