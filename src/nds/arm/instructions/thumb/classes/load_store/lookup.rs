@@ -36,6 +36,9 @@ pub fn lookup_word_byte_immediate(
         0b01 => {
             instructions::ldr_1(ctx);
         }
+        0b11 => {
+            instructions::ldrb_1(ctx);
+        }
         _ => {
             ctx.logger.log_warn(format!(
                 "unknown load/store word/byte immediate BL {:02b}",
