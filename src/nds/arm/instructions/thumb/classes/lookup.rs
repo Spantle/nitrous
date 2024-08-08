@@ -86,6 +86,21 @@ pub fn lookup_instruction_class(
             ctx.logger.log_warn("Software breakpoint not implemented");
             10000
         }
+        0b110 => {
+            if (inst_set >> 6) & 0b1 == 0 {
+                // Load/store multiple
+                ctx.logger.log_warn("Load/store multiple not implemented");
+                return 10000;
+            }
+
+            if (inst_set >> 2) & 0b1111 == 0b1111 {
+                // Software interrupt
+                ctx.logger.log_warn("Software interrupt not implemented");
+                return 10000;
+            }
+
+            branch::instructions::b::<true>(inst_set, ctx)
+        }
         0b111 => {
             // branching shenanigans
             branch::lookup(arm_kind, inst_set, ctx)

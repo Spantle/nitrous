@@ -14,7 +14,8 @@ pub fn run_instruction<const ARM_BOOL: bool>(
     inst_set: u16,
     ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {
-    let cond_result = calculate_cond(inst_set, ctx);
+    let cond = ((inst_set >> 8) & 0b1111) as u8;
+    let cond_result = calculate_cond(cond, ctx);
     if !ctx.dis.is_real() && !cond_result {
         // ctx.logger.log_debug(format!(
         //     "condition failed {:#06X} ({:016b})",

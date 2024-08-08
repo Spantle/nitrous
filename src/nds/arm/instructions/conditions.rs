@@ -1,13 +1,11 @@
 use crate::nds::arm::{
     arm::ArmTrait,
-    instructions::arm::Instruction,
     models::{Context, ContextTrait, DisassemblyTrait},
 };
 
 #[inline(always)]
-pub fn calculate_cond(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> bool {
-    let cond = (inst_set >> 8 & 0b1111) as u8;
-    let s = &ctx.arm.cpsr();
+pub fn calculate_cond<T>(cond: u8, ctx: &mut Context<T, impl ContextTrait>) -> bool {
+    let s = ctx.arm.cpsr();
     match cond {
         0b0000 => {
             ctx.dis.set_cond(['E', 'Q']);
