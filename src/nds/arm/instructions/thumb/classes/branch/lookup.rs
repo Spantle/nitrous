@@ -8,6 +8,8 @@ use crate::nds::{
     Bits,
 };
 
+use super::instructions;
+
 #[inline(always)]
 pub fn lookup(
     arm_bool: bool,
@@ -19,8 +21,7 @@ pub fn lookup(
     match h {
         0b00 => {
             // Uncodonitional branch
-            ctx.logger.log_info("unconditional branch not implemented");
-            1
+            instructions::b_2(ctx)
         }
         0b01 => {
             if !arm_bool {

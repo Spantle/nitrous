@@ -103,7 +103,7 @@ pub fn lookup_instruction_class(
                 return 10000;
             }
 
-            branch::instructions::b::<true>(inst_set, ctx)
+            branch::instructions::b_1(inst_set, ctx)
         }
         0b111 => {
             // branching shenanigans
