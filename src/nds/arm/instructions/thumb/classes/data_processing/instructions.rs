@@ -11,6 +11,7 @@ mod mov_1;
 mod mov_3;
 mod orr;
 mod sub_2;
+mod tst;
 
 pub use add_1::*;
 pub use add_2::*;
@@ -25,3 +26,4 @@ pub use mov_1::*;
 pub use mov_3::*;
 pub use orr::*;
 pub use sub_2::*;
+pub use tst::*;

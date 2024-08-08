@@ -24,21 +24,21 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
             match ((inst_set >> 4) & 0b1, (inst_set >> 3) & 0b1) {
                 (0, 0) => {
                     // ADD (3)
-                    return instructions::add_3(ctx);
+                    instructions::add_3(ctx)
                 }
                 (0, 1) => {
                     // SUB (3)
                     ctx.logger.log_warn("SUB (3) not implemented".to_string());
-                    return 1;
+                    1
                 }
                 (1, 0) => {
                     // ADD (1)
-                    return instructions::add_1(ctx);
+                    instructions::add_1(ctx)
                 }
                 (1, 1) => {
                     // SUB (1)
                     ctx.logger.log_warn("SUB (1) not implemented".to_string());
-                    return 1;
+                    1
                 }
                 _ => unreachable!(),
             }
@@ -87,13 +87,14 @@ pub fn lookup_register(inst_set: u16, ctx: &mut Context<Instruction, impl Contex
     let opcode = inst_set & 0b1111;
     match opcode {
         0b0000 => instructions::and(ctx),
+        0b1000 => instructions::tst(ctx),
         0b1100 => instructions::orr(ctx),
         _ => {
             ctx.logger.log_warn(format!(
                 "unknown data processing register lookup opcode {:04b}",
                 opcode
             ));
-            return 10000;
+            10000
         }
     }
 }
