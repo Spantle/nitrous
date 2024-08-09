@@ -7,28 +7,30 @@ use crate::nds::{
     Bits,
 };
 
-// LSR (1)
-pub fn lsr_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
+// LSR (2)
+pub fn lsr_2(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.dis.set_inst("LSR");
 
     let rd = ctx.inst.get_byte(0, 2);
-    let rm = ctx.inst.get_byte(3, 5);
-    let immed_5 = ctx.inst.get_word(6, 10);
+    let rs = ctx.inst.get_byte(3, 5);
     ctx.dis.push_reg_arg(rd, Some(", "));
-    ctx.dis.push_reg_arg(rm, None);
-    ctx.dis.push_word_end_arg(immed_5, None);
+    ctx.dis.push_reg_arg(rs, None);
 
-    let result = if immed_5 == 0 {
+    let rs = ctx.arm.r()[rs];
+    let byte = rs.get_bits(0, 7);
+    let result = if byte == 0 {
+        ctx.arm.r()[rd]
+    } else if byte < 32 {
+        let rd = ctx.arm.r()[rd];
+        ctx.arm.cpsr_mut().set_carry(rd.get_bit(byte - 1));
+        rd >> byte
+    } else if byte == 32 {
         let rd = ctx.arm.r()[rd];
         ctx.arm.cpsr_mut().set_carry(rd.get_bit(31));
-
         0
     } else {
-        let rd = ctx.arm.r()[rd];
-        ctx.arm.cpsr_mut().set_carry(rd.get_bit(immed_5 - 1));
-
-        let rm = ctx.arm.r()[rm];
-        rm >> immed_5
+        ctx.arm.cpsr_mut().set_carry(false);
+        0
     };
 
     ctx.arm.set_r(rd, result);
