@@ -13,7 +13,6 @@ use crate::nds::arm::{
 pub struct LoadStoreMultipleInstruction {
     pub register_list: u16, // bits[15:0] result
     pub start_address: u32, // cheating
-    pub end_address: u32,   // cheating
 
     pub destination: u8,      // cheating (rn)
     pub writeback_value: u32, // cheating
@@ -21,7 +20,7 @@ pub struct LoadStoreMultipleInstruction {
 
 impl LoadStoreMultipleInstruction {
     fn new(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> Self {
-        let (start_address, end_address, writeback_value) = addressing_mode::parse(inst_set, ctx);
+        let (start_address, _end_address, writeback_value) = addressing_mode::parse(inst_set, ctx);
         let register_list = ctx.inst.get_halfword(0, 15);
 
         ctx.dis.push_str_end_arg("", Some("{"));
@@ -37,7 +36,6 @@ impl LoadStoreMultipleInstruction {
         LoadStoreMultipleInstruction {
             register_list,
             start_address,
-            end_address,
 
             destination: ctx.inst.get_byte(16, 19),
             writeback_value,

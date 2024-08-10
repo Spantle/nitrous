@@ -65,7 +65,7 @@ pub fn lookup_instruction_class(
                 // Load/store to/from stack
                 ctx.logger
                     .log_warn("Load/store to/from stack not implemented");
-                return 10000;
+                10000
             }
         }
         0b101 => {

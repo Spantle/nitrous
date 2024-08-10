@@ -30,11 +30,9 @@ pub fn b_1(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> 
 fn sign_extend_8_to_32(value: u32) -> i32 {
     let sign_bit = value.get_bit(7);
 
-    let extended_value = if sign_bit {
+    if sign_bit {
         (value | 0xFFFFFF80) as i32
     } else {
         value as i32
-    };
-
-    extended_value
+    }
 }

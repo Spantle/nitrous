@@ -1,7 +1,7 @@
 use crate::nds::{
     arm::{
         arm::ArmTrait,
-        instructions::{conditions::calculate_cond, thumb::Instruction},
+        instructions::thumb::Instruction,
         models::{Context, ContextTrait, DisassemblyTrait},
     },
     Bits,
@@ -24,11 +24,9 @@ pub fn b_2(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
 fn sign_extend_11_to_32(value: u32) -> i32 {
     let sign_bit = value.get_bit(1);
 
-    let extended_value = if sign_bit {
+    if sign_bit {
         (value | 0xFFFFF800) as i32
     } else {
         (value & 0x000007FF) as i32
-    };
-
-    extended_value
+    }
 }

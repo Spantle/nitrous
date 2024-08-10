@@ -13,7 +13,7 @@ use super::{
 
 #[inline(always)]
 pub fn lookup_instruction_class(
-    arm_bool: bool,
+    _arm_bool: bool,
     inst_set: u16,
     ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {

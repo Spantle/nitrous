@@ -13,15 +13,7 @@ pub enum ArmKind {
     ARM9,
     ARM7,
 }
-impl ArmKind {
-    #[inline(always)]
-    pub fn from_bool(arm_bool: bool) -> ArmKind {
-        match arm_bool {
-            true => ArmKind::ARM9,
-            false => ArmKind::ARM7,
-        }
-    }
-}
+
 pub struct ArmBool;
 impl ArmBool {
     pub const ARM9: bool = true;
@@ -59,7 +51,6 @@ pub trait ArmTrait<Bus: BusTrait> {
     fn er(&self, r: u8) -> u32;
     fn ert(&self, r: u8) -> u32;
     fn eru(&self, r: u8) -> u32;
-    fn mode_r(&self, mode: ProcessorMode, r: u8) -> u32;
     fn set_mode_r(&mut self, mode: ProcessorMode, r: u8, value: u32);
 
     fn cpsr(&self) -> &PSR;
@@ -206,17 +197,6 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
                 );
                 self.r[15] // NOTE: this might need to be + 8?
             }
-            _ => self.r[r],
-        }
-    }
-
-    fn mode_r(&self, mode: ProcessorMode, r: u8) -> u32 {
-        match mode {
-            ProcessorMode::FIQ => self.r_fiq[r as usize],
-            ProcessorMode::IRQ => self.r_irq[r as usize],
-            ProcessorMode::SVC => self.r_svc[r as usize],
-            ProcessorMode::ABT => self.r_abt[r as usize],
-            ProcessorMode::UND => self.r_und[r as usize],
             _ => self.r[r],
         }
     }
@@ -512,10 +492,6 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
     }
 
     fn eru(&self, r: u8) -> u32 {
-        self.r[r]
-    }
-
-    fn mode_r(&self, _mode: ProcessorMode, r: u8) -> u32 {
         self.r[r]
     }
 

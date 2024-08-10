@@ -11,16 +11,16 @@ use crate::{
 #[derive(PartialEq)]
 pub enum DisassemblerInstructionSet {
     Follow,
-    ARM,
-    THUMB,
+    Arm,
+    Thumb,
 }
 
 impl Display for DisassemblerInstructionSet {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             DisassemblerInstructionSet::Follow => write!(f, "Follow CPU"),
-            DisassemblerInstructionSet::ARM => write!(f, "ARM"),
-            DisassemblerInstructionSet::THUMB => write!(f, "THUMB"),
+            DisassemblerInstructionSet::Arm => write!(f, "ARM"),
+            DisassemblerInstructionSet::Thumb => write!(f, "THUMB"),
         }
     }
 }
@@ -80,13 +80,13 @@ impl NitrousGUI {
                         );
                         ui.selectable_value(
                             selected_instruction_set,
-                            DisassemblerInstructionSet::ARM,
-                            DisassemblerInstructionSet::ARM.to_string(),
+                            DisassemblerInstructionSet::Arm,
+                            DisassemblerInstructionSet::Arm.to_string(),
                         );
                         ui.selectable_value(
                             selected_instruction_set,
-                            DisassemblerInstructionSet::THUMB,
-                            DisassemblerInstructionSet::THUMB.to_string(),
+                            DisassemblerInstructionSet::Thumb,
+                            DisassemblerInstructionSet::Thumb.to_string(),
                         );
                     });
 
@@ -206,8 +206,8 @@ impl NitrousGUI {
                 ArmBool::ARM9 => self.emulator.arm9.cpsr.get_thumb(),
                 ArmBool::ARM7 => self.emulator.arm7.cpsr.get_thumb(),
             },
-            DisassemblerInstructionSet::ARM => false,
-            DisassemblerInstructionSet::THUMB => true,
+            DisassemblerInstructionSet::Arm => false,
+            DisassemblerInstructionSet::Thumb => true,
         };
         let instruction_width = if is_thumb { 2 } else { 4 };
 

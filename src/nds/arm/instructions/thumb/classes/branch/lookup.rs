@@ -69,11 +69,9 @@ pub fn lookup(
 fn sign_extend_11_to_32(value: u32) -> u32 {
     let sign_bit = value.get_bit(11);
 
-    let extended_value = if sign_bit {
+    if sign_bit {
         value | 0xFFFFF800
     } else {
         value & 0x000007FF
-    };
-
-    extended_value
+    }
 }

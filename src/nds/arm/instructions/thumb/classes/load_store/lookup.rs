@@ -21,7 +21,7 @@ pub fn lookup_register_offset(
                 "unknown load/store register offset opcode {:03b}",
                 opcode
             ));
-            return 10000;
+            10000
         }
     }
 }

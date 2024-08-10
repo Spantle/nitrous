@@ -26,8 +26,8 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
     let is_add = inst_set >> 3 & 1 == 1; // U
     let w = inst_set >> 1 & 1 == 1; // W
     let is_load = inst_set & 1 == 1; // L
-    let s = ctx.inst.is_signed; // S
-    let h = ctx.inst.is_halfword; // H
+    let _s = ctx.inst.is_signed; // S
+    let _h = ctx.inst.is_halfword; // H
 
     let rn = arm.er(inst.first_source_register);
 

@@ -48,7 +48,7 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
                 "unknown data processing lookup opcode {:02b}",
                 opcode
             ));
-            return 10000;
+            10000
         }
     }
 }

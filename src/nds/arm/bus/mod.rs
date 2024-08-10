@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::nds::shared::Shared;
 
 use super::ArmKind;
