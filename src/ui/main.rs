@@ -99,6 +99,10 @@ pub struct NitrousGUI {
     #[serde(skip)]
     pub arm9_disassembler_step_amount: String,
     #[serde(skip)]
+    pub arm9_disassembler_breakpoints: Vec<u32>,
+    #[serde(skip)]
+    pub arm9_disassembler_selected_breakpoint: Option<usize>,
+    #[serde(skip)]
     pub arm7_disassembler_instruction_set:
         windows::debug::arm_disassembler::DisassemblerInstructionSet,
     pub arm7_disassembler_follow_pc: bool,
@@ -108,6 +112,10 @@ pub struct NitrousGUI {
     pub arm7_disassembler_jump_now: bool,
     #[serde(skip)]
     pub arm7_disassembler_step_amount: String,
+    #[serde(skip)]
+    pub arm7_disassembler_breakpoints: Vec<u32>,
+    #[serde(skip)]
+    pub arm7_disassembler_selected_breakpoint: Option<usize>,
 
     #[serde(skip)]
     pub memory_viewer_selected: Option<usize>,
@@ -169,12 +177,16 @@ impl Default for NitrousGUI {
             arm9_disassembler_jump_value: String::new(),
             arm9_disassembler_jump_now: false,
             arm9_disassembler_step_amount: "1".to_string(),
+            arm9_disassembler_breakpoints: Vec::new(),
+            arm9_disassembler_selected_breakpoint: None,
             arm7_disassembler_instruction_set:
                 windows::debug::arm_disassembler::DisassemblerInstructionSet::Follow,
             arm7_disassembler_follow_pc: true,
             arm7_disassembler_jump_value: String::new(),
             arm7_disassembler_jump_now: false,
             arm7_disassembler_step_amount: "1".to_string(),
+            arm7_disassembler_breakpoints: Vec::new(),
+            arm7_disassembler_selected_breakpoint: None,
 
             memory_viewer_selected: None,
             memory_viewer_selected_pending_value: None,
@@ -278,6 +290,31 @@ impl eframe::App for NitrousGUI {
                     self.emulator.shared.gpu2d_a.clock();
                     self.emulator.shared.gpu2d_b.clock();
                     cycles_ran_gpu += 1;
+                }
+
+                if self
+                    .arm9_disassembler_breakpoints
+                    .contains(&self.emulator.arm9.r[15])
+                {
+                    self.emulator.pause();
+                    self.arm9_disassembler_selected_breakpoint = Some(
+                        self.arm9_disassembler_breakpoints
+                            .iter()
+                            .position(|&x| x == self.emulator.arm9.r[15])
+                            .unwrap(),
+                    );
+                }
+                if self
+                    .arm7_disassembler_breakpoints
+                    .contains(&self.emulator.arm7.r[15])
+                {
+                    self.emulator.pause();
+                    self.arm7_disassembler_selected_breakpoint = Some(
+                        self.arm7_disassembler_breakpoints
+                            .iter()
+                            .position(|&x| x == self.emulator.arm7.r[15])
+                            .unwrap(),
+                    );
                 }
             }
         }

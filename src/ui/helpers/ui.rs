@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 pub trait NitrousUI {
     fn enabled_button(
         &mut self,
@@ -8,7 +6,7 @@ pub trait NitrousUI {
         callback: impl FnOnce(),
     ) -> bool;
     fn make_monospace(&mut self);
-    fn colored_strong(&mut self, color: egui::Color32, text: impl Into<String>);
+    fn colored_strong(&mut self, color: egui::Color32, text: impl Into<String>) -> egui::Response;
 }
 
 impl NitrousUI for egui::Ui {
@@ -32,7 +30,7 @@ impl NitrousUI for egui::Ui {
         self.style_mut().override_text_style = Some(egui::TextStyle::Monospace);
     }
 
-    fn colored_strong(&mut self, color: egui::Color32, text: impl Into<String>) {
-        self.label(egui::RichText::new(text).color(color).strong());
+    fn colored_strong(&mut self, color: egui::Color32, text: impl Into<String>) -> egui::Response {
+        self.label(egui::RichText::new(text).color(color).strong())
     }
 }
