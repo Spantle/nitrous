@@ -44,8 +44,8 @@ pub fn lookup(
         0b10 => {
             // BL/BLX prefix
             ctx.dis.set_inst("BL(X)"); // ??????????????????
-            let pc = ctx.arm.r()[15] + 4;
-            let lr = pc + (sign_extend_11_to_32(offset_11) << 12);
+            let pc = (ctx.arm.r()[15] + 4) as i32;
+            let lr = (pc + (offset_11.sign_extend(11) << 12)) as u32;
             ctx.dis.push_word_arg(lr);
 
             ctx.arm.set_r(14, lr);
@@ -63,15 +63,5 @@ pub fn lookup(
             1 // TODO: this is wrong
         }
         _ => unreachable!(),
-    }
-}
-
-fn sign_extend_11_to_32(value: u32) -> u32 {
-    let sign_bit = value.get_bit(11);
-
-    if sign_bit {
-        value | 0xFFFFF800
-    } else {
-        value & 0x000007FF
     }
 }

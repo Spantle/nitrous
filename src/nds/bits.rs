@@ -6,6 +6,8 @@ pub trait Bits<T> {
     fn get_bits(&self, offset: Self, end: Self) -> Self;
     fn set_bit(&mut self, offset: Self, value: bool);
     fn set_bits(&mut self, offset: Self, end: Self, value: Self);
+
+    fn sign_extend(&self, from: u32) -> i32;
 }
 
 impl Bits<u32> for u32 {
@@ -28,6 +30,12 @@ impl Bits<u32> for u32 {
     fn set_bits(&mut self, offset: u32, end: u32, value: u32) {
         let mask = ((1 << (end - offset + 1)) - 1) << offset;
         *self = (*self & !mask) | ((value << offset) & mask);
+    }
+
+    #[inline(always)]
+    fn sign_extend(&self, from: u32) -> i32 {
+        let shift = 32 - from;
+        ((*self << shift) as i32) >> shift
     }
 }
 
@@ -52,6 +60,12 @@ impl Bits<u16> for u16 {
         let mask = ((1 << (end - offset + 1)) - 1) << offset;
         *self = (*self & !mask) | ((value << offset) & mask);
     }
+
+    #[inline(always)]
+    fn sign_extend(&self, from: u32) -> i32 {
+        let shift = 16 - from;
+        ((*self << shift) as i32) >> shift
+    }
 }
 
 impl Bits<u8> for u8 {
@@ -74,5 +88,11 @@ impl Bits<u8> for u8 {
     fn set_bits(&mut self, offset: u8, end: u8, value: u8) {
         let mask = ((1 << (end - offset + 1)) - 1) << offset;
         *self = (*self & !mask) | ((value << offset) & mask);
+    }
+
+    #[inline(always)]
+    fn sign_extend(&self, from: u32) -> i32 {
+        let shift = 8 - from;
+        ((*self << shift) as i32) >> shift
     }
 }

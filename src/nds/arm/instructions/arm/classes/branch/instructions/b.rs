@@ -1,7 +1,10 @@
-use crate::nds::arm::{
-    arm::ArmTrait,
-    instructions::arm::{classes::branch::sign_extend_24_to_32, Instruction},
-    models::{Context, ContextTrait, DisassemblyTrait},
+use crate::nds::{
+    arm::{
+        arm::ArmTrait,
+        instructions::arm::Instruction,
+        models::{Context, ContextTrait, DisassemblyTrait},
+    },
+    Bits,
 };
 
 // B, BL, BLX (1)
@@ -17,12 +20,12 @@ pub fn b<const L: bool, const X: bool>(ctx: &mut Context<Instruction, impl Conte
         arm.set_r(14, arm.r()[15].wrapping_add(4));
     }
 
-    let signed_immed_24 = inst.get_word(0, 23);
+    let signed_immed_24 = inst.get_word(0, 23).sign_extend(24);
     let signed_immed_24 = if X {
         let h: i32 = inst.get_bit(24).into();
-        (sign_extend_24_to_32(signed_immed_24) << 2) + (h << 1)
+        (signed_immed_24 << 2) + (h << 1)
     } else {
-        sign_extend_24_to_32(signed_immed_24) << 2
+        signed_immed_24 << 2
     };
     let result = (arm.er(15) as i32).wrapping_add(signed_immed_24) as u32; // TODO: probably not the best conversion?
     ctx.dis.push_word_arg(result);
