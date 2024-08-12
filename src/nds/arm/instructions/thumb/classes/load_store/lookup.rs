@@ -33,6 +33,9 @@ pub fn lookup_word_byte_immediate(
 ) -> u32 {
     let bl = (inst_set >> 5) & 0b11;
     match bl {
+        0b00 => {
+            instructions::str_1(ctx);
+        }
         0b01 => {
             instructions::ldr_1(ctx);
         }
@@ -42,13 +45,7 @@ pub fn lookup_word_byte_immediate(
         0b11 => {
             instructions::ldrb_1(ctx);
         }
-        _ => {
-            ctx.logger.log_warn(format!(
-                "unknown load/store word/byte immediate BL {:02b}",
-                bl
-            ));
-            return 10000;
-        }
+        _ => unreachable!(),
     }
 
     1 // TODO: this is wrong
