@@ -1,3 +1,5 @@
+// TODO: this needs a good clean
+
 use std::fmt::Display;
 
 use crate::{
@@ -86,7 +88,9 @@ impl NitrousGUI {
                     ArmBool::ARM7 => &mut self.arm7_disassembler_follow_pc,
                 };
                 ui.checkbox(follow_pc, "Follow PC");
+            });
 
+            ui.horizontal(|ui| {
                 let step_amount = match ARM_BOOL {
                     ArmBool::ARM9 => &mut self.arm9_disassembler_step_amount,
                     ArmBool::ARM7 => &mut self.arm7_disassembler_step_amount,
@@ -126,6 +130,55 @@ impl NitrousGUI {
                         }
                     }
                 }
+
+                if ui
+                    .button("Step over")
+                    .on_hover_text("Will pause when the PC reaches the next instruction.")
+                    .clicked()
+                {
+                    let pc = match ARM_BOOL {
+                        ArmBool::ARM9 => self.emulator.arm9.r[15],
+                        ArmBool::ARM7 => self.emulator.arm7.r[15],
+                    };
+                    let is_thumb = match ARM_BOOL {
+                        ArmBool::ARM9 => self.emulator.arm9.cpsr.get_thumb(),
+                        ArmBool::ARM7 => self.emulator.arm7.cpsr.get_thumb(),
+                    };
+                    let next_inst = if is_thumb { pc + 2 } else { pc + 4 };
+                    match ARM_BOOL {
+                        ArmBool::ARM9 => self.arm9_disassembler_step_until = Some(next_inst),
+                        ArmBool::ARM7 => self.arm7_disassembler_step_until = Some(next_inst),
+                    }
+
+                    self.emulator.start();
+                }
+
+                if ui
+                    .button("Step return")
+                    .on_hover_text("Will pause when the PC reaches the LR. Use wisely!")
+                    .clicked()
+                {
+                    let lr = match ARM_BOOL {
+                        ArmBool::ARM9 => self.emulator.arm9.r[14],
+                        ArmBool::ARM7 => self.emulator.arm7.r[14],
+                    };
+                    match ARM_BOOL {
+                        ArmBool::ARM9 => self.arm9_disassembler_step_until = Some(lr),
+                        ArmBool::ARM7 => self.arm7_disassembler_step_until = Some(lr),
+                    }
+
+                    self.emulator.start();
+                }
+
+                let is_running = self.emulator.is_running();
+                let resume_text = if is_running { "Pause" } else { "Resume" };
+                if ui.button(resume_text).clicked() {
+                    if is_running {
+                        self.emulator.pause();
+                    } else {
+                        self.emulator.start();
+                    }
+                }
             });
 
             ui.horizontal(|ui| {
@@ -133,18 +186,20 @@ impl NitrousGUI {
                     ArmBool::ARM9 => &mut self.arm9_disassembler_jump_value,
                     ArmBool::ARM7 => &mut self.arm7_disassembler_jump_value,
                 };
-                ui.label("Enter address");
                 ui.add(
                     egui::TextEdit::singleline(jump_value)
-                        .hint_text("FFFFFFFF")
-                        .desired_width(60.0)
+                        .hint_text("0xFFFFFFFF")
+                        .desired_width(80.0)
                         .font(egui::TextStyle::Monospace),
                 );
 
                 if ui.button("Jump").clicked() {
+                    let jump_value = Some(
+                        u32::from_str_radix(jump_value.trim_start_matches("0x"), 16).unwrap_or(0),
+                    );
                     match ARM_BOOL {
-                        ArmBool::ARM9 => self.arm9_disassembler_jump_now = true,
-                        ArmBool::ARM7 => self.arm7_disassembler_jump_now = true,
+                        ArmBool::ARM9 => self.arm9_disassembler_jump_now = jump_value,
+                        ArmBool::ARM7 => self.arm7_disassembler_jump_now = jump_value,
                     }
                 }
 
@@ -155,12 +210,13 @@ impl NitrousGUI {
                     };
                     *jump_value = format!("{:08X}", pc);
                     match ARM_BOOL {
-                        ArmBool::ARM9 => self.arm9_disassembler_jump_now = true,
-                        ArmBool::ARM7 => self.arm7_disassembler_jump_now = true,
+                        ArmBool::ARM9 => self.arm9_disassembler_jump_now = Some(pc),
+                        ArmBool::ARM7 => self.arm7_disassembler_jump_now = Some(pc),
                     }
                 }
                 if ui.button("Add breakpoint").clicked() {
-                    let jump_value = u32::from_str_radix(jump_value, 16).unwrap_or(0);
+                    let jump_value =
+                        u32::from_str_radix(jump_value.trim_start_matches("0x"), 16).unwrap_or(0);
                     let breakpoints = match ARM_BOOL {
                         ArmBool::ARM9 => &mut self.arm9_disassembler_breakpoints,
                         ArmBool::ARM7 => &mut self.arm7_disassembler_breakpoints,
@@ -206,7 +262,21 @@ impl NitrousGUI {
                     });
                 });
 
-                if ui.button("Delete breakpoint").clicked() {
+                if ui.button("Jump to BP").clicked() {
+                    let selected_breakpoint = match ARM_BOOL {
+                        ArmBool::ARM9 => &self.arm9_disassembler_selected_breakpoint,
+                        ArmBool::ARM7 => &self.arm7_disassembler_selected_breakpoint,
+                    };
+                    if let Some(value) = selected_breakpoint {
+                        let breakpoint = breakpoints[*value];
+                        match ARM_BOOL {
+                            ArmBool::ARM9 => self.arm9_disassembler_jump_now = Some(breakpoint),
+                            ArmBool::ARM7 => self.arm7_disassembler_jump_now = Some(breakpoint),
+                        }
+                    }
+                }
+
+                if ui.button("Delete BP").clicked() {
                     let selected_breakpoint = match ARM_BOOL {
                         ArmBool::ARM9 => &mut self.arm9_disassembler_selected_breakpoint,
                         ArmBool::ARM7 => &mut self.arm7_disassembler_selected_breakpoint,
@@ -218,16 +288,6 @@ impl NitrousGUI {
                         } else {
                             *selected_breakpoint = Some(*value - 1);
                         }
-                    }
-                }
-
-                let is_running = self.emulator.is_running();
-                let resume_text = if is_running { "Pause" } else { "Resume" };
-                if ui.button(resume_text).clicked() {
-                    if is_running {
-                        self.emulator.pause();
-                    } else {
-                        self.emulator.start();
                     }
                 }
             });
@@ -310,19 +370,18 @@ impl NitrousGUI {
             ArmBool::ARM9 => self.arm9_disassembler_jump_now,
             ArmBool::ARM7 => self.arm7_disassembler_jump_now,
         };
-        if jump_now {
-            let jump_value = match ARM_BOOL {
-                ArmBool::ARM9 => &self.arm9_disassembler_jump_value,
-                ArmBool::ARM7 => &self.arm7_disassembler_jump_value,
-            };
-            let jump_value = u32::from_str_radix(jump_value, 16).unwrap_or(0);
-            let jump_row = (jump_value as usize - arm_load_address) / instruction_width;
-            table_builder = table_builder.scroll_to_row(jump_row, Some(egui::Align::Center));
+        if let Some(jump_value) = jump_now {
+            if jump_value >= (arm_load_address as u32)
+                && jump_value < (arm_load_address as u32) + arm_size
+            {
+                let jump_row = (jump_value as usize - arm_load_address) / instruction_width;
+                table_builder = table_builder.scroll_to_row(jump_row, Some(egui::Align::Center));
+            }
         };
 
         match ARM_BOOL {
-            ArmBool::ARM9 => self.arm9_disassembler_jump_now = false,
-            ArmBool::ARM7 => self.arm7_disassembler_jump_now = false,
+            ArmBool::ARM9 => self.arm9_disassembler_jump_now = None,
+            ArmBool::ARM7 => self.arm7_disassembler_jump_now = None,
         }
         let breakpoints = match ARM_BOOL {
             ArmBool::ARM9 => &mut self.arm9_disassembler_breakpoints,
@@ -441,11 +500,32 @@ impl NitrousGUI {
                                 disassembly.inst_suffix,
                             );
 
+                            let mut clickable = |ui: &mut egui::Ui, arg: &arm::models::Chunk| {
+                                let label =
+                                    ui.colored_label(match_color(&arg.kind), arg.value.to_string());
+                                if arg.kind == arm::models::ChunkKind::Immediate && label.clicked()
+                                {
+                                    ui.input(|r| {
+                                        if r.modifiers.ctrl {
+                                            let jump_now = match ARM_BOOL {
+                                                ArmBool::ARM9 => {
+                                                    &mut self.arm9_disassembler_jump_now
+                                                }
+                                                ArmBool::ARM7 => {
+                                                    &mut self.arm7_disassembler_jump_now
+                                                }
+                                            };
+                                            *jump_now = Some(arg.raw);
+                                        }
+                                    });
+                                }
+                            };
+
                             if !disassembly.args.is_empty() {
                                 ui.label(" ");
 
                                 for arg in &disassembly.args {
-                                    ui.colored_label(match_color(&arg.kind), arg.value.to_string());
+                                    clickable(ui, arg);
                                 }
                             }
 
@@ -457,7 +537,7 @@ impl NitrousGUI {
                                 }
 
                                 for arg in &disassembly.end_args {
-                                    ui.colored_label(match_color(&arg.kind), arg.value.to_string());
+                                    clickable(ui, arg);
                                 }
                             }
                         });

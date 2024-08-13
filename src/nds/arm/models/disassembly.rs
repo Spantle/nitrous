@@ -1,8 +1,10 @@
 pub struct Chunk {
     pub kind: ChunkKind,
     pub value: String,
+    pub raw: u32,
 }
 
+#[derive(PartialEq)]
 pub enum ChunkKind {
     Register,
     Immediate,
@@ -11,8 +13,8 @@ pub enum ChunkKind {
 }
 
 impl Chunk {
-    pub fn new(kind: ChunkKind, value: String) -> Self {
-        Self { kind, value }
+    pub fn new(kind: ChunkKind, value: String, raw: u32) -> Self {
+        Self { kind, value, raw }
     }
 }
 
@@ -58,53 +60,65 @@ impl DisassemblyTrait for Disassembly {
     }
 
     fn push_reg_arg(&mut self, reg: u8, suffix: Option<&str>) {
-        self.args
-            .push(Chunk::new(ChunkKind::Register, format!("r{}", reg)));
+        self.args.push(Chunk::new(
+            ChunkKind::Register,
+            format!("r{}", reg),
+            reg.into(),
+        ));
 
         if let Some(suffix) = suffix {
             self.args
-                .push(Chunk::new(ChunkKind::Modifier, suffix.to_string()));
+                .push(Chunk::new(ChunkKind::Modifier, suffix.to_string(), 0));
         }
     }
 
     fn push_word_arg(&mut self, arg: u32) {
-        self.args
-            .push(Chunk::new(ChunkKind::Immediate, format!("#0x{:0X}", arg)));
+        self.args.push(Chunk::new(
+            ChunkKind::Immediate,
+            format!("#0x{:0X}", arg),
+            arg,
+        ));
     }
 
     fn push_str_arg(&mut self, arg: &str) {
         self.args
-            .push(Chunk::new(ChunkKind::Punctuation, arg.to_string()));
+            .push(Chunk::new(ChunkKind::Punctuation, arg.to_string(), 0));
     }
 
     fn push_reg_end_arg(&mut self, reg: u8, prefix: Option<&str>) {
         if let Some(prefix) = prefix {
             self.end_args
-                .push(Chunk::new(ChunkKind::Punctuation, prefix.to_string()));
+                .push(Chunk::new(ChunkKind::Punctuation, prefix.to_string(), 0));
         }
 
-        self.end_args
-            .push(Chunk::new(ChunkKind::Register, format!("r{}", reg)));
+        self.end_args.push(Chunk::new(
+            ChunkKind::Register,
+            format!("r{}", reg),
+            reg.into(),
+        ));
     }
 
     fn push_word_end_arg(&mut self, arg: u32, prefix: Option<&str>) {
         if let Some(prefix) = prefix {
             self.end_args
-                .push(Chunk::new(ChunkKind::Punctuation, prefix.to_string()));
+                .push(Chunk::new(ChunkKind::Punctuation, prefix.to_string(), 0));
         }
 
-        self.end_args
-            .push(Chunk::new(ChunkKind::Immediate, format!("#0x{:0X}", arg)));
+        self.end_args.push(Chunk::new(
+            ChunkKind::Immediate,
+            format!("#0x{:0X}", arg),
+            arg,
+        ));
     }
 
     fn push_str_end_arg(&mut self, arg: &str, prefix: Option<&str>) {
         if let Some(prefix) = prefix {
             self.end_args
-                .push(Chunk::new(ChunkKind::Punctuation, prefix.to_string()));
+                .push(Chunk::new(ChunkKind::Punctuation, prefix.to_string(), 0));
         }
 
         self.end_args
-            .push(Chunk::new(ChunkKind::Modifier, arg.to_string()));
+            .push(Chunk::new(ChunkKind::Modifier, arg.to_string(), 0));
     }
 }
 
