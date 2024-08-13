@@ -44,7 +44,7 @@ pub fn lookup(
         0b10 => {
             // BL/BLX prefix
             ctx.dis.set_inst("BL(X)"); // ??????????????????
-            let pc = (ctx.arm.r()[15] + 4) as i32;
+            let pc = ctx.arm.ert(15) as i32;
             let lr = (pc + (offset_11.sign_extend(11) << 12)) as u32;
             ctx.dis.push_word_arg(lr);
 

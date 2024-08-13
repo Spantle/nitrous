@@ -46,7 +46,8 @@ pub struct Arm<Bus: BusTrait> {
 }
 
 pub trait ArmTrait<Bus: BusTrait> {
-    fn r(&self) -> &Registers; // TODO: rename this to `registers`
+    // NOTE: do not use this if there's a possibility that the PC is being read
+    fn r(&self) -> &Registers;
     fn set_r(&mut self, r: u8, value: u32);
     fn er(&self, r: u8) -> u32;
     fn ert(&self, r: u8) -> u32;
@@ -467,7 +468,7 @@ pub struct FakeArm {
 impl FakeArm {
     pub fn new(r15: u32) -> FakeArm {
         FakeArm {
-            r: Registers::new(r15 + 8),
+            r: Registers::new(r15),
             cpsr: PSR::default(),
             cp15: CP15::default(),
         }
@@ -484,11 +485,17 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
     }
 
     fn er(&self, r: u8) -> u32 {
-        self.r[r]
+        match r {
+            15 => self.r[15] + 8,
+            _ => self.r[r],
+        }
     }
 
     fn ert(&self, r: u8) -> u32 {
-        self.r[r]
+        match r {
+            15 => self.r[15] + 4,
+            _ => self.r[r],
+        }
     }
 
     fn eru(&self, r: u8) -> u32 {
