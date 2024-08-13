@@ -13,7 +13,8 @@ pub fn tst(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
 
     let rn = ctx.inst.get_byte(0, 2);
     let rm = ctx.inst.get_byte(3, 5);
-    ctx.dis.push_reg_arg(rn, Some(", "));
+    ctx.dis.push_reg_arg(rn, None);
+    ctx.dis.push_str_arg(", ");
     ctx.dis.push_reg_arg(rm, None);
 
     let result = ctx.arm.r()[rn] & ctx.arm.r()[rm];

@@ -13,8 +13,9 @@ pub fn add_2(ctx: &mut Context<Instruction, impl ContextTrait>) {
 
     let rd = ctx.inst.get_byte(8, 10);
     let immed_8 = ctx.inst.get_word(0, 7);
-    ctx.dis.push_reg_arg(rd, Some(", "));
-    ctx.dis.push_word_end_arg(immed_8, None);
+    ctx.dis.push_reg_arg(rd, None);
+    ctx.dis.push_str_arg(", ");
+    ctx.dis.push_word_arg(immed_8);
 
     let (result, carry) = ctx.arm.r()[rd].overflowing_add(immed_8);
 

@@ -14,8 +14,10 @@ pub fn add_3(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let rd = ctx.inst.get_byte(0, 2);
     let rn = ctx.inst.get_byte(3, 5);
     let rm = ctx.inst.get_byte(6, 8);
-    ctx.dis.push_reg_arg(rd, Some(", "));
-    ctx.dis.push_reg_arg(rn, Some(", "));
+    ctx.dis.push_reg_arg(rd, None);
+    ctx.dis.push_str_arg(", ");
+    ctx.dis.push_reg_arg(rn, None);
+    ctx.dis.push_str_arg(", ");
     ctx.dis.push_reg_arg(rm, None);
 
     let rn = ctx.arm.r()[rn];

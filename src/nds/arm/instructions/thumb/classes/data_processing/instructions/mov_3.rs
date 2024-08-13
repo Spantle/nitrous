@@ -14,7 +14,8 @@ pub fn mov_3(ctx: &mut Context<Instruction, impl ContextTrait>) {
     let h2 = ctx.inst.get_bit(6);
     let rd = ctx.inst.get_rh(h1, rd);
     let rm = ctx.inst.get_rh(h2, rm);
-    ctx.dis.push_reg_arg(rd, Some(", "));
+    ctx.dis.push_reg_arg(rd, None);
+    ctx.dis.push_str_arg(", ");
     ctx.dis.push_reg_arg(rm, None);
 
     ctx.arm.set_r(rd, ctx.arm.r()[rm]);

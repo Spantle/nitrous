@@ -27,7 +27,7 @@ pub fn lookup_push_pop(
         }
     }
     if r {
-        ctx.dis.push_str_end_arg("LR", Some(","));
+        ctx.dis.push_str_end_arg("LR", Some(prefix));
     }
     ctx.dis.push_str_end_arg("", Some("}"));
 

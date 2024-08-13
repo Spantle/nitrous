@@ -450,7 +450,11 @@ impl NitrousGUI {
                             }
 
                             if !disassembly.end_args.is_empty() {
-                                ui.label(", ");
+                                if !disassembly.args.is_empty() {
+                                    ui.label(", ");
+                                } else {
+                                    ui.label(" ");
+                                }
 
                                 for arg in &disassembly.end_args {
                                     ui.colored_label(match_color(&arg.kind), arg.value.to_string());

@@ -13,7 +13,8 @@ pub fn lsr_2(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
 
     let rd = ctx.inst.get_byte(0, 2);
     let rs = ctx.inst.get_byte(3, 5);
-    ctx.dis.push_reg_arg(rd, Some(", "));
+    ctx.dis.push_reg_arg(rd, None);
+    ctx.dis.push_str_arg(", ");
     ctx.dis.push_reg_arg(rs, None);
 
     let rs = ctx.arm.r()[rs];

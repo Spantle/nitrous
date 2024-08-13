@@ -14,9 +14,11 @@ pub fn lsl_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let rd = ctx.inst.get_byte(0, 2);
     let rm = ctx.inst.get_byte(3, 5);
     let immed_5 = ctx.inst.get_word(6, 10);
-    ctx.dis.push_reg_arg(rd, Some(", "));
+    ctx.dis.push_reg_arg(rd, None);
+    ctx.dis.push_str_arg(", ");
     ctx.dis.push_reg_arg(rm, None);
-    ctx.dis.push_word_end_arg(immed_5, None);
+    ctx.dis.push_str_arg(", ");
+    ctx.dis.push_word_arg(immed_5);
 
     let result = if immed_5 == 0 {
         ctx.arm.r()[rm]

@@ -17,7 +17,8 @@ pub fn cmp_3(ctx: &mut Context<Instruction, impl ContextTrait>) {
     let h2 = ctx.inst.get_bit(6);
     let rn = ctx.inst.get_rh(h1, rn);
     let rm = ctx.inst.get_rh(h2, rm);
-    ctx.dis.push_reg_arg(rn, Some(", "));
+    ctx.dis.push_reg_arg(rn, None);
+    ctx.dis.push_str_arg(", ");
     ctx.dis.push_reg_arg(rm, None);
 
     let (alu_out, borrow) = ctx.arm.ert(rn).overflowing_sub(ctx.arm.ert(rm));
