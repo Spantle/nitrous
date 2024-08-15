@@ -286,7 +286,7 @@ impl NitrousGUI {
                         if breakpoints.is_empty() {
                             *selected_breakpoint = None;
                         } else {
-                            *selected_breakpoint = Some(*value - 1);
+                            *selected_breakpoint = Some(*value.max(&mut 1) - 1);
                         }
                     }
                 }
