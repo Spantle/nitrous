@@ -20,6 +20,10 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
             // LSR (1)
             instructions::lsr_1(ctx)
         }
+        0b10 => {
+            // ASR (1)
+            instructions::asr_1(ctx)
+        }
         0b11 => {
             match ((inst_set >> 4) & 0b1, (inst_set >> 3) & 0b1) {
                 (0, 0) => {
