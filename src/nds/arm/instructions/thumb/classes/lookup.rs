@@ -71,8 +71,7 @@ pub fn lookup_instruction_class(
         0b101 => {
             if (inst_set >> 6) & 0b1 == 0 {
                 // Add to SP or PC
-                ctx.logger.log_warn("Add to SP or PC not implemented");
-                return 10000;
+                data_processing::instructions::add_5(ctx);
             }
 
             if (inst_set >> 4) & 0b1 == 0 {
