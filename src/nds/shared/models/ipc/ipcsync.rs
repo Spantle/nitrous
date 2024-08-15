@@ -36,16 +36,17 @@ impl IPCSYNC {
             self.log.push(IpcsyncLog::Write(ARM_BOOL, value));
         }
 
-        let set = match ARM_BOOL {
-            true => &mut self.value9,
-            false => &mut self.value7,
-        };
-        *set = value;
-
+        let etc = value.get_bits(4, 31);
         let input = value.get_bits(8, 11);
         match ARM_BOOL {
-            true => self.value7.set_bits(0, 3, input),
-            false => self.value9.set_bits(0, 3, input),
+            true => {
+                self.value9.set_bits(4, 31, etc);
+                self.value7.set_bits(0, 3, input);
+            }
+            false => {
+                self.value7.set_bits(4, 31, etc);
+                self.value9.set_bits(0, 3, input);
+            }
         };
     }
 }
