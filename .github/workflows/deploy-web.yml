@@ -1,11 +1,15 @@
-name: Build web
+name: Deploy web
 
 on:
   push:
 
 jobs:
-  build-web:
+  deploy-web:
     runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
 
     steps:
       - name: Checkout repository
@@ -31,3 +35,9 @@ jobs:
         with:
           name: "nitrous-web"
           path: "dist"
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact-name: "nitrous-web"
