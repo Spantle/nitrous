@@ -36,8 +36,9 @@ jobs:
           name: "nitrous-web"
           path: "dist"
 
+      - name: Upload pages artifact
+        uses: actions/upload-artifact@v4
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        with:
-          artifact-name: "nitrous-web"
