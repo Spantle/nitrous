@@ -26,16 +26,20 @@ pub fn lookup_push_pop(
             prefix = ",";
         }
     }
-    if r {
-        ctx.dis.push_str_end_arg("LR", Some(prefix));
-    }
-    ctx.dis.push_str_end_arg("", Some("}"));
 
     if pop {
-        instructions::pop(arm_bool, ctx)
+        if r {
+            ctx.dis.push_str_end_arg("PC", Some(prefix));
+        }
+        instructions::pop(arm_bool, ctx);
     } else {
+        if r {
+            ctx.dis.push_str_end_arg("LR", Some(prefix));
+        }
         instructions::push(ctx);
     }
+
+    ctx.dis.push_str_end_arg("", Some("}"));
 
     1 // TODO: this is wrong
 }
