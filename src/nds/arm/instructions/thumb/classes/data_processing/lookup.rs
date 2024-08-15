@@ -94,6 +94,7 @@ pub fn lookup_register(inst_set: u16, ctx: &mut Context<Instruction, impl Contex
         0b0001 => instructions::eor(ctx),
         0b0010 => instructions::lsl_2(ctx),
         0b0011 => instructions::lsr_2(ctx),
+        0b0111 => instructions::ror(ctx),
         0b1000 => instructions::tst(ctx),
         0b1001 => instructions::neg(ctx),
         0b1010 => instructions::cmp_2(ctx),

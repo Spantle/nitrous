@@ -19,6 +19,7 @@ mod mul;
 mod mvn;
 mod neg;
 mod orr;
+mod ror;
 mod sub_2;
 mod tst;
 
@@ -43,5 +44,6 @@ pub use mul::*;
 pub use mvn::*;
 pub use neg::*;
 pub use orr::*;
+pub use ror::*;
 pub use sub_2::*;
 pub use tst::*;
