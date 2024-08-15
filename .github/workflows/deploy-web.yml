@@ -2,6 +2,8 @@ name: Deploy web
 
 on:
   push:
+    branches:
+      - master
 
 jobs:
   deploy-web:
