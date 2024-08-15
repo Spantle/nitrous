@@ -98,6 +98,7 @@ pub fn lookup_register(inst_set: u16, ctx: &mut Context<Instruction, impl Contex
         0b1010 => instructions::cmp_2(ctx),
         0b1100 => instructions::orr(ctx),
         0b1101 => instructions::mul(ctx),
+        0b1111 => instructions::mvn(ctx),
         _ => {
             ctx.logger.log_warn(format!(
                 "unknown data processing register lookup opcode {:04b}",
