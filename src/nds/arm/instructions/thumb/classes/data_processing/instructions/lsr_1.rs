@@ -21,15 +21,13 @@ pub fn lsr_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.dis.push_word_arg(immed_5);
 
     let result = if immed_5 == 0 {
-        let rd = ctx.arm.r()[rd];
-        ctx.arm.cpsr_mut().set_carry(rd.get_bit(31));
+        let rm = ctx.arm.r()[rm];
+        ctx.arm.cpsr_mut().set_carry(rm.get_bit(31));
 
         0
     } else {
-        let rd = ctx.arm.r()[rd];
-        ctx.arm.cpsr_mut().set_carry(rd.get_bit(immed_5 - 1));
-
         let rm = ctx.arm.r()[rm];
+        ctx.arm.cpsr_mut().set_carry(rm.get_bit(immed_5 - 1));
         rm >> immed_5
     };
 
