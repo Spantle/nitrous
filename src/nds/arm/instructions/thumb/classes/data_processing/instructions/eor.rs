@@ -17,7 +17,7 @@ pub fn eor(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.dis.push_str_arg(", ");
     ctx.dis.push_reg_arg(rm, None);
 
-    let result = ctx.arm.r()[rd] & ctx.arm.r()[rm];
+    let result = ctx.arm.r()[rd] ^ ctx.arm.r()[rm];
     ctx.arm.set_r(rd, result);
     ctx.arm.cpsr_mut().set_negative(result.get_bit(31));
     ctx.arm.cpsr_mut().set_zero(result == 0);
