@@ -5,7 +5,7 @@ use crate::nds::shared::Shared;
 use super::ArmKind;
 
 pub trait BusTrait {
-    fn kind() -> ArmKind;
+    const KIND: ArmKind;
 
     fn load_bios(&mut self, bios: Vec<u8>);
     fn load_bios_from_path(&mut self, path: &str);
@@ -36,9 +36,7 @@ pub trait BusTrait {
 #[derive(Default)]
 pub struct FakeBus;
 impl BusTrait for FakeBus {
-    fn kind() -> ArmKind {
-        ArmKind::ARM9
-    }
+    const KIND: ArmKind = ArmKind::ARM9;
 
     fn load_bios(&mut self, _bios: Vec<u8>) {}
     fn load_bios_from_path(&mut self, _path: &str) {}

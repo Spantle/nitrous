@@ -6,9 +6,7 @@ use super::BusTrait;
 pub struct Bus7 {}
 
 impl BusTrait for Bus7 {
-    fn kind() -> ArmKind {
-        ArmKind::ARM7
-    }
+    const KIND: ArmKind = ArmKind::ARM7;
 
     fn load_bios(&mut self, _bios: Vec<u8>) {
         logger::error(logger::LogSource::Bus7, "BIOS loading not implemented");

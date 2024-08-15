@@ -127,7 +127,7 @@ impl<Bus: BusTrait> Arm<Bus> {
         //     );
         // }
 
-        let mut cycles = match Bus::kind() {
+        let mut cycles = match Bus::KIND {
             ArmKind::ARM9 => {
                 lookup_instruction_set::<true>(&mut Context::new(
                     inst,
@@ -197,7 +197,7 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
     fn eru(&self, r: u8) -> u32 {
         match r {
             15 => {
-                let log_source = match Bus::kind() {
+                let log_source = match Bus::KIND {
                     ArmKind::ARM9 => logger::LogSource::Arm9(0),
                     ArmKind::ARM7 => logger::LogSource::Arm7(0),
                 };
@@ -248,7 +248,7 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
             ProcessorMode::ABT => PSR::from(self.r_abt[2]),
             ProcessorMode::UND => PSR::from(self.r_und[2]),
             _ => {
-                let log_source = match Bus::kind() {
+                let log_source = match Bus::KIND {
                     ArmKind::ARM9 => logger::LogSource::Arm9(0),
                     ArmKind::ARM7 => logger::LogSource::Arm7(0),
                 };
@@ -391,7 +391,7 @@ impl<Bus: BusTrait> Arm<Bus> {
         );
         let (data_tcm_end, inst_tcm_end) =
             (data_tcm_base + data_tcm_size, inst_tcm_base + inst_tcm_size);
-        match Bus::kind() {
+        match Bus::KIND {
             ArmKind::ARM9 => {
                 if !self.cp15.control_register.get_instruction_tcm_load_mode()
                     && addr >= inst_tcm_base
@@ -433,7 +433,7 @@ impl<Bus: BusTrait> Arm<Bus> {
     ) {
         let addr = orig_addr as usize / T * T;
 
-        match Bus::kind() {
+        match Bus::KIND {
             ArmKind::ARM9 => {
                 let (data_tcm_base, data_tcm_size, inst_tcm_base, inst_tcm_size) = (
                     self.cp15.data_tcm_base as usize,

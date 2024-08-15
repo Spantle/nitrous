@@ -8,9 +8,7 @@ pub struct Bus9 {
 }
 
 impl BusTrait for Bus9 {
-    fn kind() -> ArmKind {
-        ArmKind::ARM9
-    }
+    const KIND: ArmKind = ArmKind::ARM9;
 
     fn load_bios(&mut self, bios: Vec<u8>) {
         logger::info(logger::LogSource::Arm9(0), "Successfully loaded BIOS");
