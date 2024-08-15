@@ -158,10 +158,15 @@ impl NitrousGUI {
                     .on_hover_text("Will pause when the PC reaches the LR. Use wisely!")
                     .clicked()
                 {
+                    let is_thumb = match ARM_BOOL {
+                        ArmBool::ARM9 => self.emulator.arm9.cpsr.get_thumb(),
+                        ArmBool::ARM7 => self.emulator.arm7.cpsr.get_thumb(),
+                    };
                     let lr = match ARM_BOOL {
                         ArmBool::ARM9 => self.emulator.arm9.r[14],
                         ArmBool::ARM7 => self.emulator.arm7.r[14],
                     };
+                    let lr = if is_thumb { lr & 0xFFFFFFFE } else { lr };
                     match ARM_BOOL {
                         ArmBool::ARM9 => self.arm9_disassembler_step_until = Some(lr),
                         ArmBool::ARM7 => self.arm7_disassembler_step_until = Some(lr),
