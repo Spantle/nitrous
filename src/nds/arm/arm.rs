@@ -14,6 +14,15 @@ pub enum ArmKind {
     ARM7,
 }
 
+impl From<ArmKind> for bool {
+    fn from(kind: ArmKind) -> bool {
+        match kind {
+            ArmKind::ARM9 => true,
+            ArmKind::ARM7 => false,
+        }
+    }
+}
+
 pub struct ArmBool;
 impl ArmBool {
     pub const ARM9: bool = true;

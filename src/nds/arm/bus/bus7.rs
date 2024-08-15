@@ -56,7 +56,7 @@ impl BusTrait for Bus7 {
                 bytes.copy_from_slice(&shared.wram[addr..addr + T]);
             }
             0x04000180..=0x04000183 => {
-                let value = shared.ipcsync.value(false).to_le_bytes();
+                let value = shared.ipcsync.value::<false>().to_le_bytes();
                 let len = T.min(value.len());
                 bytes[..len].copy_from_slice(&value[..len]);
             }
@@ -84,7 +84,7 @@ impl BusTrait for Bus7 {
                 shared.wram[addr..addr + T].copy_from_slice(&value);
             }
             0x04000180..=0x04000183 => {
-                shared.ipcsync.set(false, self.update_reg_value(value));
+                shared.ipcsync.set::<false>(self.update_reg_value(value));
             }
             _ => {
                 logger::warn(

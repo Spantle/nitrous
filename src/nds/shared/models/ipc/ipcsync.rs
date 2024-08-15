@@ -2,46 +2,51 @@
 
 use crate::nds::Bits;
 
+// I could've made this a generic, but this actually seems nicer (considering the logging + too many generics for something this simple)
 #[derive(Default)]
 #[allow(clippy::upper_case_acronyms)]
 pub struct IPCSYNC {
-    value: u32,
+    value9: u32,
+    value7: u32,
 
     pub log: Vec<IpcsyncLog>,
     pub logging_enabled: bool,
 }
 
-impl From<u32> for IPCSYNC {
-    fn from(value: u32) -> Self {
-        Self {
-            value,
-            log: Vec::new(),
-            logging_enabled: false,
-        }
-    }
-}
-
 impl IPCSYNC {
-    pub fn value_quiet(&self) -> u32 {
-        self.value
+    pub fn value_quiet<const ARM_BOOL: bool>(&self) -> u32 {
+        if ARM_BOOL {
+            self.value9
+        } else {
+            self.value7
+        }
     }
 
-    pub fn value(&mut self, is_arm9: bool) -> u32 {
+    pub fn value<const ARM_BOOL: bool>(&mut self) -> u32 {
+        let value = self.value_quiet::<ARM_BOOL>();
         if self.logging_enabled {
-            self.log.push(IpcsyncLog::Read(is_arm9, self.value));
+            self.log.push(IpcsyncLog::Read(ARM_BOOL, value));
         }
 
-        self.value
+        value
     }
 
-    pub fn set(&mut self, is_arm9: bool, value: u32) {
+    pub fn set<const ARM_BOOL: bool>(&mut self, value: u32) {
         if self.logging_enabled {
-            self.log.push(IpcsyncLog::Write(is_arm9, value));
+            self.log.push(IpcsyncLog::Write(ARM_BOOL, value));
         }
 
-        self.value = value;
-        let input = self.value.get_bits(8, 11);
-        self.value.set_bits(0, 3, input);
+        let set = match ARM_BOOL {
+            true => &mut self.value9,
+            false => &mut self.value7,
+        };
+        *set = value;
+
+        let input = value.get_bits(8, 11);
+        match ARM_BOOL {
+            true => self.value7.set_bits(0, 3, input),
+            false => self.value9.set_bits(0, 3, input),
+        };
     }
 }
 

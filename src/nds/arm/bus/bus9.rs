@@ -89,7 +89,7 @@ impl BusTrait for Bus9 {
                 bytes[..len].copy_from_slice(&value[..len]);
             }
             0x04000180..=0x04000183 => {
-                let value = shared.ipcsync.value(true).to_le_bytes();
+                let value = shared.ipcsync.value::<true>().to_le_bytes();
                 let len = T.min(value.len());
                 bytes[..len].copy_from_slice(&value[..len]);
             }
@@ -136,7 +136,7 @@ impl BusTrait for Bus9 {
                 shared.gpu2d_b.dispcnt = self.update_reg_value(value).into();
             }
             0x04000180..=0x04000183 => {
-                shared.ipcsync.set(true, self.update_reg_value(value));
+                shared.ipcsync.set::<true>(self.update_reg_value(value));
             }
             0x04000304..=0x04000307 => {
                 shared.powcnt1 = self.update_reg_value(value).into();
