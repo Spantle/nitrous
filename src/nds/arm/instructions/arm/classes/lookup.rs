@@ -1,7 +1,7 @@
 use crate::nds::{
     arm::{
         instructions::arm::Instruction,
-        models::{Context, ContextTrait},
+        models::{Context, ContextTrait, DisassemblyTrait},
     },
     logger::LoggerTrait,
 };
@@ -98,8 +98,23 @@ fn lookup_multiples_and_extra_load_store_instructions(
             // bit 24
             if inst_set >> 4 & 1 == 0 {
                 // Multiply
-                ctx.logger.log_warn("multiply instruction not implemented");
-                return 0;
+
+                let s = inst_set & 1 != 0;
+                if s {
+                    ctx.dis.set_inst_suffix("S");
+                }
+
+                // bit 23
+                return match (inst_set >> 3 & 1 == 1, s) {
+                    (false, false) => data_processing::instructions::mul::<false>(ctx),
+                    (false, true) => data_processing::instructions::mul::<true>(ctx),
+                    (true, _) => {
+                        // Multiply long
+                        ctx.logger
+                            .log_warn("multiply long instruction not implemented");
+                        return 1;
+                    }
+                };
             } else {
                 // Semaphore
                 ctx.logger.log_warn("semaphore instruction not implemented");

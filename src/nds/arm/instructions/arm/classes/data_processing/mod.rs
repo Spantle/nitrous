@@ -3,7 +3,7 @@ use crate::nds::arm::{
     models::{Context, ContextTrait},
 };
 
-mod instructions;
+pub mod instructions;
 mod lookup;
 mod shifter_operand;
 
