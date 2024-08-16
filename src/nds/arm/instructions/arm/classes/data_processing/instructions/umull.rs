@@ -25,7 +25,9 @@ pub fn umull<const S: bool>(ctx: &mut Context<Instruction, impl ContextTrait>) -
     arm.set_r(rd_hi, result.get_bits(32, 63) as u32);
     arm.set_r(rd_lo, result.get_bits(0, 31) as u32);
     if S {
-        arm.cpsr_mut().set_negative(result.get_bit(63));
+        arm.cpsr_mut()
+            .set_negative(result.get_bit(63) || result.get_bit(31));
+
         arm.cpsr_mut().set_zero(result == 0);
     }
 

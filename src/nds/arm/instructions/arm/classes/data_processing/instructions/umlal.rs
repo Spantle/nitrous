@@ -29,7 +29,9 @@ pub fn umlal<const S: bool>(ctx: &mut Context<Instruction, impl ContextTrait>) -
     arm.set_r(rd_lo, rd_lo_value);
     arm.set_r(rd_hi, rd_hi_value);
     if S {
-        arm.cpsr_mut().set_negative(result.get_bit(63));
+        arm.cpsr_mut()
+            .set_negative(rd_lo_value.get_bit(31) || rd_hi_value.get_bit(31));
+
         arm.cpsr_mut().set_zero(result == 0);
     }
 
