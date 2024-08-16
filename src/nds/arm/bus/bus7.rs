@@ -53,6 +53,11 @@ impl BusTrait for Bus7 {
                 let addr = (addr - 0x03000000) % 0x8000;
                 bytes.copy_from_slice(&shared.wram[addr..addr + T]);
             }
+            0x04000004..=0x04000005 => {
+                let value = shared.gpu2d_a.dispstat.value().to_le_bytes();
+                let len = T.min(value.len());
+                bytes[..len].copy_from_slice(&value[..len]);
+            }
             0x04000180..=0x04000183 => {
                 let value = shared.ipcsync.value::<false>().to_le_bytes();
                 let len = T.min(value.len());
