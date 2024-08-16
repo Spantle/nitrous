@@ -58,6 +58,11 @@ impl BusTrait for Bus7 {
                 let len = T.min(value.len());
                 bytes[..len].copy_from_slice(&value[..len]);
             }
+            0x04000130..=0x04000131 => {
+                let value = shared.keyinput.value().to_le_bytes();
+                let len = T.min(value.len());
+                bytes[..len].copy_from_slice(&value[..len]);
+            }
             0x04000180..=0x04000183 => {
                 let value = shared.ipcsync.value::<false>().to_le_bytes();
                 let len = T.min(value.len());
