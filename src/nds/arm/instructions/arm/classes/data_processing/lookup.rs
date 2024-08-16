@@ -144,6 +144,7 @@ pub fn lookup_multiply<Ctx: ContextTrait>(
     inst_set: u16,
     ctx: &mut Context<Instruction, Ctx>,
 ) -> u32 {
+    let u = inst_set >> 2 & 1 != 0;
     let a = inst_set >> 1 & 1 != 0;
     let s = inst_set & 1 != 0;
     if s {
@@ -151,16 +152,18 @@ pub fn lookup_multiply<Ctx: ContextTrait>(
     }
 
     // bit 23
-    return match (inst_set >> 3 & 1 == 1, a, s) {
-        (false, false, false) => instructions::mul::<false>(ctx),
-        (false, false, true) => instructions::mul::<true>(ctx),
-        (false, true, false) => instructions::mla::<false>(ctx),
-        (false, true, true) => instructions::mla::<true>(ctx),
-        (true, _, _) => {
-            // Multiply long
-            ctx.logger
-                .log_warn("multiply long instruction not implemented");
-            return 1;
-        }
-    };
+    match (inst_set >> 3 & 1 == 1, u, a, s) {
+        (false, _, false, false) => instructions::mul::<false>(ctx),
+        (false, _, false, true) => instructions::mul::<true>(ctx),
+        (false, _, true, false) => instructions::mla::<false>(ctx),
+        (false, _, true, true) => instructions::mla::<true>(ctx),
+        (true, false, false, false) => instructions::umull::<false>(ctx),
+        (true, false, false, true) => instructions::umull::<true>(ctx),
+        (true, false, true, false) => instructions::umlal::<false>(ctx),
+        (true, false, true, true) => instructions::umlal::<true>(ctx),
+        (true, true, false, false) => instructions::smull::<false>(ctx),
+        (true, true, false, true) => instructions::smull::<true>(ctx),
+        (true, true, true, false) => instructions::smlal::<false>(ctx),
+        (true, true, true, true) => instructions::smlal::<true>(ctx),
+    }
 }

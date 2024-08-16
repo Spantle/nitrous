@@ -10,6 +10,35 @@ pub trait Bits<T> {
     fn sign_extend(&self, from: u32) -> i32;
 }
 
+impl Bits<u64> for u64 {
+    #[inline(always)]
+    fn get_bit(&self, offset: u64) -> bool {
+        (self >> offset) & 1 == 1
+    }
+
+    #[inline(always)]
+    fn set_bit(&mut self, offset: u64, value: bool) {
+        *self = (*self & !(1 << offset)) | ((value as u64) << offset);
+    }
+
+    #[inline(always)]
+    fn get_bits(&self, offset: u64, end: u64) -> u64 {
+        (self >> offset) & ((1 << (end - offset + 1)) - 1)
+    }
+
+    #[inline(always)]
+    fn set_bits(&mut self, offset: u64, end: u64, value: u64) {
+        let mask = ((1 << (end - offset + 1)) - 1) << offset;
+        *self = (*self & !mask) | ((value << offset) & mask);
+    }
+
+    #[inline(always)]
+    fn sign_extend(&self, from: u32) -> i32 {
+        let shift = 32 - from;
+        ((*self << shift) as i32) >> shift
+    }
+}
+
 impl Bits<u32> for u32 {
     #[inline(always)]
     fn get_bit(&self, offset: u32) -> bool {
