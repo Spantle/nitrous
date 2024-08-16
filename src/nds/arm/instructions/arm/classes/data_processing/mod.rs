@@ -3,11 +3,11 @@ use crate::nds::arm::{
     models::{Context, ContextTrait},
 };
 
-pub mod instructions;
+mod instructions;
 mod lookup;
 mod shifter_operand;
 
-pub use lookup::lookup;
+pub use lookup::*;
 
 pub struct DataProcessingInstruction {
     first_source_register: u8,  // Rn
