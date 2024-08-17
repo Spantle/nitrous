@@ -96,6 +96,9 @@ impl BusTrait for Bus9 {
                 let len = T.min(value.len());
                 bytes[..len].copy_from_slice(&value[..len]);
             }
+            0x04004008..=0x0400400B => {
+                // DSi Stuff, return nothing
+            }
             0x06800000..=0x068A4000 => {
                 let addr = addr - 0x06800000;
                 bytes.copy_from_slice(&shared.vram_lcdc_alloc[addr..addr + T]);
