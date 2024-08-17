@@ -44,15 +44,42 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
                 arm.cp15_mut().control_register.value(),
             ));
         }
+        (2, 0, 0) => {
+            // PU Cachability Bits for Data/Unified Protection Region
+            // ctx.logger.log_warn(
+            //     "MCR: unimplemented \"PU Cachability Bits for Data/Unified Protection Region\"",
+            // );
+        }
+        (2, 0, 1) => {
+            // PU Cachability Bits for Instruction Protection Region
+            // ctx.logger.log_warn(
+            //     "MCR: unimplemented \"PU Cachability Bits for Instruction Protection Region\"",
+            // );
+        }
+        (5, 0, 2) => {
+            // PU Extended Access Permission Data/Unified Protection Region
+            // ctx.logger
+            //     .log_warn("MCR: unimplemented \"PU Extended Access Permission Data/Unified Protection Region\"");
+        }
+        (5, 0, 3) => {
+            // PU Extended Access Permission Instruction Protection Region
+            // ctx.logger
+            //     .log_warn("MCR: unimplemented \"PU Extended Access Permission Instruction Protection Region\"");
+        }
+        (3, 0, 0) => {
+            // PU Cache Write-Bufferability Bits for Data Protection Regions
+            // ctx.logger
+            //     .log_warn("MCR: unimplemented \"PU Cache Write-Bufferability Bits for Data Protection Regions\"");
+        }
         (6, 0..=7, 0) => {
             // Protection Unit Data/Unified Region
-            ctx.logger
-                .log_warn("MCR: unimplemented \"Protection Unit Data/Unified Region\"");
+            // ctx.logger
+            //     .log_warn("MCR: unimplemented \"Protection Unit Data/Unified Region\"");
         }
         (6, 0..=7, 1) => {
             // Protection Unit Instruction Region
-            ctx.logger
-                .log_warn("MCR: unimplemented \"Protection Unit Instruction Region\"");
+            // ctx.logger
+            //     .log_warn("MCR: unimplemented \"Protection Unit Instruction Region\"");
         }
         (7, 5, 0) => {
             // Invalidate Entire Instruction Cache
@@ -63,8 +90,8 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             arm.cp15_mut().data_tcm = vec![0; arm.cp15().data_tcm_size as usize];
         }
         (7, 10, 4) => {
-            ctx.logger
-                .log_warn("MCR: unimplemented \"Drain Write Buffer\"");
+            // ctx.logger
+            //     .log_warn("MCR: unimplemented \"Drain Write Buffer\"");
         }
         (9, 1, 0) => {
             // Data TCM Base and Virtual Size
