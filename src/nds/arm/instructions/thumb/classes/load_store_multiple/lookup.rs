@@ -24,8 +24,7 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
 
     if inst_set >> 5 & 0b1 == 0 {
         // STMIA
-        ctx.logger.log_warn("STMIA not implemented");
-        return 10000;
+        instructions::stmia(ctx);
     } else {
         // LDMIA
         instructions::ldmia(ctx);
