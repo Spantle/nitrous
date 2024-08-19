@@ -305,33 +305,27 @@ impl NitrousGUI {
 
         ui.make_monospace();
 
-        let (arm_load_address, arm_size) = match ARM_BOOL {
+        let (pc, bios_size, arm_load_address, arm_size) = match ARM_BOOL {
             ArmBool::ARM9 => (
-                self.emulator.shared.cart.arm9_load_address,
-                self.emulator.shared.cart.arm9_size,
+                self.emulator.arm9.r[15] as usize,
+                self.emulator.bus9.bios.len(),
+                self.emulator.shared.cart.arm9_load_address as usize,
+                self.emulator.shared.cart.arm9_size as usize,
             ),
             ArmBool::ARM7 => (
-                self.emulator.shared.cart.arm7_load_address,
-                self.emulator.shared.cart.arm7_size,
+                self.emulator.arm7.r[15] as usize,
+                0,
+                self.emulator.shared.cart.arm7_load_address as usize,
+                self.emulator.shared.cart.arm7_size as usize,
             ),
         };
-        let mem = if arm_size == 0 {
-            vec![]
+
+        let (mem_start, mem_size) = if pc >= arm_load_address && pc < arm_load_address + arm_size {
+            (arm_load_address, arm_size)
+        } else if pc >= 0xFFFF0000 && pc < 0xFFFF0000 + bios_size {
+            (0xFFFF0000, bios_size)
         } else {
-            match ARM_BOOL {
-                ArmBool::ARM9 => self.emulator.arm9.read_bulk(
-                    &mut self.emulator.bus9,
-                    &mut self.emulator.shared,
-                    arm_load_address,
-                    arm_size,
-                ),
-                ArmBool::ARM7 => self.emulator.arm7.read_bulk(
-                    &mut self.emulator.bus7,
-                    &mut self.emulator.shared,
-                    arm_load_address,
-                    arm_size,
-                ),
-            }
+            (0, 0)
         };
 
         let instruction_set = match ARM_BOOL {
@@ -348,13 +342,8 @@ impl NitrousGUI {
         };
         let instruction_width = if is_thumb { 2 } else { 4 };
 
-        let pc = match ARM_BOOL {
-            ArmBool::ARM9 => self.emulator.arm9.r[15],
-            ArmBool::ARM7 => self.emulator.arm7.r[15],
-        } as usize;
         let height = ui.text_style_height(&egui::TextStyle::Monospace);
-        let total_rows = mem.len() / instruction_width;
-        let arm_load_address = arm_load_address as usize;
+        let total_rows = mem_size / instruction_width;
         let mut table_builder = egui_extras::TableBuilder::new(ui)
             .striped(true)
             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
@@ -366,8 +355,8 @@ impl NitrousGUI {
             ArmBool::ARM9 => self.arm9_disassembler_follow_pc,
             ArmBool::ARM7 => self.arm7_disassembler_follow_pc,
         };
-        if follow_pc && !(pc < arm_load_address || pc >= arm_load_address + arm_size as usize) {
-            let pc_row = (pc - arm_load_address) / instruction_width;
+        if follow_pc {
+            let pc_row = (pc - mem_start) / instruction_width;
             table_builder = table_builder.scroll_to_row(pc_row, Some(egui::Align::Center));
         };
 
@@ -376,10 +365,9 @@ impl NitrousGUI {
             ArmBool::ARM7 => self.arm7_disassembler_jump_now,
         };
         if let Some(jump_value) = jump_now {
-            if jump_value >= (arm_load_address as u32)
-                && jump_value < (arm_load_address as u32) + arm_size
-            {
-                let jump_row = (jump_value as usize - arm_load_address) / instruction_width;
+            let jump_value = jump_value as usize;
+            if jump_value >= mem_start && jump_value < mem_start + mem_size {
+                let jump_row = (jump_value - mem_start) / instruction_width;
                 table_builder = table_builder.scroll_to_row(jump_row, Some(egui::Align::Center));
             }
         };
@@ -408,16 +396,30 @@ impl NitrousGUI {
             .body(|body| {
                 body.rows(height, total_rows, |mut row| {
                     let start = row.index() * instruction_width;
-                    let address = arm_load_address + start;
+                    let mut address = mem_start + start;
+                    if address >= mem_start + mem_size {
+                        address += 0xFFFF0000;
+                    };
+
+                    let mem = match ARM_BOOL {
+                        ArmBool::ARM9 => self.emulator.arm9.read_bulk(
+                            &mut self.emulator.bus9,
+                            &mut self.emulator.shared,
+                            address as u32,
+                            instruction_width as u32,
+                        ),
+                        ArmBool::ARM7 => self.emulator.arm7.read_bulk(
+                            &mut self.emulator.bus7,
+                            &mut self.emulator.shared,
+                            address as u32,
+                            instruction_width as u32,
+                        ),
+                    };
+
                     let inst = if is_thumb {
-                        u16::from_le_bytes([mem[start], mem[start + 1]]) as u32
+                        u16::from_le_bytes([mem[0], mem[1]]) as u32
                     } else {
-                        u32::from_le_bytes([
-                            mem[start],
-                            mem[start + 1],
-                            mem[start + 2],
-                            mem[start + 3],
-                        ])
+                        u32::from_le_bytes([mem[0], mem[1], mem[2], mem[3]])
                     };
 
                     row.set_selected(address == pc);
