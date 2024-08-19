@@ -294,38 +294,44 @@ impl eframe::App for NitrousGUI {
                     cycles_ran_gpu += 1;
                 }
 
-                if self.arm9_disassembler_step_until == Some(self.emulator.arm9.r[15]) {
-                    self.emulator.pause();
-                    self.arm9_disassembler_step_until = None;
-                }
-                if self.arm7_disassembler_step_until == Some(self.emulator.arm7.r[15]) {
-                    self.emulator.pause();
-                    self.arm7_disassembler_step_until = None;
+                if self.arm9_disassembler {
+                    if self.arm9_disassembler_step_until == Some(self.emulator.arm9.r[15]) {
+                        self.emulator.pause();
+                        self.arm9_disassembler_step_until = None;
+                    }
+
+                    if self
+                        .arm9_disassembler_breakpoints
+                        .contains(&self.emulator.arm9.r[15])
+                    {
+                        self.emulator.pause();
+                        self.arm9_disassembler_selected_breakpoint = Some(
+                            self.arm9_disassembler_breakpoints
+                                .iter()
+                                .position(|&x| x == self.emulator.arm9.r[15])
+                                .unwrap(),
+                        );
+                    }
                 }
 
-                if self
-                    .arm9_disassembler_breakpoints
-                    .contains(&self.emulator.arm9.r[15])
-                {
-                    self.emulator.pause();
-                    self.arm9_disassembler_selected_breakpoint = Some(
-                        self.arm9_disassembler_breakpoints
-                            .iter()
-                            .position(|&x| x == self.emulator.arm9.r[15])
-                            .unwrap(),
-                    );
-                }
-                if self
-                    .arm7_disassembler_breakpoints
-                    .contains(&self.emulator.arm7.r[15])
-                {
-                    self.emulator.pause();
-                    self.arm7_disassembler_selected_breakpoint = Some(
-                        self.arm7_disassembler_breakpoints
-                            .iter()
-                            .position(|&x| x == self.emulator.arm7.r[15])
-                            .unwrap(),
-                    );
+                if self.arm7_disassembler {
+                    if self.arm7_disassembler_step_until == Some(self.emulator.arm7.r[15]) {
+                        self.emulator.pause();
+                        self.arm7_disassembler_step_until = None;
+                    }
+
+                    if self
+                        .arm7_disassembler_breakpoints
+                        .contains(&self.emulator.arm7.r[15])
+                    {
+                        self.emulator.pause();
+                        self.arm7_disassembler_selected_breakpoint = Some(
+                            self.arm7_disassembler_breakpoints
+                                .iter()
+                                .position(|&x| x == self.emulator.arm7.r[15])
+                                .unwrap(),
+                        );
+                    }
                 }
             }
         }
