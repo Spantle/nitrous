@@ -41,8 +41,7 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
                 }
                 (1, 1) => {
                     // SUB (1)
-                    ctx.logger.log_warn("SUB (1) not implemented".to_string());
-                    1
+                    instructions::sub_1(ctx)
                 }
                 _ => unreachable!(),
             }
