@@ -15,6 +15,7 @@ pub fn lookup_register_offset(
 ) -> u32 {
     let opcode = (inst_set >> 3) & 0b111;
     match opcode {
+        0b000 => instructions::str_2(ctx),
         0b001 => instructions::strh_2(ctx),
         0b101 => instructions::ldrh_2(ctx),
         _ => {
