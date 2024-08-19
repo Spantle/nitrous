@@ -92,8 +92,7 @@ pub fn lookup_instruction_class(
         0b110 => {
             if (inst_set >> 6) & 0b1 == 0 {
                 // Load/store multiple
-                ctx.logger.log_warn("Load/store multiple not implemented");
-                return 10000;
+                return load_store_multiple::lookup(inst_set, ctx);
             }
 
             if (inst_set >> 2) & 0b1111 == 0b1111 {

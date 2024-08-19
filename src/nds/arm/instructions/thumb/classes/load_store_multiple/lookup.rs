@@ -3,10 +3,36 @@ use crate::nds::{
         instructions::thumb::Instruction,
         models::{Context, ContextTrait, DisassemblyTrait},
     },
+    logger::LoggerTrait,
     Bits,
 };
 
 use super::instructions;
+
+#[inline(always)]
+pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
+    let register_list = ctx.inst.get_halfword(0, 7);
+
+    ctx.dis.push_str_end_arg("", Some("{"));
+    let mut prefix = "";
+    for i in 0..=7 {
+        if register_list.get_bit(i as u16) {
+            ctx.dis.push_reg_end_arg(i, Some(prefix));
+            prefix = ",";
+        }
+    }
+
+    if inst_set >> 5 & 0b1 == 0 {
+        // STMIA
+        ctx.logger.log_warn("STMIA not implemented");
+        return 10000;
+    } else {
+        // LDMIA
+        instructions::ldmia(ctx);
+    }
+
+    1 // TODO: this is wrong
+}
 
 #[inline(always)]
 pub fn lookup_push_pop(
