@@ -230,12 +230,11 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
         &mut self.cpsr
     }
 
-    // TODO: review if setting the cpsr also changes modes?
     fn set_cpsr(&mut self, psr: PSR) {
-        // let new_mode = psr.get_mode();
-        // if new_mode != self.cpsr.get_mode() {
-        //     self.switch_mode::<false>(new_mode, false);
-        // }
+        let new_mode = psr.get_mode();
+        if new_mode != self.cpsr.get_mode() {
+            self.switch_mode::<false>(new_mode, false);
+        }
 
         self.cpsr = psr;
     }
