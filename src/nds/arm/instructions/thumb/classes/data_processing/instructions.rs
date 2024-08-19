@@ -1,3 +1,4 @@
+mod adc;
 mod add_1;
 mod add_2;
 mod add_3;
@@ -25,6 +26,7 @@ mod sub_2;
 mod sub_3;
 mod tst;
 
+pub use adc::*;
 pub use add_1::*;
 pub use add_2::*;
 pub use add_3::*;
