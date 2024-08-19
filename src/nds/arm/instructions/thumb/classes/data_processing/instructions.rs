@@ -22,6 +22,7 @@ mod orr;
 mod ror;
 mod sub_1;
 mod sub_2;
+mod sub_3;
 mod tst;
 
 pub use add_1::*;
@@ -48,4 +49,5 @@ pub use orr::*;
 pub use ror::*;
 pub use sub_1::*;
 pub use sub_2::*;
+pub use sub_3::*;
 pub use tst::*;
