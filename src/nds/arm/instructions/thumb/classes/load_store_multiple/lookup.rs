@@ -3,7 +3,6 @@ use crate::nds::{
         instructions::thumb::Instruction,
         models::{Context, ContextTrait, DisassemblyTrait},
     },
-    logger::LoggerTrait,
     Bits,
 };
 
