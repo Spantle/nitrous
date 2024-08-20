@@ -71,7 +71,7 @@ impl BusTrait for Bus7 {
             _ => {
                 logger::warn(
                     logger::LogSource::Bus7,
-                    format!("Invalid read {} byte(s) address: {:#010X}", T, addr),
+                    format!("Invalid read {} byte(s) at address {:#010X}", T, addr),
                 );
             }
         };
@@ -97,7 +97,12 @@ impl BusTrait for Bus7 {
             _ => {
                 logger::warn(
                     logger::LogSource::Bus7,
-                    format!("Invalid write {} byte(s) address: {:#010X}", T, addr),
+                    format!(
+                        "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
+                        T,
+                        addr,
+                        self.update_reg_value(value)
+                    ),
                 );
             }
         };
