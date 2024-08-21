@@ -1,4 +1,4 @@
-use crate::nds::{arm::ArmKind, logger, shared::Shared, Bits, Bytes};
+use crate::nds::{arm::ArmKind, dma::DMA, logger, shared::Shared, Bits, Bytes};
 
 use super::BusTrait;
 
@@ -59,6 +59,10 @@ impl BusTrait for Bus7 {
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
             0x04000180..=0x04000183 => shared.ipcsync.value::<false>().to_bytes::<T>(),
             _ => {
+                if let Some(bytes) = shared.dma7.read_slice::<T>(addr) {
+                    return bytes;
+                }
+
                 logger::warn(
                     logger::LogSource::Bus7,
                     format!("Invalid read {} byte(s) at address {:#010X}", T, addr),
@@ -84,15 +88,18 @@ impl BusTrait for Bus7 {
                 shared.ipcsync.set::<false>(value.into_word());
             }
             _ => {
-                logger::warn(
-                    logger::LogSource::Bus7,
-                    format!(
-                        "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
-                        T,
-                        addr,
-                        value.into_word()
-                    ),
-                );
+                let success = shared.dma7.write_slice::<T>(addr, value);
+                if !success {
+                    logger::warn(
+                        logger::LogSource::Bus7,
+                        format!(
+                            "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
+                            T,
+                            addr,
+                            value.into_word()
+                        ),
+                    );
+                }
             }
         };
     }

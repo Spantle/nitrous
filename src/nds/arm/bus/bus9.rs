@@ -1,4 +1,4 @@
-use crate::nds::{arm::ArmKind, logger, shared::Shared, Bits, Bytes};
+use crate::nds::{arm::ArmKind, dma::DMA, logger, shared::Shared, Bits, Bytes};
 
 use super::BusTrait;
 
@@ -85,6 +85,10 @@ impl BusTrait for Bus9 {
                 bytes
             }
             _ => {
+                if let Some(bytes) = shared.dma9.read_slice::<T>(addr) {
+                    return bytes;
+                }
+
                 logger::warn(
                     logger::LogSource::Bus9,
                     format!("Invalid read {} byte(s) at address {:#010X}", T, addr),
@@ -131,15 +135,18 @@ impl BusTrait for Bus9 {
                 self.bios[addr..addr + T].copy_from_slice(&value);
             }
             _ => {
-                logger::warn(
-                    logger::LogSource::Bus9,
-                    format!(
-                        "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
-                        T,
-                        addr,
-                        value.into_word()
-                    ),
-                );
+                let success = shared.dma9.write_slice::<T>(addr, value);
+                if !success {
+                    logger::warn(
+                        logger::LogSource::Bus9,
+                        format!(
+                            "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
+                            T,
+                            addr,
+                            value.into_word()
+                        ),
+                    );
+                }
             }
         }
     }

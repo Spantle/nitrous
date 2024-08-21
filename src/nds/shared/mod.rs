@@ -1,6 +1,10 @@
 use models::{IPCSYNC, KEYINPUT, POWCNT1};
 
-use super::{cartridge::Cartridge, gpu::gpu2d::Gpu2d};
+use super::{
+    cartridge::Cartridge,
+    dma::{DMA7, DMA9},
+    gpu::gpu2d::Gpu2d,
+};
 
 pub struct Shared {
     pub cart: Cartridge,
@@ -13,6 +17,9 @@ pub struct Shared {
     pub vramcnt: [u8; 10],  // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
     pub ipcsync: IPCSYNC,   // 0x04000180
     pub powcnt1: POWCNT1,   // 0x04000304
+
+    pub dma9: DMA9,
+    pub dma7: DMA7,
 
     pub vram_lcdc_alloc: Vec<u8>, // 0x06800000
 }
@@ -30,6 +37,9 @@ impl Default for Shared {
             vramcnt: [0; 10],
             ipcsync: IPCSYNC::default(),
             powcnt1: POWCNT1::default(),
+
+            dma9: DMA9::default(),
+            dma7: DMA7::default(),
 
             vram_lcdc_alloc: vec![0; 1024 * 656],
         }
@@ -49,6 +59,9 @@ impl Shared {
             vramcnt: [0; 10],
             ipcsync: IPCSYNC::default(),
             powcnt1: POWCNT1::default(),
+
+            dma9: DMA9::default(),
+            dma7: DMA7::default(),
 
             vram_lcdc_alloc: vec![0; 0],
         }

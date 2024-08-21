@@ -78,6 +78,8 @@ pub enum LogSource {
     Arm7T(u16),
     Bus7,
     Bus9,
+    DMA9,
+    DMA7,
     Cart,
 }
 
@@ -126,6 +128,8 @@ impl Display for LogSource {
             }
             LogSource::Bus7 => write!(f, "Bus7"),
             LogSource::Bus9 => write!(f, "Bus9"),
+            LogSource::DMA9 => write!(f, "DMA9"),
+            LogSource::DMA7 => write!(f, "DMA7"),
             LogSource::Cart => write!(f, "Cart"),
         }
     }

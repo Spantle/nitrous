@@ -2,6 +2,7 @@ pub mod arm;
 mod bits;
 mod cartridge;
 mod cp15;
+mod dma;
 mod emulator;
 pub mod gpu;
 pub mod logger;
