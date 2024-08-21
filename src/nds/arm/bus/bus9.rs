@@ -1,4 +1,4 @@
-use crate::nds::{arm::ArmKind, logger, shared::Shared};
+use crate::nds::{arm::ArmKind, logger, shared::Shared, Bits, Bytes};
 
 use super::BusTrait;
 
@@ -56,66 +56,42 @@ impl BusTrait for Bus9 {
             0x02000000..=0x02FFFFFF => {
                 let addr = (addr - 0x02000000) % 0x400000;
                 bytes.copy_from_slice(&shared.psram[addr..addr + T]);
+                bytes
             }
             0x03000000..=0x037FFFFF => {
                 let addr = (addr - 0x03000000) % 0x8000;
                 bytes.copy_from_slice(&shared.wram[addr..addr + T]);
+                bytes
             }
-            0x04000000..=0x04000003 => {
-                let value = shared.gpu2d_a.dispcnt.value().to_le_bytes();
-                let len = T.min(value.len());
-                bytes[..len].copy_from_slice(&value[..len]);
-            }
-            0x04000004..=0x04000005 => {
-                let value = shared.gpu2d_a.dispstat.value().to_le_bytes();
-                let len = T.min(value.len());
-                bytes[..len].copy_from_slice(&value[..len]);
-            }
-            0x04001000..=0x04001003 => {
-                let value = shared.gpu2d_b.dispcnt.value().to_le_bytes();
-                let len = T.min(value.len());
-                bytes[..len].copy_from_slice(&value[..len]);
-            }
-            0x04001004..=0x04001005 => {
-                let value = shared.gpu2d_b.dispstat.value().to_le_bytes();
-                let len = T.min(value.len());
-                bytes[..len].copy_from_slice(&value[..len]);
-            }
-            0x04000130..=0x04000131 => {
-                let value = shared.keyinput.value().to_le_bytes();
-                let len = T.min(value.len());
-                bytes[..len].copy_from_slice(&value[..len]);
-            }
-            0x04000180..=0x04000183 => {
-                let value = shared.ipcsync.value::<true>().to_le_bytes();
-                let len = T.min(value.len());
-                bytes[..len].copy_from_slice(&value[..len]);
-            }
-            0x04000304..=0x04000307 => {
-                let value = shared.powcnt1.value().to_le_bytes();
-                let len = T.min(value.len());
-                bytes[..len].copy_from_slice(&value[..len]);
-            }
+            0x04000000..=0x04000003 => shared.gpu2d_a.dispcnt.value().to_bytes::<T>(),
+            0x04000004..=0x04000005 => shared.gpu2d_a.dispstat.value().to_bytes::<T>(),
+            0x04001000..=0x04001003 => shared.gpu2d_b.dispcnt.value().to_bytes::<T>(),
+            0x04001004..=0x04001005 => shared.gpu2d_b.dispstat.value().to_bytes::<T>(),
+            0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
+            0x04000180..=0x04000183 => shared.ipcsync.value::<true>().to_bytes::<T>(),
+            0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
             0x04004008..=0x0400400B => {
                 // DSi Stuff, return nothing
+                bytes
             }
             0x06800000..=0x068A4000 => {
                 let addr = addr - 0x06800000;
                 bytes.copy_from_slice(&shared.vram_lcdc_alloc[addr..addr + T]);
+                bytes
             }
             0xFFFF0000..=0xFFFF7FFF => {
                 let addr = addr - 0xFFFF0000;
                 bytes.copy_from_slice(&self.bios[addr..addr + T]);
+                bytes
             }
             _ => {
                 logger::warn(
                     logger::LogSource::Bus9,
                     format!("Invalid read {} byte(s) at address {:#010X}", T, addr),
                 );
+                bytes
             }
         }
-
-        bytes
     }
 
     #[inline(always)]
@@ -131,16 +107,16 @@ impl BusTrait for Bus9 {
                 shared.wram[addr..addr + T].copy_from_slice(&value);
             }
             0x04000000..=0x04000003 => {
-                shared.gpu2d_a.dispcnt = self.update_reg_value(value).into();
+                shared.gpu2d_a.dispcnt = value.into_word().into();
             }
             0x04001000..=0x04001003 => {
-                shared.gpu2d_b.dispcnt = self.update_reg_value(value).into();
+                shared.gpu2d_b.dispcnt = value.into_word().into();
             }
             0x04000180..=0x04000183 => {
-                shared.ipcsync.set::<true>(self.update_reg_value(value));
+                shared.ipcsync.set::<true>(value.into_word());
             }
             0x04000304..=0x04000307 => {
-                shared.powcnt1 = self.update_reg_value(value).into();
+                shared.powcnt1 = value.into_word().into();
             }
             0x04000240..=0x04000249 => {
                 let len = T.min(shared.vramcnt.len());
@@ -161,21 +137,10 @@ impl BusTrait for Bus9 {
                         "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
                         T,
                         addr,
-                        self.update_reg_value(value)
+                        value.into_word()
                     ),
                 );
             }
         }
-    }
-}
-
-impl Bus9 {
-    #[inline(always)]
-    fn update_reg_value<const T: usize>(&mut self, new_value: [u8; T]) -> u32 {
-        // TODO: check if this is cursed
-        let len = T.min(4);
-        let mut bytes = [0; 4];
-        bytes[..len].copy_from_slice(&new_value[..len]);
-        u32::from_le_bytes(bytes)
     }
 }

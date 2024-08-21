@@ -7,6 +7,8 @@ pub trait Bits<T> {
     fn set_bit(&mut self, offset: Self, value: bool);
     fn set_bits(&mut self, offset: Self, end: Self, value: Self);
 
+    fn to_bytes<const B: usize>(&self) -> [u8; B];
+
     fn sign_extend(&self, from: u32) -> i32;
 }
 
@@ -30,6 +32,14 @@ impl Bits<u64> for u64 {
     fn set_bits(&mut self, offset: u64, end: u64, value: u64) {
         let mask = ((1 << (end - offset + 1)) - 1) << offset;
         *self = (*self & !mask) | ((value << offset) & mask);
+    }
+
+    #[inline(always)]
+    fn to_bytes<const B: usize>(&self) -> [u8; B] {
+        let mut bytes = [0; B];
+        let len = B.min(8);
+        bytes[..len].copy_from_slice(&self.to_le_bytes()[..len]);
+        bytes
     }
 
     #[inline(always)]
@@ -62,6 +72,14 @@ impl Bits<u32> for u32 {
     }
 
     #[inline(always)]
+    fn to_bytes<const B: usize>(&self) -> [u8; B] {
+        let mut bytes = [0; B];
+        let len = B.min(4);
+        bytes[..len].copy_from_slice(&self.to_le_bytes()[..len]);
+        bytes
+    }
+
+    #[inline(always)]
     fn sign_extend(&self, from: u32) -> i32 {
         let shift = 32 - from;
         ((*self << shift) as i32) >> shift
@@ -88,6 +106,14 @@ impl Bits<u16> for u16 {
     fn set_bits(&mut self, offset: u16, end: u16, value: u16) {
         let mask = ((1 << (end - offset + 1)) - 1) << offset;
         *self = (*self & !mask) | ((value << offset) & mask);
+    }
+
+    #[inline(always)]
+    fn to_bytes<const B: usize>(&self) -> [u8; B] {
+        let mut bytes = [0; B];
+        let len = B.min(2);
+        bytes[..len].copy_from_slice(&self.to_le_bytes()[..len]);
+        bytes
     }
 
     #[inline(always)]
@@ -120,8 +146,30 @@ impl Bits<u8> for u8 {
     }
 
     #[inline(always)]
+    fn to_bytes<const B: usize>(&self) -> [u8; B] {
+        let mut bytes = [0; B];
+        let len = B.min(1);
+        bytes[..len].copy_from_slice(&self.to_le_bytes()[..len]);
+        bytes
+    }
+
+    #[inline(always)]
     fn sign_extend(&self, from: u32) -> i32 {
         let shift = 8 - from;
         ((*self << shift) as i32) >> shift
     }
+}
+
+impl<const T: usize> Bytes for [u8; T] {
+    #[inline(always)]
+    fn into_word(&self) -> u32 {
+        let mut bytes = [0; 4];
+        let len = T.min(4);
+        bytes[..len].copy_from_slice(&self[..len]);
+        u32::from_le_bytes(bytes)
+    }
+}
+
+pub trait Bytes {
+    fn into_word(&self) -> u32;
 }
