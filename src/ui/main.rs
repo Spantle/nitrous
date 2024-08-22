@@ -294,13 +294,18 @@ impl eframe::App for NitrousGUI {
                     cycles_ran_gpu += 1;
                 }
 
-                self.emulator
+                // this sucks lmao
+                self.emulator.shared.dma9 = self
+                    .emulator
                     .shared
                     .dma9
+                    .clone()
                     .check_immediately(&mut self.emulator.bus9, &mut self.emulator.shared);
-                self.emulator
+                self.emulator.shared.dma7 = self
+                    .emulator
                     .shared
                     .dma7
+                    .clone()
                     .check_immediately(&mut self.emulator.bus7, &mut self.emulator.shared);
 
                 if self.arm9_disassembler {

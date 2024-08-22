@@ -38,6 +38,25 @@ pub struct DMA_Channel<Bus: BusTrait> {
     internal_cnt_l: u32,
 }
 
+impl<Bus: BusTrait> Clone for DMA_Channel<Bus> {
+    fn clone(&self) -> Self {
+        Self {
+            _phantom: std::marker::PhantomData,
+
+            index: self.index,
+
+            dmasad: self.dmasad,
+            dmadad: self.dmadad,
+            dmacnt: self.dmacnt,
+            dmafill: self.dmafill,
+
+            internal_sad: self.internal_sad,
+            internal_dad: self.internal_dad,
+            internal_cnt_l: self.internal_cnt_l,
+        }
+    }
+}
+
 impl<Bus: BusTrait> DMA_Channel<Bus> {
     pub fn new(index: u8) -> Self {
         Self {
@@ -77,7 +96,7 @@ impl<Bus: BusTrait> DMA_Channel<Bus> {
     }
 
     fn cnt_updated(&mut self, old_enable: bool) {
-        if !(!old_enable && self.dmacnt.get_dma_enable()) {
+        if old_enable || !self.dmacnt.get_dma_enable() {
             return;
         }
 
@@ -102,10 +121,26 @@ impl<Bus: BusTrait> DMA_Channel<Bus> {
     }
 
     pub fn run(&mut self, bus: &mut Bus, shared: &mut Shared) -> u32 {
-        let real_word_count = self.get_word_count();
+        logger::debug(
+            self.log_source(),
+            format!(
+                "DMA{} running {:010X},{:010X},{:010X},{:010X}",
+                self.index,
+                self.internal_sad,
+                self.internal_dad,
+                self.internal_cnt_l,
+                self.dmacnt.get()
+            ),
+        );
         let is_32bit_transfer = self.dmacnt.get_dma_transfer_type();
         let offset_amount = if is_32bit_transfer { 4 } else { 2 };
         loop {
+            if self.internal_cnt_l == 0 {
+                // TODO: interrupt or something
+                break;
+            }
+            self.internal_cnt_l -= 1;
+
             if is_32bit_transfer {
                 let value = bus.read_word(shared, self.internal_sad);
                 bus.write_word(shared, self.internal_dad, value);
@@ -125,11 +160,6 @@ impl<Bus: BusTrait> DMA_Channel<Bus> {
                 1 => self.internal_sad = self.internal_sad.wrapping_sub(offset_amount),
                 2 | 3 => {}
                 _ => unreachable!(),
-            }
-
-            if self.internal_cnt_l > real_word_count {
-                // TODO: interrupt or something
-                break;
             }
         }
 
@@ -153,27 +183,26 @@ impl<Bus: BusTrait> DMA_Channel<Bus> {
             } else {
                 value
             }
-        } else {
-            if self.index == 3 {
-                let value = self.dmacnt.get().get_bits(0, 16);
-                if value == 0 {
-                    0x10000
-                } else {
-                    value
-                }
+        } else if self.index == 3 {
+            let value = self.dmacnt.get().get_bits(0, 16);
+            if value == 0 {
+                0x10000
             } else {
-                let value = self.dmacnt.get().get_bits(0, 14);
-                if value == 0 {
-                    0x4000
-                } else {
-                    value
-                }
+                value
+            }
+        } else {
+            let value = self.dmacnt.get().get_bits(0, 14);
+            if value == 0 {
+                0x4000
+            } else {
+                value
             }
         }
     }
 }
 
-#[derive(Default)]
+#[derive(Clone, Copy, Default)]
+#[allow(clippy::upper_case_acronyms)]
 pub struct DMACNT(u32);
 
 impl DMACNT {
