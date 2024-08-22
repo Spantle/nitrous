@@ -1,4 +1,4 @@
-use crate::nds::{arm::ArmKind, dma::DMA, logger, shared::Shared, Bits, Bytes};
+use crate::nds::{arm::ArmKind, logger, shared::Shared, Bits, Bytes};
 
 use super::BusTrait;
 

@@ -1,8 +1,9 @@
 use models::{IPCSYNC, KEYINPUT, POWCNT1};
 
 use super::{
+    arm::bus::{bus7::Bus7, bus9::Bus9},
     cartridge::Cartridge,
-    dma::{DMA7, DMA9},
+    dma::DMA,
     gpu::gpu2d::Gpu2d,
 };
 
@@ -18,8 +19,8 @@ pub struct Shared {
     pub ipcsync: IPCSYNC,   // 0x04000180
     pub powcnt1: POWCNT1,   // 0x04000304
 
-    pub dma9: DMA9,
-    pub dma7: DMA7,
+    pub dma9: DMA<Bus9>,
+    pub dma7: DMA<Bus7>,
 
     pub vram_lcdc_alloc: Vec<u8>, // 0x06800000
 }
@@ -38,8 +39,8 @@ impl Default for Shared {
             ipcsync: IPCSYNC::default(),
             powcnt1: POWCNT1::default(),
 
-            dma9: DMA9::default(),
-            dma7: DMA7::default(),
+            dma9: DMA::default(),
+            dma7: DMA::default(),
 
             vram_lcdc_alloc: vec![0; 1024 * 656],
         }
@@ -60,8 +61,8 @@ impl Shared {
             ipcsync: IPCSYNC::default(),
             powcnt1: POWCNT1::default(),
 
-            dma9: DMA9::default(),
-            dma7: DMA7::default(),
+            dma9: DMA::default(),
+            dma7: DMA::default(),
 
             vram_lcdc_alloc: vec![0; 0],
         }
