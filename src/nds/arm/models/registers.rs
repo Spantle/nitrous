@@ -1,16 +1,13 @@
 #[derive(Clone, Copy)]
 pub struct Registers(pub [u32; 16]);
 
-impl Default for Registers {
-    // TODO: in the future, this should be set by the BIOS
-    fn default() -> Self {
-        Self([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x803EC0, 0, 0])
-    }
-}
-
 impl Registers {
-    // TODO: in the future, this should be set by the BIOS
-    pub fn new(r15: u32) -> Self {
+    // TODO: in the future, the SP should be set by the BIOS
+    pub fn new_with_sp(sp: u32) -> Self {
+        Self([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, sp, 0, 0])
+    }
+
+    pub fn new_with_pc(r15: u32) -> Self {
         Self([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x803EC0, 0, r15])
     }
 }

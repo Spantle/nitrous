@@ -87,13 +87,20 @@ pub trait ArmTrait<Bus: BusTrait> {
 
 impl<Bus: BusTrait> Default for Arm<Bus> {
     fn default() -> Arm<Bus> {
+        // TODO: in the future, the stack pointer MIGHT be set by the BIOS?
+        let (sp, irq_sp, svc_sp) = if Bus::KIND == ArmKind::ARM9 {
+            (0x00803EC0, 0x00803FA0, 0x00803FC0)
+        } else {
+            (0x0380FF00, 0x0380FFB0, 0x0380FFDC)
+        };
+
         Arm::<Bus> {
             _phantom: std::marker::PhantomData,
 
-            r: Registers::default(),
+            r: Registers::new_with_sp(sp),
             r_fiq: [0, 0, 0, 0, 0, 0, 0, 0],
-            r_irq: [0x803FA0, 0, 0], // TODO: in the future, the stack pointer should be set by the BIOS
-            r_svc: [0x803FC0, 0, 0], // TODO: in the future, the stack pointer should be set by the BIOS
+            r_irq: [irq_sp, 0, 0],
+            r_svc: [svc_sp, 0, 0],
             r_abt: [0, 0, 0],
             r_und: [0, 0, 0],
             cpsr: PSR::default(),
@@ -476,7 +483,7 @@ pub struct FakeArm {
 impl FakeArm {
     pub fn new(r15: u32) -> FakeArm {
         FakeArm {
-            r: Registers::new(r15),
+            r: Registers::new_with_pc(r15),
             cpsr: PSR::default(),
             cp15: CP15::default(),
         }
