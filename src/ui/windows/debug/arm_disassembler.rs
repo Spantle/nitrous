@@ -324,6 +324,14 @@ impl NitrousGUI {
             (arm_load_address, arm_size)
         } else if pc >= 0xFFFF0000 && pc < 0xFFFF0000 + bios_size {
             (0xFFFF0000, bios_size)
+        } else if ARM_BOOL == false {
+            if pc >= 0x03000000 && pc <= 0x037FFFFF {
+                (0x03000000, 0x800000)
+            } else if pc >= 0x03800000 && pc <= 0x03FFFFFF {
+                (0x03800000, 0x800000)
+            } else {
+                (0, 0)
+            }
         } else {
             (0, 0)
         };
