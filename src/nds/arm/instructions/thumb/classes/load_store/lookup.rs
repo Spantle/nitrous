@@ -67,3 +67,17 @@ pub fn lookup_halfword_immediate(
 
     1 // TODO: this is wrong
 }
+
+#[inline(always)]
+pub fn lookup_stack(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
+    let l = (inst_set >> 5) & 0b1 == 1;
+    if l {
+        instructions::ldr_4(ctx);
+        // TODO: this is wrong
+        1
+    } else {
+        ctx.logger
+            .log_warn("STR (3) store to stack not implemented");
+        10000
+    }
+}

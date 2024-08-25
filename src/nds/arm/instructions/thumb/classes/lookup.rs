@@ -63,9 +63,7 @@ pub fn lookup_instruction_class(
                 load_store::lookup_halfword_immediate(inst_set, ctx)
             } else {
                 // Load/store to/from stack
-                ctx.logger
-                    .log_warn("Load/store to/from stack not implemented");
-                10000
+                load_store::lookup_stack(inst_set, ctx)
             }
         }
         0b101 => {
