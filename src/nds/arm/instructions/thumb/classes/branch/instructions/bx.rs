@@ -20,6 +20,8 @@ pub fn bx<const L: bool>(ctx: &mut Context<Instruction, impl ContextTrait>) -> u
     }
 
     let rm = ctx.inst.get_byte(3, 5);
+    let h2 = ctx.inst.get_bit(6);
+    let rm = ctx.inst.get_rh(h2, rm);
     ctx.dis.push_reg_arg(rm, None);
 
     let rm = ctx.arm.r()[rm];
