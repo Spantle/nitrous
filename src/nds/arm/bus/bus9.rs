@@ -65,6 +65,7 @@ impl BusTrait for Bus9 {
             }
             0x04000000..=0x04000003 => shared.gpu2d_a.dispcnt.value().to_bytes::<T>(),
             0x04000004..=0x04000005 => shared.gpu2d_a.dispstat.value().to_bytes::<T>(),
+            0x04000006..=0x04000007 => shared.gpu2d_a.vcount.to_bytes::<T>(),
             0x04001000..=0x04001003 => shared.gpu2d_b.dispcnt.value().to_bytes::<T>(),
             0x04001004..=0x04001005 => shared.gpu2d_b.dispstat.value().to_bytes::<T>(),
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
