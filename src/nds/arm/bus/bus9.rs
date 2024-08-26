@@ -78,6 +78,11 @@ impl BusTrait for Bus9 {
             0x04000208..=0x0400020B => self.interrupts.me.value().to_bytes::<T>(),
             0x04000210..=0x04000213 => self.interrupts.e.value().to_bytes::<T>(),
             0x04000214..=0x04000217 => self.interrupts.f.value().to_bytes::<T>(),
+            0x04000240..=0x04000249 => {
+                let len = T.min(shared.vramcnt.len());
+                bytes[..len].copy_from_slice(&shared.vramcnt[..len]);
+                bytes
+            }
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
             0x04004008..=0x0400400B => {
                 // DSi Stuff, return nothing
