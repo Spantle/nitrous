@@ -39,7 +39,12 @@ impl Gpu2d {
         }
 
         let vcount_setting = self.dispstat.get_vcount_setting();
-        self.dispstat.set_vcount_flag(vcount_setting == self.vcount);
+        let is_vcounter_match = vcount_setting == self.vcount;
+        self.dispstat.set_vcounter_flag(is_vcounter_match);
+        if is_vcounter_match && self.dispstat.get_vcounter_irq_enable() {
+            bus9.interrupts.f.set_lcd_vcounter_match(true);
+            bus7.interrupts.f.set_lcd_vcounter_match(true);
+        }
     }
 
     pub fn render(&self, shared: &Shared) -> egui::ImageData {

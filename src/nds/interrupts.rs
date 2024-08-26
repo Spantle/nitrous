@@ -49,6 +49,7 @@ impl From<u32> for InterruptFlags {
 impl InterruptFlags {
     const LCD_VBLANK_OFFSET: u32 = 0;
     const LCD_HBLANK_OFFSET: u32 = 1;
+    const LCD_VCOUNTER_MATCH_OFFSET: u32 = 2;
 
     pub fn value(&self) -> u32 {
         self.0
@@ -68,5 +69,13 @@ impl InterruptFlags {
 
     pub fn set_lcd_hblank(&mut self, value: bool) {
         self.0.set_bit(Self::LCD_HBLANK_OFFSET, value);
+    }
+
+    pub fn get_lcd_vcounter_match(&self) -> bool {
+        self.0.get_bit(Self::LCD_VCOUNTER_MATCH_OFFSET)
+    }
+
+    pub fn set_lcd_vcounter_match(&mut self, value: bool) {
+        self.0.set_bit(Self::LCD_VCOUNTER_MATCH_OFFSET, value);
     }
 }
