@@ -13,6 +13,8 @@ impl DISPSTAT {
     const VBLANK_FLAG_OFFSET: u16 = 0;
     const HBLANK_FLAG_OFFSET: u16 = 1;
     const VCOUNT_FLAG_OFFSET: u16 = 2;
+    const VBLANK_IRQ_ENABLE_OFFSET: u16 = 3;
+    const HBLANK_IRQ_ENABLE_OFFSET: u16 = 4;
     const VCOUNT_SETTING_OFFSET: u16 = 7;
 
     pub fn value(&self) -> u16 {
@@ -59,6 +61,22 @@ impl DISPSTAT {
 
     pub fn set_vcount_flag(&mut self, value: bool) {
         self.set_bit(Self::VCOUNT_FLAG_OFFSET, value);
+    }
+
+    pub fn get_vblank_irq_enable(&self) -> bool {
+        self.get_bit(Self::VBLANK_IRQ_ENABLE_OFFSET)
+    }
+
+    pub fn set_vblank_irq_enable(&mut self, value: bool) {
+        self.set_bit(Self::VBLANK_IRQ_ENABLE_OFFSET, value);
+    }
+
+    pub fn get_hblank_irq_enable(&self) -> bool {
+        self.get_bit(Self::HBLANK_IRQ_ENABLE_OFFSET)
+    }
+
+    pub fn set_hblank_irq_enable(&mut self, value: bool) {
+        self.set_bit(Self::HBLANK_IRQ_ENABLE_OFFSET, value);
     }
 
     pub fn get_vcount_setting(&self) -> u16 {

@@ -127,8 +127,8 @@ impl Emulator {
             }
             CycleState::Arm7 => {
                 let cycles = self.arm7.clock(&mut self.bus7, &mut self.shared);
-                self.shared.gpu2d_a.clock();
-                self.shared.gpu2d_b.clock();
+                self.shared.gpu2d_a.clock(&mut self.bus9, &mut self.bus7);
+                self.shared.gpu2d_b.clock(&mut self.bus9, &mut self.bus7);
                 self.cycle_state = CycleState::Arm9_1;
                 cycles
             }

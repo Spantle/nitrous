@@ -73,6 +73,8 @@ pub trait ArmTrait<Bus: BusTrait> {
         copy_cpsr_to_spsr: bool,
     );
 
+    fn handle_irq(&mut self);
+
     fn cp15(&self) -> &CP15;
     fn cp15_mut(&mut self) -> &mut CP15;
 
@@ -166,6 +168,10 @@ impl<Bus: BusTrait> Arm<Bus> {
         }
 
         self.pc_changed = false;
+
+        if !self.cpsr().get_irq_interrupt() && bus.is_requesting_interrupt() {
+            self.handle_irq();
+        }
 
         cycles
     }
@@ -331,6 +337,15 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
         }
 
         self.cpsr.set_mode(new_mode);
+    }
+
+    fn handle_irq(&mut self) {
+        let instruction_width = if self.cpsr().get_thumb() { 2 } else { 4 };
+        self.set_mode_r(ProcessorMode::IRQ, 1, self.r[15] + instruction_width + 4);
+        self.switch_mode::<false>(ProcessorMode::IRQ, true);
+        self.cpsr_mut().set_thumb(false);
+        self.cpsr_mut().set_irq_interrupt(true);
+        self.set_r(15, 0xFFFF0018);
     }
 
     fn cp15(&self) -> &CP15 {
@@ -541,6 +556,8 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
         _copy_cpsr_to_spsr: bool,
     ) {
     }
+
+    fn handle_irq(&mut self) {}
 
     fn cp15(&self) -> &CP15 {
         &self.cp15

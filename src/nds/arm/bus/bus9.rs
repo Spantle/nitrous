@@ -1,10 +1,11 @@
-use crate::nds::{arm::ArmKind, logger, shared::Shared, Bits, Bytes};
+use crate::nds::{arm::ArmKind, interrupts::Interrupts, logger, shared::Shared, Bits, Bytes};
 
 use super::BusTrait;
 
 #[derive(Default)]
 pub struct Bus9 {
     pub bios: Vec<u8>,
+    pub interrupts: Interrupts,
 }
 
 impl BusTrait for Bus9 {
@@ -24,6 +25,10 @@ impl BusTrait for Bus9 {
                 format!("Failed to load BIOS: {}", e),
             ),
         };
+    }
+
+    fn is_requesting_interrupt(&self) -> bool {
+        self.interrupts.is_requesting_interrupt()
     }
 
     fn read_byte(&self, shared: &mut Shared, addr: u32) -> u8 {
@@ -70,6 +75,9 @@ impl BusTrait for Bus9 {
             0x04001004..=0x04001005 => shared.gpu2d_b.dispstat.value().to_bytes::<T>(),
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
             0x04000180..=0x04000183 => shared.ipcsync.value::<true>().to_bytes::<T>(),
+            0x04000208..=0x0400020B => self.interrupts.me.value().to_bytes::<T>(),
+            0x04000210..=0x04000213 => self.interrupts.e.value().to_bytes::<T>(),
+            0x04000214..=0x04000217 => self.interrupts.f.value().to_bytes::<T>(),
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
             0x04004008..=0x0400400B => {
                 // DSi Stuff, return nothing
@@ -119,6 +127,15 @@ impl BusTrait for Bus9 {
             }
             0x04000180..=0x04000183 => {
                 shared.ipcsync.set::<true>(value.into_word());
+            }
+            0x04000208..=0x0400020B => {
+                self.interrupts.me = value.into_word().into();
+            }
+            0x04000210..=0x04000213 => {
+                self.interrupts.e = value.into_word().into();
+            }
+            0x04000214..=0x04000217 => {
+                self.interrupts.f = value.into_word().into();
             }
             0x04000304..=0x04000307 => {
                 shared.powcnt1 = value.into_word().into();

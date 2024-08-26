@@ -1,4 +1,8 @@
-use crate::nds::{shared::Shared, Bits};
+use crate::nds::{
+    arm::bus::{bus7::Bus7, bus9::Bus9},
+    shared::Shared,
+    Bits,
+};
 
 use super::models::{DISPCNT, DISPSTAT};
 
@@ -14,13 +18,25 @@ pub struct Gpu2d {
 const COLOUR_MULT: f32 = 255.0 / 31.0;
 
 impl Gpu2d {
-    pub fn clock(&mut self) {
+    pub fn clock(&mut self, bus9: &mut Bus9, bus7: &mut Bus7) {
         self.x = (self.x + 1) % (256 + 99);
         self.vcount = (self.vcount + (self.x == 0) as u16) % (192 + 71);
 
-        self.dispstat.set_hblank_flag(self.x >= 256);
-        self.dispstat
-            .set_vblank_flag(self.vcount >= 192 && self.vcount != 262);
+        let hblanking = self.x >= 256;
+        let hblank_start = self.x == 256;
+        let vblanking = self.vcount >= 192 && self.vcount != 262;
+        let vblank_start = self.vcount == 192;
+        self.dispstat.set_hblank_flag(hblanking);
+        self.dispstat.set_vblank_flag(vblanking);
+
+        if hblank_start && self.dispstat.get_hblank_irq_enable() {
+            bus9.interrupts.f.set_lcd_hblank(true);
+            bus7.interrupts.f.set_lcd_hblank(true);
+        }
+        if vblank_start && self.dispstat.get_vblank_irq_enable() {
+            bus9.interrupts.f.set_lcd_vblank(true);
+            bus7.interrupts.f.set_lcd_vblank(true);
+        }
 
         let vcount_setting = self.dispstat.get_vcount_setting();
         self.dispstat.set_vcount_flag(vcount_setting == self.vcount);

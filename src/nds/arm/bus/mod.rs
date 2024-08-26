@@ -10,6 +10,8 @@ pub trait BusTrait {
     fn load_bios(&mut self, bios: Vec<u8>);
     fn load_bios_from_path(&mut self, path: &str);
 
+    fn is_requesting_interrupt(&self) -> bool;
+
     fn read_byte(&self, shared: &mut Shared, addr: u32) -> u8;
     fn read_halfword(&self, shared: &mut Shared, addr: u32) -> u16;
     fn read_word(&self, shared: &mut Shared, addr: u32) -> u32;
@@ -40,6 +42,10 @@ impl BusTrait for FakeBus {
 
     fn load_bios(&mut self, _bios: Vec<u8>) {}
     fn load_bios_from_path(&mut self, _path: &str) {}
+
+    fn is_requesting_interrupt(&self) -> bool {
+        false
+    }
 
     fn read_byte(&self, _shared: &mut Shared, _addr: u32) -> u8 {
         0

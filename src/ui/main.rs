@@ -289,8 +289,14 @@ impl eframe::App for NitrousGUI {
                 }
 
                 while cycles_ran_gpu < target_cycles_gpu {
-                    self.emulator.shared.gpu2d_a.clock();
-                    self.emulator.shared.gpu2d_b.clock();
+                    self.emulator
+                        .shared
+                        .gpu2d_a
+                        .clock(&mut self.emulator.bus9, &mut self.emulator.bus7);
+                    self.emulator
+                        .shared
+                        .gpu2d_b
+                        .clock(&mut self.emulator.bus9, &mut self.emulator.bus7);
                     cycles_ran_gpu += 1;
                 }
 
