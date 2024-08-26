@@ -133,8 +133,30 @@ impl BusTrait for Bus9 {
             0x04000004..=0x04000005 => {
                 shared.gpu2d_a.dispstat = value.into_halfword().into();
             }
+            0x04000100..=0x0400010F => {
+                logger::warn(
+                    logger::LogSource::Bus9,
+                    format!(
+                        "Timers not implemented (W{} {:#010X}:{:#010X})",
+                        T,
+                        addr,
+                        value.into_word()
+                    ),
+                );
+            }
             0x04000180..=0x04000183 => {
                 shared.ipcsync.set::<true>(value.into_word());
+            }
+            0x04000184..=0x04000185 => {
+                logger::warn(
+                    logger::LogSource::Bus9,
+                    format!(
+                        "IPCFIFO not implemented (W{} {:#010X}:{:#010X})",
+                        T,
+                        addr,
+                        value.into_word()
+                    ),
+                );
             }
             0x04000208..=0x0400020B => {
                 self.interrupts.me = value.into_word().into();
@@ -152,9 +174,31 @@ impl BusTrait for Bus9 {
                 let len = T.min(shared.vramcnt.len());
                 shared.vramcnt[..len].copy_from_slice(&value[..len]);
             }
+            0x05000000..=0x05FFFFFF => {
+                logger::warn(
+                    logger::LogSource::Bus9,
+                    format!(
+                        "Standard Palettes not implemented (W{} {:#010X}:{:#010X})",
+                        T,
+                        addr,
+                        value.into_word()
+                    ),
+                );
+            }
             0x06800000..=0x068A4000 => {
                 let addr = addr - 0x06800000;
                 shared.vram_lcdc_alloc[addr..addr + T].copy_from_slice(&value);
+            }
+            0x07000000..=0x07FFFFFF => {
+                logger::warn(
+                    logger::LogSource::Bus9,
+                    format!(
+                        "OAM not implemented (W{} {:#010X}:{:#010X})",
+                        T,
+                        addr,
+                        value.into_word()
+                    ),
+                );
             }
             0xFFFF0000..=0xFFFF7FFF => {
                 let addr = addr - 0xFFFF0000;
