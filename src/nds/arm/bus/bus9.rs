@@ -125,6 +125,9 @@ impl BusTrait for Bus9 {
             0x04001000..=0x04001003 => {
                 shared.gpu2d_b.dispcnt = value.into_word().into();
             }
+            0x04000004..=0x04000005 => {
+                shared.gpu2d_a.dispstat = value.into_halfword().into();
+            }
             0x04000180..=0x04000183 => {
                 shared.ipcsync.set::<true>(value.into_word());
             }

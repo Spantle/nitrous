@@ -9,6 +9,12 @@ impl Default for DISPSTAT {
     }
 }
 
+impl From<u16> for DISPSTAT {
+    fn from(value: u16) -> Self {
+        Self(value)
+    }
+}
+
 impl DISPSTAT {
     const VBLANK_FLAG_OFFSET: u16 = 0;
     const HBLANK_FLAG_OFFSET: u16 = 1;

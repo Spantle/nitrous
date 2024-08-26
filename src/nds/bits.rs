@@ -162,6 +162,7 @@ impl Bits<u8> for u8 {
 
 pub trait Bytes {
     fn into_word(self) -> u32;
+    fn into_halfword(self) -> u16;
 }
 
 impl<const T: usize> Bytes for [u8; T] {
@@ -171,5 +172,13 @@ impl<const T: usize> Bytes for [u8; T] {
         let len = T.min(4);
         bytes[..len].copy_from_slice(&self[..len]);
         u32::from_le_bytes(bytes)
+    }
+
+    #[inline(always)]
+    fn into_halfword(self) -> u16 {
+        let mut bytes = [0; 2];
+        let len = T.min(2);
+        bytes[..len].copy_from_slice(&self[..len]);
+        u16::from_le_bytes(bytes)
     }
 }
