@@ -31,10 +31,6 @@ impl InterruptMasterEnable {
     pub fn get_disable_all(&self) -> bool {
         self.0.get_bit(0)
     }
-
-    pub fn set_disable_all(&mut self, value: bool) {
-        self.0.set_bit(0, value);
-    }
 }
 
 #[derive(Default)]
@@ -55,24 +51,12 @@ impl InterruptFlags {
         self.0
     }
 
-    pub fn get_lcd_vblank(&self) -> bool {
-        self.0.get_bit(Self::LCD_VBLANK_OFFSET)
-    }
-
     pub fn set_lcd_vblank(&mut self, value: bool) {
         self.0.set_bit(Self::LCD_VBLANK_OFFSET, value);
     }
 
-    pub fn get_lcd_hblank(&self) -> bool {
-        self.0.get_bit(Self::LCD_HBLANK_OFFSET)
-    }
-
     pub fn set_lcd_hblank(&mut self, value: bool) {
         self.0.set_bit(Self::LCD_HBLANK_OFFSET, value);
-    }
-
-    pub fn get_lcd_vcounter_match(&self) -> bool {
-        self.0.get_bit(Self::LCD_VCOUNTER_MATCH_OFFSET)
     }
 
     pub fn set_lcd_vcounter_match(&mut self, value: bool) {
