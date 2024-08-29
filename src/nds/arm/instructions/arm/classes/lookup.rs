@@ -13,7 +13,7 @@ use super::{
 
 #[inline(always)]
 pub fn lookup_instruction_class(
-    _arm_bool: bool,
+    arm_bool: bool,
     inst_set: u16,
     ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {
@@ -73,7 +73,7 @@ pub fn lookup_instruction_class(
             } else {
                 // Software interrupt
                 // technically also possibly an undefined instruction based on the cond or something iirc
-                exceptions::instructions::swi(ctx)
+                exceptions::instructions::swi(arm_bool, ctx)
             }
         }
         _ => {
