@@ -63,6 +63,12 @@ pub struct NitrousGUI {
     #[serde(skip)]
     #[cfg(target_arch = "wasm32")]
     pub load_arm9_bios_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
+    #[serde(skip)]
+    #[cfg(not(target_arch = "wasm32"))]
+    pub load_arm7_bios_channel: (Sender<String>, Receiver<String>),
+    #[serde(skip)]
+    #[cfg(target_arch = "wasm32")]
+    pub load_arm7_bios_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
 
     pub fps_info: bool,
 
@@ -125,6 +131,7 @@ pub struct NitrousGUI {
     #[serde(skip)]
     pub preferences_selected: PreferencesPanel,
     pub preferences_arm9_bios_path: String,
+    pub preferences_arm7_bios_path: String,
 
     #[serde(skip)]
     fps_counter: FpsCounter,
@@ -150,6 +157,7 @@ impl Default for NitrousGUI {
 
             load_rom_channel: channel(),
             load_arm9_bios_channel: channel(),
+            load_arm7_bios_channel: channel(),
 
             fps_info: false,
 
@@ -195,6 +203,7 @@ impl Default for NitrousGUI {
 
             preferences_selected: PreferencesPanel::Emulation,
             preferences_arm9_bios_path: String::new(),
+            preferences_arm7_bios_path: String::new(),
 
             fps_counter: FpsCounter::new(),
             last_cycle_count: 0,
@@ -452,6 +461,12 @@ impl eframe::App for NitrousGUI {
                         .bus9
                         .load_bios_from_path(&self.preferences_arm9_bios_path);
                 }
+
+                if !self.preferences_arm7_bios_path.is_empty() {
+                    self.emulator
+                        .bus7
+                        .load_bios_from_path(&self.preferences_arm7_bios_path);
+                }
             }
 
             if let Ok(bytes) = self.load_rom_channel.1.try_recv() {
@@ -470,6 +485,21 @@ impl eframe::App for NitrousGUI {
                 #[cfg(target_arch = "wasm32")]
                 {
                     self.emulator.bus9.load_bios(content);
+                }
+            }
+
+            if let Ok(content) = self.load_arm7_bios_channel.1.try_recv() {
+                #[cfg(not(target_arch = "wasm32"))]
+                {
+                    self.preferences_arm7_bios_path = content;
+                    self.emulator
+                        .bus7
+                        .load_bios_from_path(&self.preferences_arm7_bios_path);
+                }
+
+                #[cfg(target_arch = "wasm32")]
+                {
+                    self.emulator.bus7.load_bios(content);
                 }
             }
         }
