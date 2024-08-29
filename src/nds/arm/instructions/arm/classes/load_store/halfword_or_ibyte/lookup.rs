@@ -1,7 +1,10 @@
-use crate::nds::arm::{
-    arm::ArmTrait,
-    instructions::arm::Instruction,
-    models::{Context, ContextTrait, DisassemblyTrait},
+use crate::nds::{
+    arm::{
+        arm::ArmTrait,
+        instructions::arm::Instruction,
+        models::{Context, ContextTrait, DisassemblyTrait},
+    },
+    logger::LoggerTrait,
 };
 
 use super::{instructions, LoadStoreInstruction};
@@ -26,8 +29,8 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
     let is_add = inst_set >> 3 & 1 == 1; // U
     let w = inst_set >> 1 & 1 == 1; // W
     let is_load = inst_set & 1 == 1; // L
-    let _s = ctx.inst.is_signed; // S
-    let _h = ctx.inst.is_halfword; // H
+    let s = ctx.inst.is_signed; // S
+    let h = ctx.inst.is_halfword; // H
 
     let rn = arm.er(inst.first_source_register);
 
@@ -56,13 +59,25 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
         arm.set_r(inst.first_source_register, address);
     };
 
-    if is_load {
-        ctx.dis.set_inst("LDRH");
-        instructions::ldrh(&mut ctx, address);
-    } else {
-        ctx.dis.set_inst("STRH");
-        instructions::strh(&mut ctx, address);
-    }
+    match (s, h, is_load) {
+        (true, true, true) => {
+            ctx.dis.set_inst("LDRSH");
+            ctx.logger.log_warn("LDRSH not implemented");
+        }
+        (true, false, true) => {
+            ctx.dis.set_inst("LDRSB");
+            ctx.logger.log_warn("LDRSB not implemented");
+        }
+        (false, true, true) => {
+            ctx.dis.set_inst("LDRH");
+            instructions::ldrh(&mut ctx, address);
+        }
+        (false, true, false) => {
+            ctx.dis.set_inst("STRH");
+            instructions::strh(&mut ctx, address);
+        }
+        _ => unreachable!("If you see this then the software you're running sucks"), // might actually be reachable
+    };
 
     1
 }
