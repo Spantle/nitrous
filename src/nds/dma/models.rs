@@ -124,7 +124,7 @@ impl<Bus: BusTrait> DMA_Channel<Bus> {
         logger::debug(
             self.log_source(),
             format!(
-                "DMA{} running {:010X},{:010X},{:010X},{:010X}",
+                "DMA{} running {:08X},{:08X},{:08X},{:08X}",
                 self.index,
                 self.internal_sad,
                 self.internal_dad,
