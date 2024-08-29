@@ -118,6 +118,12 @@ impl<Bus: BusTrait> DMA_Channel<Bus> {
         self.internal_sad = self.dmasad;
         self.internal_dad = self.dmadad;
         self.internal_cnt_l = self.get_word_count();
+        if self.internal_cnt_l == 0 {
+            logger::error(
+                self.log_source(),
+                format!("DMA{} has 0 word count. Not implemented.", self.index),
+            );
+        }
     }
 
     pub fn run(&mut self, bus: &mut Bus, shared: &mut Shared) -> u32 {
