@@ -1,4 +1,4 @@
-use models::{IPCSYNC, KEYINPUT, POWCNT1};
+use models::{IPCFIFO, IPCSYNC, KEYINPUT, POWCNT1};
 
 use super::{
     arm::bus::{bus7::Bus7, bus9::Bus9},
@@ -17,6 +17,7 @@ pub struct Shared {
     pub keyinput: KEYINPUT, // 0x04000130
     pub vramcnt: [u8; 10],  // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
     pub ipcsync: IPCSYNC,   // 0x04000180
+    pub ipcfifo: IPCFIFO,   // 0x04000184, 0x04000188, 0x04100000
     pub powcnt1: POWCNT1,   // 0x04000304
 
     pub dma9: DMA<Bus9>,
@@ -37,6 +38,7 @@ impl Default for Shared {
             keyinput: KEYINPUT::default(),
             vramcnt: [0; 10],
             ipcsync: IPCSYNC::default(),
+            ipcfifo: IPCFIFO::default(),
             powcnt1: POWCNT1::default(),
 
             dma9: DMA::default(),
@@ -59,6 +61,7 @@ impl Shared {
             keyinput: KEYINPUT::default(),
             vramcnt: [0; 10],
             ipcsync: IPCSYNC::default(),
+            ipcfifo: IPCFIFO::default(),
             powcnt1: POWCNT1::default(),
 
             dma9: DMA::default(),
@@ -75,7 +78,11 @@ impl Shared {
 
         self.vramcnt = [0; 10];
         self.ipcsync = IPCSYNC::default();
+        self.ipcfifo = IPCFIFO::default();
         self.powcnt1 = POWCNT1::default();
+
+        self.dma9 = DMA::default();
+        self.dma7 = DMA::default();
 
         self.vram_lcdc_alloc = vec![0; 1024 * 656];
     }

@@ -75,6 +75,7 @@ impl BusTrait for Bus9 {
             0x04001004..=0x04001005 => shared.gpu2d_b.dispstat.value().to_bytes::<T>(),
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
             0x04000180..=0x04000183 => shared.ipcsync.value::<true>().to_bytes::<T>(),
+            0x04000184..=0x04000185 => shared.ipcfifo.get_cnt::<true>().to_bytes::<T>(),
             0x04000208..=0x0400020B => self.interrupts.me.value().to_bytes::<T>(),
             0x04000210..=0x04000213 => self.interrupts.e.value().to_bytes::<T>(),
             0x04000214..=0x04000217 => self.interrupts.f.value().to_bytes::<T>(),
@@ -88,6 +89,7 @@ impl BusTrait for Bus9 {
                 // DSi Stuff, return nothing
                 bytes
             }
+            0x04100000..=0x04100003 => shared.ipcfifo.receive::<true>().to_bytes::<T>(),
             0x06800000..=0x068A4000 => {
                 let addr = addr - 0x06800000;
                 bytes.copy_from_slice(&shared.vram_lcdc_alloc[addr..addr + T]);
@@ -147,16 +149,13 @@ impl BusTrait for Bus9 {
             0x04000180..=0x04000183 => {
                 shared.ipcsync.set::<true>(value.into_word());
             }
-            0x04000184..=0x04000185 => {
-                logger::warn(
-                    logger::LogSource::Bus9,
-                    format!(
-                        "IPCFIFO not implemented (W{} {:#010X}:{:#010X})",
-                        T,
-                        addr,
-                        value.into_word()
-                    ),
-                );
+            0x04000184..=0x04000187 => {
+                shared
+                    .ipcfifo
+                    .set_cnt::<true>(&mut self.interrupts, value.into_word());
+            }
+            0x04000188..=0x0400018B => {
+                shared.ipcfifo.send::<true>(value.into_word());
             }
             0x04000208..=0x0400020B => {
                 self.interrupts.me = value.into_word().into();
