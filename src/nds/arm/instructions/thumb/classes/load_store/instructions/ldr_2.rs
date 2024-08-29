@@ -1,7 +1,10 @@
-use crate::nds::arm::{
-    arm::ArmTrait,
-    instructions::thumb::Instruction,
-    models::{Context, ContextTrait, DisassemblyTrait},
+use crate::nds::{
+    arm::{
+        arm::ArmTrait,
+        instructions::thumb::Instruction,
+        models::{Context, ContextTrait, DisassemblyTrait},
+    },
+    Bits,
 };
 
 // LDR (2)
@@ -17,9 +20,14 @@ pub fn ldr_2(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.dis.push_str_end_arg("", Some("]"));
 
     let address = ctx.arm.r()[rn] + ctx.arm.r()[rm];
-    // NOTE: technically it's UNPREDICTABLE if bits 1-0 of address is not 0
-    ctx.arm
-        .set_r(rd, ctx.arm.read_word(ctx.bus, ctx.shared, address));
+    // NOTE: it's UNPREDICTABLE if bits 1-0 of address is not 0
+    let bits = address.get_bits(0, 1);
+    ctx.arm.set_r(
+        rd,
+        ctx.arm
+            .read_word(ctx.bus, ctx.shared, address)
+            .rotate_right(bits * 8),
+    );
 
     1 // TODO: this is wrong
 }

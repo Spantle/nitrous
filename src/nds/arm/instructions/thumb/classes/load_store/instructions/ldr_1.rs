@@ -1,7 +1,10 @@
-use crate::nds::arm::{
-    arm::ArmTrait,
-    instructions::thumb::Instruction,
-    models::{Context, ContextTrait, DisassemblyTrait},
+use crate::nds::{
+    arm::{
+        arm::ArmTrait,
+        instructions::thumb::Instruction,
+        models::{Context, ContextTrait, DisassemblyTrait},
+    },
+    Bits,
 };
 
 // LDR (1)
@@ -19,8 +22,14 @@ pub fn ldr_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
 
     let rn = ctx.arm.r()[rn];
     let address = rn + (immed_5 * 4);
-    ctx.arm
-        .set_r(rd, ctx.arm.read_word(ctx.bus, ctx.shared, address));
+    // NOTE: it's UNPREDICTABLE if bits 1-0 of address is not 0
+    let bits = address.get_bits(0, 1);
+    ctx.arm.set_r(
+        rd,
+        ctx.arm
+            .read_word(ctx.bus, ctx.shared, address)
+            .rotate_right(bits * 8),
+    );
 
     1 // TODO: this is wrong
 }
