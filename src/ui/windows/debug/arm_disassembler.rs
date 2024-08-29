@@ -104,7 +104,7 @@ impl NitrousGUI {
                 if ui.button("Step").clicked() {
                     let mut steps_remaining = step_amount.parse().unwrap_or(0);
                     loop {
-                        self.emulator.clock();
+                        self.emulator.step();
 
                         let mut ran = false;
                         match ARM_BOOL {

@@ -113,15 +113,27 @@ impl Emulator {
     }
 
     // NOTE: do not use this in a loop, it is slow
-    pub fn clock(&mut self) -> u32 {
+    pub fn step(&mut self) -> u32 {
         match self.cycle_state {
             CycleState::Arm9_1 => {
                 let cycles = self.arm9.clock(&mut self.bus9, &mut self.shared);
+                self.shared.dma9 = self
+                    .shared
+                    .dma9
+                    .clone()
+                    .check_immediately(&mut self.bus9, &mut self.shared);
+
                 self.cycle_state = CycleState::Arm9_2;
                 cycles
             }
             CycleState::Arm9_2 => {
                 let cycles = self.arm9.clock(&mut self.bus9, &mut self.shared);
+                self.shared.dma9 = self
+                    .shared
+                    .dma9
+                    .clone()
+                    .check_immediately(&mut self.bus9, &mut self.shared);
+
                 self.cycle_state = CycleState::Arm7;
                 cycles
             }
@@ -129,6 +141,12 @@ impl Emulator {
                 let cycles = self.arm7.clock(&mut self.bus7, &mut self.shared);
                 self.shared.gpu2d_a.clock(&mut self.bus9, &mut self.bus7);
                 self.shared.gpu2d_b.clock(&mut self.bus9, &mut self.bus7);
+                self.shared.dma7 = self
+                    .shared
+                    .dma7
+                    .clone()
+                    .check_immediately(&mut self.bus7, &mut self.shared);
+
                 self.cycle_state = CycleState::Arm9_1;
                 cycles
             }

@@ -89,7 +89,7 @@ impl NitrousGUI {
             false
         };
         if ui.button("Step emulation").clicked() {
-            self.emulator.clock();
+            self.emulator.step();
         }
 
         started || paused || reset
