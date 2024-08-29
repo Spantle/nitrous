@@ -12,7 +12,7 @@ impl BusTrait for Bus9 {
     const KIND: ArmKind = ArmKind::ARM9;
 
     fn load_bios(&mut self, bios: Vec<u8>) {
-        logger::info(logger::LogSource::Arm9(0), "Successfully loaded BIOS");
+        logger::info(logger::LogSource::Bus9, "Successfully loaded BIOS");
         self.bios = bios;
     }
 
@@ -21,7 +21,7 @@ impl BusTrait for Bus9 {
         match file {
             Ok(bios) => self.load_bios(bios),
             Err(e) => logger::error(
-                logger::LogSource::Arm9(0),
+                logger::LogSource::Bus9,
                 format!("Failed to load BIOS: {}", e),
             ),
         };

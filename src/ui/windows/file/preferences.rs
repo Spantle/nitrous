@@ -57,6 +57,37 @@ impl NitrousGUI {
                 });
             }
         });
+
+        ui.horizontal(|ui| {
+            ui.label("ARM7 BIOS file:");
+            ui.text_edit_singleline(&mut self.preferences_arm7_bios_path);
+
+            if ui.button("Browse").clicked() {
+                let sender = self.load_arm7_bios_channel.0.clone();
+
+                let task = rfd::AsyncFileDialog::new()
+                    .add_filter("ARM7 BIOS", &["bin"])
+                    .pick_file();
+
+                let ctx = ui.ctx().clone();
+                execute(async move {
+                    let file = task.await;
+                    if let Some(file) = file {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _result = sender.send(file.path().to_string_lossy().to_string());
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            let _result = sender.send(file.read().await);
+                        }
+
+                        ctx.request_repaint();
+                    }
+                });
+            }
+        });
     }
 }
 

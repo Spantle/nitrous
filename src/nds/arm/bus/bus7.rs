@@ -4,20 +4,27 @@ use super::BusTrait;
 
 #[derive(Default)]
 pub struct Bus7 {
+    pub bios: Vec<u8>,
     pub interrupts: Interrupts,
 }
 
 impl BusTrait for Bus7 {
     const KIND: ArmKind = ArmKind::ARM7;
 
-    fn load_bios(&mut self, _bios: Vec<u8>) {
-        logger::error(logger::LogSource::Bus7, "BIOS loading not implemented");
+    fn load_bios(&mut self, bios: Vec<u8>) {
+        logger::info(logger::LogSource::Bus7, "Successfully loaded BIOS");
+        self.bios = bios;
     }
-    fn load_bios_from_path(&mut self, _path: &str) {
-        logger::error(
-            logger::LogSource::Bus7,
-            "BIOS loading (path) not implemented",
-        );
+
+    fn load_bios_from_path(&mut self, path: &str) {
+        let file = std::fs::read(path);
+        match file {
+            Ok(bios) => self.load_bios(bios),
+            Err(e) => logger::error(
+                logger::LogSource::Bus7,
+                format!("Failed to load BIOS: {}", e),
+            ),
+        };
     }
 
     fn is_requesting_interrupt(&self) -> bool {
@@ -51,6 +58,10 @@ impl BusTrait for Bus7 {
         let addr = addr as usize / T * T;
         let mut bytes = [0; T];
         match addr {
+            0x00000000..=0x00003FFF => {
+                bytes.copy_from_slice(&self.bios[addr..addr + T]);
+                bytes
+            }
             0x02000000..=0x02FFFFFF => {
                 let addr = (addr - 0x02000000) % 0x400000;
                 bytes.copy_from_slice(&shared.psram[addr..addr + T]);
