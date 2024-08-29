@@ -65,7 +65,7 @@ impl IPCFIFO {
 
         cnt.send_fifo_empty_irq = value.get_bit(2);
         cnt.receive_fifo_not_empty_irq = value.get_bit(10);
-        cnt.error = value.get_bit(14);
+        cnt.error &= !value.get_bit(14);
         cnt.enabled = value.get_bit(15);
     }
 
@@ -93,18 +93,16 @@ impl IPCFIFO {
     }
 
     pub fn send<const ARM_BOOL: bool>(&mut self, value: u32) {
-        let (cnt, send_queue, recent, interrupt) = if ARM_BOOL {
+        let (cnt, send_queue, interrupt) = if ARM_BOOL {
             (
                 &mut self.cnt9,
                 &mut self.send_queue9,
-                &mut self.recent9,
                 &mut self.request_receive_fifo_not_empty_irq7,
             )
         } else {
             (
                 &mut self.cnt7,
                 &mut self.send_queue7,
-                &mut self.recent7,
                 &mut self.request_receive_fifo_not_empty_irq9,
             )
         };
@@ -116,7 +114,6 @@ impl IPCFIFO {
         cnt.error = send_queue.is_full();
         *interrupt = !send_queue.is_empty() && cnt.receive_fifo_not_empty_irq;
         send_queue.push(value);
-        *recent = value;
     }
 
     pub fn receive<const ARM_BOOL: bool>(&mut self) -> u32 {
@@ -147,6 +144,7 @@ impl IPCFIFO {
 
         let value = receive_queue.pop().unwrap();
         *interrupt = receive_queue.is_empty() && cnt.send_fifo_empty_irq;
+        *recent = value;
         value
     }
 }
