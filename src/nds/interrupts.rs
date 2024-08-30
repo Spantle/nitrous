@@ -53,6 +53,10 @@ impl InterruptFlags {
         self.0
     }
 
+    pub fn write_and_ack(&mut self, value: u32) {
+        self.0 &= !value;
+    }
+
     pub fn set_lcd_vblank(&mut self, value: bool) {
         self.0.set_bit(Self::LCD_VBLANK_OFFSET, value);
     }

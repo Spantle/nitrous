@@ -164,7 +164,7 @@ impl BusTrait for Bus9 {
                 self.interrupts.e = value.into_word().into();
             }
             0x04000214..=0x04000217 => {
-                self.interrupts.f = value.into_word().into();
+                self.interrupts.f.write_and_ack(value.into_word());
             }
             0x04000304..=0x04000307 => {
                 shared.powcnt1 = value.into_word().into();

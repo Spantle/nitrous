@@ -124,7 +124,7 @@ impl BusTrait for Bus7 {
                 self.interrupts.e = value.into_word().into();
             }
             0x04000214..=0x04000217 => {
-                self.interrupts.f = value.into_word().into();
+                self.interrupts.f.write_and_ack(value.into_word());
             }
             _ => {
                 let success = shared.dma7.write_slice::<T>(addr, value);
