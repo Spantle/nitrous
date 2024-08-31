@@ -345,7 +345,12 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
         self.switch_mode::<false>(ProcessorMode::IRQ, true);
         self.cpsr_mut().set_thumb(false);
         self.cpsr_mut().set_irq_interrupt(true);
-        self.set_r(15, 0xFFFF0018);
+
+        if Bus::KIND == ArmKind::ARM9 {
+            self.set_r(15, 0xFFFF0018);
+        } else {
+            self.set_r(15, 0x00000018);
+        }
     }
 
     fn cp15(&self) -> &CP15 {

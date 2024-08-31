@@ -46,9 +46,15 @@ impl InterruptFlags {
     const LCD_VBLANK_OFFSET: u32 = 0;
     const LCD_HBLANK_OFFSET: u32 = 1;
     const LCD_VCOUNTER_MATCH_OFFSET: u32 = 2;
+    const IPC_SEND_FIFO_EMPTY_OFFSET: u32 = 17;
+    const IPC_RECEIVE_FIFO_NOT_EMPTY_OFFSET: u32 = 18;
 
     pub fn value(&self) -> u32 {
         self.0
+    }
+
+    pub fn write_and_ack(&mut self, value: u32) {
+        self.0 &= !value;
     }
 
     pub fn set_lcd_vblank(&mut self, value: bool) {
@@ -61,5 +67,28 @@ impl InterruptFlags {
 
     pub fn set_lcd_vcounter_match(&mut self, value: bool) {
         self.0.set_bit(Self::LCD_VCOUNTER_MATCH_OFFSET, value);
+    }
+
+    pub fn set_ipc_send_fifo_empty(&mut self, value: bool) {
+        self.0.set_bit(Self::IPC_SEND_FIFO_EMPTY_OFFSET, value);
+    }
+
+    pub fn falsy_set_ipc_send_fifo_empty(&mut self, value: bool) {
+        self.0.set_bit(
+            Self::IPC_SEND_FIFO_EMPTY_OFFSET,
+            self.0.get_bit(Self::IPC_SEND_FIFO_EMPTY_OFFSET) || value,
+        );
+    }
+
+    pub fn set_ipc_receive_fifo_not_empty(&mut self, value: bool) {
+        self.0
+            .set_bit(Self::IPC_RECEIVE_FIFO_NOT_EMPTY_OFFSET, value);
+    }
+
+    pub fn falsy_set_ipc_receive_fifo_not_empty(&mut self, value: bool) {
+        self.0.set_bit(
+            Self::IPC_RECEIVE_FIFO_NOT_EMPTY_OFFSET,
+            self.0.get_bit(Self::IPC_RECEIVE_FIFO_NOT_EMPTY_OFFSET) || value,
+        );
     }
 }

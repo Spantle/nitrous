@@ -114,7 +114,7 @@ impl Emulator {
 
     // NOTE: do not use this in a loop, it is slow
     pub fn step(&mut self) -> u32 {
-        match self.cycle_state {
+        let cycles = match self.cycle_state {
             CycleState::Arm9_1 => {
                 let cycles = self.arm9.clock(&mut self.bus9, &mut self.shared);
                 self.shared.dma9 = self
@@ -150,7 +150,13 @@ impl Emulator {
                 self.cycle_state = CycleState::Arm9_1;
                 cycles
             }
-        }
+        };
+
+        self.shared
+            .ipcfifo
+            .update_interrupts(&mut self.bus9.interrupts, &mut self.bus7.interrupts);
+
+        cycles
     }
 }
 

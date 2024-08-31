@@ -5,7 +5,8 @@ use crate::nds::arm::{
 };
 
 // SWI
-pub fn swi(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
+#[inline(always)]
+pub fn swi(arm_bool: bool, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.dis.set_inst("SWI");
 
     let immed_24 = ctx.inst.get_word(0, 23);
@@ -16,7 +17,12 @@ pub fn swi(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.arm.switch_mode::<false>(ProcessorMode::SVC, true);
     ctx.arm.cpsr_mut().set_thumb(false);
     ctx.arm.cpsr_mut().set_irq_interrupt(true);
-    ctx.arm.set_r(15, 0xFFFF0008);
+
+    if arm_bool {
+        ctx.arm.set_r(15, 0xFFFF0008);
+    } else {
+        ctx.arm.set_r(15, 0x00000008);
+    }
 
     1 // TODO: this is wrong
 }

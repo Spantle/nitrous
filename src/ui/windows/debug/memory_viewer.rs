@@ -5,21 +5,23 @@ impl NitrousGUI {
         let window = egui::Window::new_nitrous("Memory Viewer", ctx)
             .open(&mut self.memory_viewer)
             .show(ctx, |ui| {
-                let visual_offset = 0x02000000;
-                let mem = &mut self.emulator.shared.psram;
                 let text_style = egui::TextStyle::Monospace;
                 let height = ui.text_style_height(&text_style);
-                let total_rows = mem.len() / 16;
+                let total_rows = (0x02FFFFFF - 0x02000000) / 16;
                 egui::ScrollArea::vertical().show_rows(ui, height, total_rows, |ui, row_range| {
                     for row in row_range {
-                        let row_start = row * 16;
-                        let row_end = row_start + 16;
-                        let row_mem = &mem[row_start..row_end];
+                        let row_start = 0x02000000 + row * 16;
+                        let row_mem = self.emulator.arm9.read_bulk(
+                            &mut self.emulator.bus9,
+                            &mut self.emulator.shared,
+                            row_start as u32,
+                            16,
+                        );
 
                         ui.horizontal(|ui| {
                             ui.make_monospace();
 
-                            ui.strong(format!("{:08X}", row_start + visual_offset));
+                            ui.strong(format!("{:08X}", row_start));
 
                             ui.add_space(height / 2.0);
                             for (i, b) in row_mem.iter().enumerate() {
@@ -109,7 +111,7 @@ impl NitrousGUI {
                                 pressed: true,
                                 ..
                             } => {
-                                if selected < mem.len() - 16 {
+                                if selected < 0x687FFFF {
                                     self.memory_viewer_selected = Some(selected + 16);
                                 }
                             }
@@ -127,7 +129,7 @@ impl NitrousGUI {
                                 pressed: true,
                                 ..
                             } => {
-                                if selected < mem.len() - 1 {
+                                if selected < 0x687FFFF {
                                     self.memory_viewer_selected = Some(selected + 1);
                                 }
                             }
@@ -162,7 +164,12 @@ impl NitrousGUI {
                                                 match char2 {
                                                     ValidateCharResult::Valid(char2) => {
                                                         let b = (char << 4) | char2;
-                                                        mem[i] = b;
+                                                        self.emulator.arm9.write_bulk(
+                                                            &mut self.emulator.bus9,
+                                                            &mut self.emulator.shared,
+                                                            i as u32,
+                                                            [b].to_vec(),
+                                                        );
                                                         i += 1;
                                                         continue;
                                                     }
@@ -189,9 +196,14 @@ impl NitrousGUI {
                                     if let Some(value) = self.memory_viewer_selected_pending_value {
                                         let b = (value << 4) | char;
                                         self.memory_viewer_selected_pending_value = None;
-                                        mem[selected] = b;
+                                        self.emulator.arm9.write_bulk(
+                                            &mut self.emulator.bus9,
+                                            &mut self.emulator.shared,
+                                            selected as u32,
+                                            [b].to_vec(),
+                                        );
 
-                                        if selected < mem.len() - 1 {
+                                        if selected < 0x687FFFF {
                                             self.memory_viewer_selected = Some(selected + 1);
                                         }
                                     } else {
