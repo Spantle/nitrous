@@ -11,6 +11,10 @@ pub struct Bus7 {
 impl BusTrait for Bus7 {
     const KIND: ArmKind = ArmKind::ARM7;
 
+    fn reset(&mut self) {
+        self.interrupts = Interrupts::default();
+    }
+
     fn load_bios(&mut self, bios: Vec<u8>) {
         logger::info(logger::LogSource::Bus7, "Successfully loaded BIOS");
         self.bios = bios;

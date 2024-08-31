@@ -11,6 +11,10 @@ pub struct Bus9 {
 impl BusTrait for Bus9 {
     const KIND: ArmKind = ArmKind::ARM9;
 
+    fn reset(&mut self) {
+        self.interrupts = Interrupts::default();
+    }
+
     fn load_bios(&mut self, bios: Vec<u8>) {
         logger::info(logger::LogSource::Bus9, "Successfully loaded BIOS");
         self.bios = bios;

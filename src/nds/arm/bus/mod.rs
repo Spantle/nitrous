@@ -7,6 +7,8 @@ use super::ArmKind;
 pub trait BusTrait {
     const KIND: ArmKind;
 
+    fn reset(&mut self);
+
     fn load_bios(&mut self, bios: Vec<u8>);
     fn load_bios_from_path(&mut self, path: &str);
 
@@ -39,6 +41,8 @@ pub trait BusTrait {
 pub struct FakeBus;
 impl BusTrait for FakeBus {
     const KIND: ArmKind = ArmKind::ARM9;
+
+    fn reset(&mut self) {}
 
     fn load_bios(&mut self, _bios: Vec<u8>) {}
     fn load_bios_from_path(&mut self, _path: &str) {}
