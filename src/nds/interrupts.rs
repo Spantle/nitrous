@@ -73,8 +73,22 @@ impl InterruptFlags {
         self.0.set_bit(Self::IPC_SEND_FIFO_EMPTY_OFFSET, value);
     }
 
+    pub fn falsy_set_ipc_send_fifo_empty(&mut self, value: bool) {
+        self.0.set_bit(
+            Self::IPC_SEND_FIFO_EMPTY_OFFSET,
+            self.0.get_bit(Self::IPC_SEND_FIFO_EMPTY_OFFSET) || value,
+        );
+    }
+
     pub fn set_ipc_receive_fifo_not_empty(&mut self, value: bool) {
         self.0
             .set_bit(Self::IPC_RECEIVE_FIFO_NOT_EMPTY_OFFSET, value);
+    }
+
+    pub fn falsy_set_ipc_receive_fifo_not_empty(&mut self, value: bool) {
+        self.0.set_bit(
+            Self::IPC_RECEIVE_FIFO_NOT_EMPTY_OFFSET,
+            self.0.get_bit(Self::IPC_RECEIVE_FIFO_NOT_EMPTY_OFFSET) || value,
+        );
     }
 }

@@ -11,10 +11,8 @@ pub struct IPCFIFO {
     recent9: u32,
     recent7: u32,
 
-    pub request_send_fifo_empty_irq9: bool,
-    pub request_send_fifo_empty_irq7: bool,
-    pub request_receive_fifo_not_empty_irq9: bool,
-    pub request_receive_fifo_not_empty_irq7: bool,
+    did_send: bool,
+    did_receive: bool,
 }
 
 impl Default for IPCFIFO {
@@ -27,10 +25,8 @@ impl Default for IPCFIFO {
             recent9: 0,
             recent7: 0,
 
-            request_send_fifo_empty_irq9: false,
-            request_send_fifo_empty_irq7: false,
-            request_receive_fifo_not_empty_irq9: false,
-            request_receive_fifo_not_empty_irq7: false,
+            did_send: false,
+            did_receive: false,
         }
     }
 }
@@ -61,6 +57,8 @@ impl IPCFIFO {
 
         if value.get_bit(3) {
             send_queue.clear();
+
+            self.did_send = true;
         }
 
         cnt.send_fifo_empty_irq = value.get_bit(2);
@@ -93,44 +91,26 @@ impl IPCFIFO {
     }
 
     pub fn send<const ARM_BOOL: bool>(&mut self, value: u32) {
-        let (cnt, send_queue, interrupt) = if ARM_BOOL {
-            (
-                &mut self.cnt9,
-                &mut self.send_queue9,
-                &mut self.request_receive_fifo_not_empty_irq7,
-            )
+        let (cnt, send_queue) = if ARM_BOOL {
+            (&mut self.cnt9, &mut self.send_queue9)
         } else {
-            (
-                &mut self.cnt7,
-                &mut self.send_queue7,
-                &mut self.request_receive_fifo_not_empty_irq9,
-            )
+            (&mut self.cnt7, &mut self.send_queue7)
         };
 
         if !cnt.enabled {
             return;
         }
 
-        cnt.error = send_queue.is_full();
-        *interrupt = !send_queue.is_empty() && cnt.receive_fifo_not_empty_irq;
         send_queue.push(value);
+        cnt.error = send_queue.is_full();
+        self.did_send = true;
     }
 
     pub fn receive<const ARM_BOOL: bool>(&mut self) -> u32 {
-        let (cnt, receive_queue, recent, interrupt) = if ARM_BOOL {
-            (
-                &mut self.cnt9,
-                &mut self.send_queue7,
-                &mut self.recent9,
-                &mut self.request_send_fifo_empty_irq7,
-            )
+        let (cnt, receive_queue, recent) = if ARM_BOOL {
+            (&mut self.cnt9, &mut self.send_queue7, &mut self.recent9)
         } else {
-            (
-                &mut self.cnt7,
-                &mut self.send_queue9,
-                &mut self.recent7,
-                &mut self.request_send_fifo_empty_irq9,
-            )
+            (&mut self.cnt7, &mut self.send_queue9, &mut self.recent7)
         };
 
         if !cnt.enabled {
@@ -143,8 +123,31 @@ impl IPCFIFO {
         }
 
         let value = receive_queue.pop().unwrap();
-        *interrupt = receive_queue.is_empty() && cnt.send_fifo_empty_irq;
         *recent = value;
+        self.did_receive = true;
         value
+    }
+
+    pub fn update_interrupts(
+        &mut self,
+        interrupts9: &mut Interrupts,
+        interrupts7: &mut Interrupts,
+    ) {
+        interrupts9.f.falsy_set_ipc_send_fifo_empty(
+            self.did_receive && self.cnt9.send_fifo_empty_irq && self.send_queue9.is_empty(),
+        );
+        interrupts9.f.falsy_set_ipc_receive_fifo_not_empty(
+            self.did_send && self.cnt9.receive_fifo_not_empty_irq && !self.send_queue7.is_empty(),
+        );
+
+        interrupts7.f.falsy_set_ipc_send_fifo_empty(
+            self.did_receive && self.cnt7.send_fifo_empty_irq && self.send_queue7.is_empty(),
+        );
+        interrupts7.f.falsy_set_ipc_receive_fifo_not_empty(
+            self.did_send && self.cnt7.receive_fifo_not_empty_irq && !self.send_queue9.is_empty(),
+        );
+
+        self.did_send = false;
+        self.did_receive = false;
     }
 }
