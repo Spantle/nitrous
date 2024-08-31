@@ -323,6 +323,10 @@ impl eframe::App for NitrousGUI {
                     .clone()
                     .check_immediately(&mut self.emulator.bus7, &mut self.emulator.shared);
 
+                self.emulator.shared.ipcsync.update_interrupts(
+                    &mut self.emulator.bus9.interrupts,
+                    &mut self.emulator.bus7.interrupts,
+                );
                 self.emulator.shared.ipcfifo.update_interrupts(
                     &mut self.emulator.bus9.interrupts,
                     &mut self.emulator.bus7.interrupts,

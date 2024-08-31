@@ -155,6 +155,9 @@ impl Emulator {
         };
 
         self.shared
+            .ipcsync
+            .update_interrupts(&mut self.bus9.interrupts, &mut self.bus7.interrupts);
+        self.shared
             .ipcfifo
             .update_interrupts(&mut self.bus9.interrupts, &mut self.bus7.interrupts);
 
