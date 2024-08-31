@@ -2,7 +2,7 @@ use std::sync::atomic::AtomicBool;
 
 use super::{
     arm::{
-        bus::{bus7::Bus7, bus9::Bus9},
+        bus::{bus7::Bus7, bus9::Bus9, BusTrait},
         Arm,
     },
     shared::Shared,
@@ -90,6 +90,8 @@ impl Emulator {
 
         self.arm9 = Arm::default();
         self.arm7 = Arm::default();
+        self.bus9.reset();
+        self.bus7.reset();
 
         self.shared.reset();
 
