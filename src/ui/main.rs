@@ -29,7 +29,11 @@ pub fn init(emulator: Emulator) -> Result<(), eframe::Error> {
         viewport: egui::ViewportBuilder::default().with_min_inner_size(egui::vec2(272.0, 427.0)),
         ..Default::default()
     };
-    eframe::run_native("Nitrous", options, Box::new(|cc| Ok(creator(cc, emulator))))
+    eframe::run_native(
+        "NitrousDS",
+        options,
+        Box::new(|cc| Ok(creator(cc, emulator))),
+    )
 }
 
 #[cfg(target_arch = "wasm32")]
