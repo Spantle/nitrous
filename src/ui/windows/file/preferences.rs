@@ -143,6 +143,7 @@ impl PreferencesWindow {
     }
 
     pub fn load_bios_from_channel<Bus: BusTrait>(&mut self, bus: &mut Bus) {
+        #[allow(unused_variables)]
         let (bios_channel, bios_path) = match Bus::KIND {
             ArmKind::ARM9 => (&self.load_arm9_bios_channel, &mut self.arm9_bios_path),
             ArmKind::ARM7 => (&self.load_arm7_bios_channel, &mut self.arm7_bios_path),
