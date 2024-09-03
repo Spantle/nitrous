@@ -1,18 +1,29 @@
-use crate::nds::arm;
-use crate::ui::{NitrousGUI, NitrousUI, NitrousWindow};
+use crate::nds::{arm, Emulator};
+use crate::ui::{NitrousUI, NitrousWindow};
+
+#[derive(Default, serde::Deserialize, serde::Serialize)]
+#[serde(default)]
+pub struct Arm9LegacyInfoWindow {
+    pub open: bool,
+
+    #[serde(skip)]
+    arm9_info_legacy_selected: Option<(String, usize)>,
+    #[serde(skip)]
+    arm9_info_legacy_selected_pending_value: String,
+}
 
 // this code is absolutely horrendous and i'm sorry (i just wanna write the emulator not this important useful crap i'm gonna be using 24/7 lol)
-impl NitrousGUI {
-    pub fn show_arm9_info_legacy(&mut self, ctx: &egui::Context) {
+impl Arm9LegacyInfoWindow {
+    pub fn show(&mut self, emulator: &mut Emulator, ctx: &egui::Context) {
         egui::Window::new_nitrous("(Legacy) ARM9 Info", ctx)
-            .open(&mut self.arm9_info_legacy)
+            .open(&mut self.open)
             .show(ctx, |ui| {
                 egui::CollapsingHeader::new("Register Values (Hexadecimal)")
                     .default_open(true)
                     .show(ui, |ui| {
                         ui.make_monospace();
 
-                        let r = self.emulator.arm9.r;
+                        let r = emulator.arm9.r;
                         egui_extras::TableBuilder::new(ui)
                             .striped(true)
                             .cell_layout(egui::Layout::left_to_right(egui::Align::Center))
@@ -51,7 +62,7 @@ impl NitrousGUI {
                                                     if ui.add(text_edit).lost_focus() {
                                                         let value = u32::from_str_radix(&self.arm9_info_legacy_selected_pending_value, 16);
                                                         if let Ok(value) = value {
-                                                            self.emulator.arm9.r[ii] = value;
+                                                            emulator.arm9.r[ii] = value;
                                                         }
                                                         self.arm9_info_legacy_selected = None;
                                                     } else {
@@ -60,7 +71,7 @@ impl NitrousGUI {
                                                 }
                                             }
 
-                                            let value = format!("{:08X}", self.emulator.arm9.r[ii]);
+                                            let value = format!("{:08X}", emulator.arm9.r[ii]);
                                             if flag && ui.add(egui::Label::new(&value).sense(egui::Sense::click())).clicked()
                                             {
                                                 self.arm9_info_legacy_selected_pending_value = value;
@@ -112,11 +123,11 @@ impl NitrousGUI {
                                         });
                                     };
 
-                                display_range("FIQ", 8, 14, &mut self.emulator.arm9.r_fiq);
-                                display_range("IRQ", 13, 14, &mut self.emulator.arm9.r_irq);
-                                display_range("SVC", 13, 14, &mut self.emulator.arm9.r_svc);
-                                display_range("ABT", 13, 14, &mut self.emulator.arm9.r_abt);
-                                display_range("UND", 13, 14, &mut self.emulator.arm9.r_und);
+                                display_range("FIQ", 8, 14, &mut emulator.arm9.r_fiq);
+                                display_range("IRQ", 13, 14, &mut emulator.arm9.r_irq);
+                                display_range("SVC", 13, 14, &mut emulator.arm9.r_svc);
+                                display_range("ABT", 13, 14, &mut emulator.arm9.r_abt);
+                                display_range("UND", 13, 14, &mut emulator.arm9.r_und);
                             });
                     });
 
@@ -212,12 +223,12 @@ impl NitrousGUI {
                                     });
                                 };
 
-                                display_psr("Base", &self.emulator.arm9.cpsr);
-                                display_psr("FIQ", &self.emulator.arm9.r_fiq[7].into());
-                                display_psr("IRQ", &self.emulator.arm9.r_irq[2].into());
-                                display_psr("SVC", &self.emulator.arm9.r_svc[2].into());
-                                display_psr("ABT", &self.emulator.arm9.r_abt[2].into());
-                                display_psr("UND", &self.emulator.arm9.r_und[2].into());
+                                display_psr("Base", &emulator.arm9.cpsr);
+                                display_psr("FIQ", &emulator.arm9.r_fiq[7].into());
+                                display_psr("IRQ", &emulator.arm9.r_irq[2].into());
+                                display_psr("SVC", &emulator.arm9.r_svc[2].into());
+                                display_psr("ABT", &emulator.arm9.r_abt[2].into());
+                                display_psr("UND", &emulator.arm9.r_und[2].into());
                             });
                     });
             });

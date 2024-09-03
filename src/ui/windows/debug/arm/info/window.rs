@@ -1,70 +1,77 @@
 use crate::{
-    nds::arm::{models::PSR, ArmBool},
-    ui::{NitrousGUI, NitrousUI, NitrousWindow},
+    nds::{
+        arm::{models::PSR, ArmBool},
+        Emulator,
+    },
+    ui::{NitrousUI, NitrousWindow},
 };
 
-impl NitrousGUI {
-    pub fn show_arm_info<const ARM_BOOL: bool>(&mut self, ctx: &egui::Context) {
-        let mut arm_info = match ARM_BOOL {
-            ArmBool::ARM9 => self.arm9_info,
-            ArmBool::ARM7 => self.arm7_info,
-        };
+use super::models::ArmInfoWindow;
+
+impl ArmInfoWindow {
+    pub fn show<const ARM_BOOL: bool>(&mut self, emulator: &mut Emulator, ctx: &egui::Context) {
+        let mut open = self.open;
         let title = match ARM_BOOL {
             ArmBool::ARM9 => "ARM9 Info",
             ArmBool::ARM7 => "ARM7 Info",
         };
 
         egui::Window::new_nitrous(title, ctx)
-            .open(&mut arm_info)
+            .open(&mut open)
             .show(ctx, |ui| {
-                self.render_arm_info::<ARM_BOOL>(ui);
+                self.render_arm_info::<ARM_BOOL>(emulator, ui);
             });
 
-        match ARM_BOOL {
-            ArmBool::ARM9 => self.arm9_info = arm_info,
-            ArmBool::ARM7 => self.arm7_info = arm_info,
-        };
+        self.open = open;
     }
 
-    fn render_arm_info<const ARM_BOOL: bool>(&mut self, ui: &mut egui::Ui) {
+    fn render_arm_info<const ARM_BOOL: bool>(
+        &mut self,
+        emulator: &mut Emulator,
+        ui: &mut egui::Ui,
+    ) {
         ui.make_monospace();
 
         egui::CollapsingHeader::new("Register Values (Hex)")
             .default_open(true)
             .show(ui, |ui| {
-                self.render_reg_values::<ARM_BOOL>(ui);
+                self.render_reg_values::<ARM_BOOL>(emulator, ui);
             });
 
         egui::CollapsingHeader::new("Program Status Register Values")
             .default_open(true)
             .show(ui, |ui| {
-                self.render_psrs::<ARM_BOOL>(ui);
+                self.render_psrs::<ARM_BOOL>(emulator, ui);
             });
 
         egui::CollapsingHeader::new("Program Status Registers (Binary)")
             .default_open(false)
             .show(ui, |ui| {
-                self.render_psr_values::<ARM_BOOL>(ui);
+                self.render_psr_values::<ARM_BOOL>(emulator, ui);
             });
     }
 
-    fn render_reg_values<const ARM_BOOL: bool>(&mut self, ui: &mut egui::Ui) {
+    fn render_reg_values<const ARM_BOOL: bool>(
+        &mut self,
+        emulator: &mut Emulator,
+        ui: &mut egui::Ui,
+    ) {
         let (r, r_fiq, r_irq, r_svc, r_abt, r_und) = match ARM_BOOL {
             ArmBool::ARM9 => (
-                &self.emulator.arm9.r,
-                &self.emulator.arm9.r_fiq,
-                &self.emulator.arm9.r_irq,
-                &self.emulator.arm9.r_svc,
-                &self.emulator.arm9.r_abt,
-                &self.emulator.arm9.r_und,
+                &emulator.arm9.r,
+                &emulator.arm9.r_fiq,
+                &emulator.arm9.r_irq,
+                &emulator.arm9.r_svc,
+                &emulator.arm9.r_abt,
+                &emulator.arm9.r_und,
             ),
             ArmBool::ARM7 => (
-                &self.emulator.arm7.r,
-                &self.emulator.arm7.r_fiq,
-                &self.emulator.arm7.r_irq,
-                &self.emulator.arm7.r_svc,
-                &self.emulator.arm7.r_abt,
-                &self.emulator.arm7.r_und,
+                &emulator.arm7.r,
+                &emulator.arm7.r_fiq,
+                &emulator.arm7.r_irq,
+                &emulator.arm7.r_svc,
+                &emulator.arm7.r_abt,
+                &emulator.arm7.r_und,
             ),
         };
 
@@ -140,23 +147,23 @@ impl NitrousGUI {
             });
     }
 
-    fn render_psrs<const ARM_BOOL: bool>(&mut self, ui: &mut egui::Ui) {
+    fn render_psrs<const ARM_BOOL: bool>(&mut self, emulator: &mut Emulator, ui: &mut egui::Ui) {
         let (cpsr, psr_fiq, psr_irq, psr_svc, psr_abt, psr_und) = match ARM_BOOL {
             ArmBool::ARM9 => (
-                &self.emulator.arm9.cpsr,
-                PSR::from(self.emulator.arm9.r_fiq[7]),
-                PSR::from(self.emulator.arm9.r_irq[2]),
-                PSR::from(self.emulator.arm9.r_svc[2]),
-                PSR::from(self.emulator.arm9.r_abt[2]),
-                PSR::from(self.emulator.arm9.r_und[2]),
+                &emulator.arm9.cpsr,
+                PSR::from(emulator.arm9.r_fiq[7]),
+                PSR::from(emulator.arm9.r_irq[2]),
+                PSR::from(emulator.arm9.r_svc[2]),
+                PSR::from(emulator.arm9.r_abt[2]),
+                PSR::from(emulator.arm9.r_und[2]),
             ),
             ArmBool::ARM7 => (
-                &self.emulator.arm7.cpsr,
-                PSR::from(self.emulator.arm7.r_fiq[7]),
-                PSR::from(self.emulator.arm7.r_irq[2]),
-                PSR::from(self.emulator.arm7.r_svc[2]),
-                PSR::from(self.emulator.arm7.r_abt[2]),
-                PSR::from(self.emulator.arm7.r_und[2]),
+                &emulator.arm7.cpsr,
+                PSR::from(emulator.arm7.r_fiq[7]),
+                PSR::from(emulator.arm7.r_irq[2]),
+                PSR::from(emulator.arm7.r_svc[2]),
+                PSR::from(emulator.arm7.r_abt[2]),
+                PSR::from(emulator.arm7.r_und[2]),
             ),
         };
 
@@ -249,23 +256,27 @@ impl NitrousGUI {
             });
     }
 
-    fn render_psr_values<const ARM_BOOL: bool>(&mut self, ui: &mut egui::Ui) {
+    fn render_psr_values<const ARM_BOOL: bool>(
+        &mut self,
+        emulator: &mut Emulator,
+        ui: &mut egui::Ui,
+    ) {
         let (cpsr, psr_fiq, psr_irq, psr_svc, psr_abt, psr_und) = match ARM_BOOL {
             ArmBool::ARM9 => (
-                self.emulator.arm9.cpsr.value(),
-                PSR::from(self.emulator.arm9.r_fiq[7]).value(),
-                PSR::from(self.emulator.arm9.r_irq[2]).value(),
-                PSR::from(self.emulator.arm9.r_svc[2]).value(),
-                PSR::from(self.emulator.arm9.r_abt[2]).value(),
-                PSR::from(self.emulator.arm9.r_und[2]).value(),
+                emulator.arm9.cpsr.value(),
+                PSR::from(emulator.arm9.r_fiq[7]).value(),
+                PSR::from(emulator.arm9.r_irq[2]).value(),
+                PSR::from(emulator.arm9.r_svc[2]).value(),
+                PSR::from(emulator.arm9.r_abt[2]).value(),
+                PSR::from(emulator.arm9.r_und[2]).value(),
             ),
             ArmBool::ARM7 => (
-                self.emulator.arm7.cpsr.value(),
-                PSR::from(self.emulator.arm7.r_fiq[7]).value(),
-                PSR::from(self.emulator.arm7.r_irq[2]).value(),
-                PSR::from(self.emulator.arm7.r_svc[2]).value(),
-                PSR::from(self.emulator.arm7.r_abt[2]).value(),
-                PSR::from(self.emulator.arm7.r_und[2]).value(),
+                emulator.arm7.cpsr.value(),
+                PSR::from(emulator.arm7.r_fiq[7]).value(),
+                PSR::from(emulator.arm7.r_irq[2]).value(),
+                PSR::from(emulator.arm7.r_svc[2]).value(),
+                PSR::from(emulator.arm7.r_abt[2]).value(),
+                PSR::from(emulator.arm7.r_und[2]).value(),
             ),
         };
 

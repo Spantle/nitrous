@@ -1,13 +1,19 @@
 use crate::{
     nds::logger::{self, do_pause_on_warn, set_pause_on_warn},
-    ui::{NitrousGUI, NitrousUI, NitrousWindow},
+    ui::{NitrousUI, NitrousWindow},
 };
 
-impl NitrousGUI {
-    pub fn show_emulation_log(&mut self, ctx: &egui::Context) {
+#[derive(Default, serde::Deserialize, serde::Serialize)]
+#[serde(default)]
+pub struct EmulationLogWindow {
+    pub open: bool,
+}
+
+impl EmulationLogWindow {
+    pub fn show(&mut self, ctx: &egui::Context) {
         egui::Window::new_nitrous("Emulation Log", ctx)
             .default_width(600.0)
-            .open(&mut self.emulation_log)
+            .open(&mut self.open)
             .show(ctx, |ui| {
                 egui::TopBottomPanel::top("emulation_log_navbar").show_inside(ui, |ui| {
                     ui.horizontal(|ui| {

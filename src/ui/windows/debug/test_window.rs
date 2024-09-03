@@ -1,9 +1,15 @@
-use crate::ui::{NitrousGUI, NitrousWindow};
+use crate::ui::NitrousWindow;
 
-impl NitrousGUI {
-    pub fn show_test_window(&mut self, ctx: &egui::Context) {
+#[derive(Default, serde::Deserialize, serde::Serialize)]
+#[serde(default)]
+pub struct TestWindow {
+    pub open: bool,
+}
+
+impl TestWindow {
+    pub fn show(&mut self, ctx: &egui::Context) {
         egui::Window::new_nitrous("Test Window", ctx)
-            .open(&mut self.test_window)
+            .open(&mut self.open)
             .show(ctx, |ui| {
                 ui.heading("Heading");
             });

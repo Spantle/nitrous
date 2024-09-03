@@ -1,9 +1,23 @@
-use crate::ui::{NitrousGUI, NitrousUI, NitrousWindow};
+use crate::{
+    nds::Emulator,
+    ui::{NitrousUI, NitrousWindow},
+};
 
-impl NitrousGUI {
-    pub fn show_memory_viewer(&mut self, ctx: &egui::Context) {
+#[derive(Default, serde::Deserialize, serde::Serialize)]
+#[serde(default)]
+pub struct MemoryViewerWindow {
+    pub open: bool,
+
+    #[serde(skip)]
+    memory_viewer_selected: Option<usize>,
+    #[serde(skip)]
+    memory_viewer_selected_pending_value: Option<u8>,
+}
+
+impl MemoryViewerWindow {
+    pub fn show(&mut self, emulator: &mut Emulator, ctx: &egui::Context) {
         let window = egui::Window::new_nitrous("Memory Viewer", ctx)
-            .open(&mut self.memory_viewer)
+            .open(&mut self.open)
             .show(ctx, |ui| {
                 let text_style = egui::TextStyle::Monospace;
                 let height = ui.text_style_height(&text_style);
@@ -11,9 +25,9 @@ impl NitrousGUI {
                 egui::ScrollArea::vertical().show_rows(ui, height, total_rows, |ui, row_range| {
                     for row in row_range {
                         let row_start = 0x02000000 + row * 16;
-                        let row_mem = self.emulator.arm9.read_bulk(
-                            &mut self.emulator.bus9,
-                            &mut self.emulator.shared,
+                        let row_mem = emulator.arm9.read_bulk(
+                            &mut emulator.bus9,
+                            &mut emulator.shared,
                             row_start as u32,
                             16,
                         );
@@ -164,9 +178,9 @@ impl NitrousGUI {
                                                 match char2 {
                                                     ValidateCharResult::Valid(char2) => {
                                                         let b = (char << 4) | char2;
-                                                        self.emulator.arm9.write_bulk(
-                                                            &mut self.emulator.bus9,
-                                                            &mut self.emulator.shared,
+                                                        emulator.arm9.write_bulk(
+                                                            &mut emulator.bus9,
+                                                            &mut emulator.shared,
                                                             i as u32,
                                                             [b].to_vec(),
                                                         );
@@ -196,9 +210,9 @@ impl NitrousGUI {
                                     if let Some(value) = self.memory_viewer_selected_pending_value {
                                         let b = (value << 4) | char;
                                         self.memory_viewer_selected_pending_value = None;
-                                        self.emulator.arm9.write_bulk(
-                                            &mut self.emulator.bus9,
-                                            &mut self.emulator.shared,
+                                        emulator.arm9.write_bulk(
+                                            &mut emulator.bus9,
+                                            &mut emulator.shared,
                                             selected as u32,
                                             [b].to_vec(),
                                         );

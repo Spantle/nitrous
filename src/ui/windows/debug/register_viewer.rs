@@ -1,22 +1,31 @@
-use crate::ui::{NitrousGUI, NitrousUI, NitrousWindow};
+use crate::{
+    nds::Emulator,
+    ui::{NitrousUI, NitrousWindow},
+};
 
-impl NitrousGUI {
-    pub fn show_register_viewer(&mut self, ctx: &egui::Context) {
-        let mut register_viewer = self.register_viewer;
+#[derive(Default, serde::Deserialize, serde::Serialize)]
+#[serde(default)]
+pub struct RegisterViewerWindow {
+    pub open: bool,
+}
+
+impl RegisterViewerWindow {
+    pub fn show(&mut self, emulator: &Emulator, ctx: &egui::Context) {
+        let mut open = self.open;
         egui::Window::new_nitrous("Register Viewer", ctx)
-            .open(&mut register_viewer)
+            .open(&mut open)
             .show(ctx, |ui| {
                 ui.make_monospace();
 
-                self.render_values(ui);
+                self.render_values(emulator, ui);
             });
 
-        self.register_viewer = register_viewer;
+        self.open = open;
     }
 
-    fn render_values(&mut self, ui: &mut egui::Ui) {
+    fn render_values(&mut self, emulator: &Emulator, ui: &mut egui::Ui) {
         let names = self.names();
-        let values = self.values();
+        let values = self.values(emulator);
 
         let column_count = 2;
         let column_width = 80.0;
@@ -84,39 +93,39 @@ impl NitrousGUI {
         .into()
     }
 
-    fn values(&self) -> Vec<u32> {
+    fn values(&self, emulator: &Emulator) -> Vec<u32> {
         [
-            self.emulator.shared.gpu2d_a.dispcnt.value(),
-            self.emulator.shared.gpu2d_a.dispstat.value() as u32,
-            self.emulator.shared.gpu2d_a.vcount as u32,
-            self.emulator.shared.gpu2d_b.dispcnt.value(),
-            self.emulator.shared.gpu2d_b.dispstat.value() as u32,
-            self.emulator.shared.gpu2d_b.vcount as u32,
-            self.emulator.shared.keyinput.value() as u32,
-            self.emulator.shared.vramcnt[0] as u32,
-            self.emulator.shared.vramcnt[1] as u32,
-            self.emulator.shared.vramcnt[2] as u32,
-            self.emulator.shared.vramcnt[3] as u32,
-            self.emulator.shared.vramcnt[4] as u32,
-            self.emulator.shared.vramcnt[5] as u32,
-            self.emulator.shared.vramcnt[6] as u32,
-            self.emulator.shared.vramcnt[7] as u32,
-            self.emulator.shared.vramcnt[8] as u32,
-            self.emulator.shared.vramcnt[9] as u32,
-            self.emulator.shared.ipcsync.value_quiet::<true>(),
-            self.emulator.shared.ipcsync.value_quiet::<false>(),
-            self.emulator.shared.ipcfifo.get_cnt::<true>(),
-            self.emulator.shared.ipcfifo.get_cnt::<false>(),
-            self.emulator.bus9.interrupts.me.value(),
-            self.emulator.bus9.interrupts.e.value(),
-            self.emulator.bus9.interrupts.f.value(),
-            self.emulator.bus7.interrupts.me.value(),
-            self.emulator.bus7.interrupts.e.value(),
-            self.emulator.bus7.interrupts.f.value(),
-            self.emulator.shared.powcnt1.value(),
-            self.emulator.arm9.cp15.control_register.value(),
-            self.emulator.arm9.cp15.data_tcm_reg,
-            self.emulator.arm9.cp15.inst_tcm_reg,
+            emulator.shared.gpu2d_a.dispcnt.value(),
+            emulator.shared.gpu2d_a.dispstat.value() as u32,
+            emulator.shared.gpu2d_a.vcount as u32,
+            emulator.shared.gpu2d_b.dispcnt.value(),
+            emulator.shared.gpu2d_b.dispstat.value() as u32,
+            emulator.shared.gpu2d_b.vcount as u32,
+            emulator.shared.keyinput.value() as u32,
+            emulator.shared.vramcnt[0] as u32,
+            emulator.shared.vramcnt[1] as u32,
+            emulator.shared.vramcnt[2] as u32,
+            emulator.shared.vramcnt[3] as u32,
+            emulator.shared.vramcnt[4] as u32,
+            emulator.shared.vramcnt[5] as u32,
+            emulator.shared.vramcnt[6] as u32,
+            emulator.shared.vramcnt[7] as u32,
+            emulator.shared.vramcnt[8] as u32,
+            emulator.shared.vramcnt[9] as u32,
+            emulator.shared.ipcsync.value_quiet::<true>(),
+            emulator.shared.ipcsync.value_quiet::<false>(),
+            emulator.shared.ipcfifo.get_cnt::<true>(),
+            emulator.shared.ipcfifo.get_cnt::<false>(),
+            emulator.bus9.interrupts.me.value(),
+            emulator.bus9.interrupts.e.value(),
+            emulator.bus9.interrupts.f.value(),
+            emulator.bus7.interrupts.me.value(),
+            emulator.bus7.interrupts.e.value(),
+            emulator.bus7.interrupts.f.value(),
+            emulator.shared.powcnt1.value(),
+            emulator.arm9.cp15.control_register.value(),
+            emulator.arm9.cp15.data_tcm_reg,
+            emulator.arm9.cp15.inst_tcm_reg,
         ]
         .into()
     }
