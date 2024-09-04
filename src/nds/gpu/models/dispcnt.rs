@@ -3,16 +3,15 @@ use bitflags::bitflags;
 use crate::nds::Bits;
 
 #[derive(Default)]
-#[allow(clippy::upper_case_acronyms)]
-pub struct DISPCNT(u32);
+pub struct DispCnt(u32);
 
-impl From<u32> for DISPCNT {
+impl From<u32> for DispCnt {
     fn from(value: u32) -> Self {
         Self(value)
     }
 }
 
-impl DISPCNT {
+impl DispCnt {
     const VRAM_BLOCK_OFFSET: u32 = 18;
     const VRAM_BLOCK_END: u32 = 19;
 

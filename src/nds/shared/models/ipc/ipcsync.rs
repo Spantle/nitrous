@@ -1,11 +1,8 @@
-#![allow(dead_code)]
-
 use crate::nds::{interrupts::Interrupts, Bits};
 
 // I could've made this a generic, but this actually seems nicer (considering the logging + too many generics for something this simple)
 #[derive(Default)]
-#[allow(clippy::upper_case_acronyms)]
-pub struct IPCSYNC {
+pub struct IpcSync {
     value9: u32,
     value7: u32,
 
@@ -16,7 +13,7 @@ pub struct IPCSYNC {
     send_irq7to9: bool,
 }
 
-impl IPCSYNC {
+impl IpcSync {
     pub fn value_quiet<const ARM_BOOL: bool>(&self) -> u32 {
         if ARM_BOOL {
             self.value9

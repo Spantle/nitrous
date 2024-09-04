@@ -6,8 +6,7 @@ use crate::nds::{arm::ArmKind, bus::BusTrait, logger, shared::Shared, Bits};
 // TODO: IRQ upon end of word count
 // TODO: maybe some edge cases? idk read gbatek lmao
 
-#[allow(non_camel_case_types)]
-pub struct DMA_Channel<Bus: BusTrait> {
+pub struct DmaChannel<Bus: BusTrait> {
     _phantom: std::marker::PhantomData<Bus>,
 
     index: u8,
@@ -23,7 +22,7 @@ pub struct DMA_Channel<Bus: BusTrait> {
     // arm9: word count (21 bits - max 200000h), control
     // arm7: word count (14 bits - max 4000h), control
     // 0x040000B8/0x040000BA, 0x040000C4/0x040000C6, 0x040000D0/0x040000D2, 0x040000DC(arm7: 16 bits - max 10000h)/0x040000DE
-    pub dmacnt: DMACNT,
+    pub dmacnt: DmaCnt,
     // filldata, arm9 only
     // 0x040000E0, 0x040000E4, 0x040000E8, 0x040000EC
     pub dmafill: u32,
@@ -33,7 +32,7 @@ pub struct DMA_Channel<Bus: BusTrait> {
     internal_cnt_l: u32,
 }
 
-impl<Bus: BusTrait> Clone for DMA_Channel<Bus> {
+impl<Bus: BusTrait> Clone for DmaChannel<Bus> {
     fn clone(&self) -> Self {
         Self {
             _phantom: std::marker::PhantomData,
@@ -52,7 +51,7 @@ impl<Bus: BusTrait> Clone for DMA_Channel<Bus> {
     }
 }
 
-impl<Bus: BusTrait> DMA_Channel<Bus> {
+impl<Bus: BusTrait> DmaChannel<Bus> {
     pub fn new(index: u8) -> Self {
         Self {
             _phantom: std::marker::PhantomData,
@@ -61,7 +60,7 @@ impl<Bus: BusTrait> DMA_Channel<Bus> {
 
             dmasad: 0,
             dmadad: 0,
-            dmacnt: DMACNT::default(),
+            dmacnt: DmaCnt::default(),
             dmafill: 0,
 
             internal_sad: 0,
@@ -203,10 +202,9 @@ impl<Bus: BusTrait> DMA_Channel<Bus> {
 }
 
 #[derive(Clone, Copy, Default)]
-#[allow(clippy::upper_case_acronyms)]
-pub struct DMACNT(u32);
+pub struct DmaCnt(u32);
 
-impl DMACNT {
+impl DmaCnt {
     const DEST_ADDR_CONTROL_START: u32 = 16 + 5;
     const DEST_ADDR_CONTROL_END: u32 = 16 + 6;
     const SOURCE_ADDR_CONTROL_START: u32 = 16 + 7;

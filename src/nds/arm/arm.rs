@@ -2,7 +2,7 @@ use crate::nds::{bus::BusTrait, cp15::CP15, logger, shared::Shared};
 
 use super::{
     instructions::lookup_instruction_set,
-    models::{Context, FakeDisassembly, ProcessorMode, Registers, PSR},
+    models::{Context, FakeDisassembly, ProcessorMode, Psr, Registers},
     ArmKind, ArmTrait,
 };
 
@@ -18,7 +18,7 @@ pub struct Arm<Bus: BusTrait> {
     pub r_svc: [u32; 3], // r13-r14 + spsr
     pub r_abt: [u32; 3], // r13-r14 + spsr
     pub r_und: [u32; 3], // r13-r14 + spsr
-    pub cpsr: PSR,       // Current Program Status Register, technically a u32
+    pub cpsr: Psr,       // Current Program Status Register, technically a u32
 
     // TODO: do this better
     // it's 2am i cannot be bothered
@@ -49,7 +49,7 @@ impl<Bus: BusTrait> Default for Arm<Bus> {
             r_svc: [svc_sp, 0, 0],
             r_abt: [0, 0, 0],
             r_und: [0, 0, 0],
-            cpsr: PSR::default(),
+            cpsr: Psr::default(),
 
             cp15: CP15::default(),
             wram7: vec![0; 1024 * 64],

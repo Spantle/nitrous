@@ -3,7 +3,7 @@ use core::mem::swap;
 use crate::nds::{bus::BusTrait, cp15::CP15, logger, shared::Shared};
 
 use super::{
-    models::{ProcessorMode, Registers, PSR},
+    models::{ProcessorMode, Psr, Registers},
     Arm, ArmInternalRW, ArmKind,
 };
 
@@ -16,10 +16,10 @@ pub trait ArmTrait<Bus: BusTrait> {
     fn eru(&self, r: u8) -> u32;
     fn set_mode_r(&mut self, mode: ProcessorMode, r: u8, value: u32);
 
-    fn cpsr(&self) -> &PSR;
-    fn cpsr_mut(&mut self) -> &mut PSR;
-    fn set_cpsr(&mut self, psr: PSR);
-    fn get_spsr(&self) -> PSR;
+    fn cpsr(&self) -> &Psr;
+    fn cpsr_mut(&mut self) -> &mut Psr;
+    fn set_cpsr(&mut self, psr: Psr);
+    fn get_spsr(&self) -> Psr;
     fn switch_mode<const RETURN_TO_DEFAULT: bool>(
         &mut self,
         mode: ProcessorMode,
@@ -96,15 +96,15 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
         }
     }
 
-    fn cpsr(&self) -> &PSR {
+    fn cpsr(&self) -> &Psr {
         &self.cpsr
     }
 
-    fn cpsr_mut(&mut self) -> &mut PSR {
+    fn cpsr_mut(&mut self) -> &mut Psr {
         &mut self.cpsr
     }
 
-    fn set_cpsr(&mut self, psr: PSR) {
+    fn set_cpsr(&mut self, psr: Psr) {
         let new_mode = psr.get_mode();
         if new_mode != self.cpsr.get_mode() {
             self.switch_mode::<false>(new_mode, false);
@@ -113,13 +113,13 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
         self.cpsr = psr;
     }
 
-    fn get_spsr(&self) -> PSR {
+    fn get_spsr(&self) -> Psr {
         match self.cpsr.get_mode() {
-            ProcessorMode::FIQ => PSR::from(self.r_fiq[7]),
-            ProcessorMode::IRQ => PSR::from(self.r_irq[2]),
-            ProcessorMode::SVC => PSR::from(self.r_svc[2]),
-            ProcessorMode::ABT => PSR::from(self.r_abt[2]),
-            ProcessorMode::UND => PSR::from(self.r_und[2]),
+            ProcessorMode::FIQ => Psr::from(self.r_fiq[7]),
+            ProcessorMode::IRQ => Psr::from(self.r_irq[2]),
+            ProcessorMode::SVC => Psr::from(self.r_svc[2]),
+            ProcessorMode::ABT => Psr::from(self.r_abt[2]),
+            ProcessorMode::UND => Psr::from(self.r_und[2]),
             _ => {
                 let log_source = match Bus::KIND {
                     ArmKind::Arm9 => logger::LogSource::Arm9(0),
@@ -129,7 +129,7 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
                     log_source,
                     "UNPREDICTABLE: attempt to get SPSR in non-exception mode.",
                 );
-                PSR::default()
+                Psr::default()
             }
         }
     }

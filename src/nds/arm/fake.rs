@@ -1,13 +1,13 @@
 use crate::nds::{bus::BusTrait, cp15::CP15, shared::Shared};
 
 use super::{
-    models::{ProcessorMode, Registers, PSR},
+    models::{ProcessorMode, Psr, Registers},
     ArmTrait,
 };
 
 pub struct FakeArm {
     r: Registers,
-    cpsr: PSR,
+    cpsr: Psr,
     cp15: CP15,
 }
 
@@ -15,7 +15,7 @@ impl FakeArm {
     pub fn new(r15: u32) -> FakeArm {
         FakeArm {
             r: Registers::new_with_pc(r15),
-            cpsr: PSR::default(),
+            cpsr: Psr::default(),
             cp15: CP15::default(),
         }
     }
@@ -52,18 +52,18 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
         self.r[r] = value;
     }
 
-    fn cpsr(&self) -> &PSR {
+    fn cpsr(&self) -> &Psr {
         &self.cpsr
     }
 
-    fn cpsr_mut(&mut self) -> &mut PSR {
+    fn cpsr_mut(&mut self) -> &mut Psr {
         &mut self.cpsr
     }
 
-    fn set_cpsr(&mut self, _psr: PSR) {}
+    fn set_cpsr(&mut self, _psr: Psr) {}
 
-    fn get_spsr(&self) -> PSR {
-        PSR::default()
+    fn get_spsr(&self) -> Psr {
+        Psr::default()
     }
 
     fn switch_mode<const RETURN_TO_DEFAULT: bool>(

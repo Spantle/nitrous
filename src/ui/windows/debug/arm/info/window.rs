@@ -1,6 +1,6 @@
 use crate::{
     nds::{
-        arm::{models::PSR, ArmBool},
+        arm::{models::Psr, ArmBool},
         Emulator,
     },
     ui::{NitrousUI, NitrousWindow},
@@ -151,19 +151,19 @@ impl ArmInfoWindow {
         let (cpsr, psr_fiq, psr_irq, psr_svc, psr_abt, psr_und) = match ARM_BOOL {
             ArmBool::ARM9 => (
                 &emulator.arm9.cpsr,
-                PSR::from(emulator.arm9.r_fiq[7]),
-                PSR::from(emulator.arm9.r_irq[2]),
-                PSR::from(emulator.arm9.r_svc[2]),
-                PSR::from(emulator.arm9.r_abt[2]),
-                PSR::from(emulator.arm9.r_und[2]),
+                Psr::from(emulator.arm9.r_fiq[7]),
+                Psr::from(emulator.arm9.r_irq[2]),
+                Psr::from(emulator.arm9.r_svc[2]),
+                Psr::from(emulator.arm9.r_abt[2]),
+                Psr::from(emulator.arm9.r_und[2]),
             ),
             ArmBool::ARM7 => (
                 &emulator.arm7.cpsr,
-                PSR::from(emulator.arm7.r_fiq[7]),
-                PSR::from(emulator.arm7.r_irq[2]),
-                PSR::from(emulator.arm7.r_svc[2]),
-                PSR::from(emulator.arm7.r_abt[2]),
-                PSR::from(emulator.arm7.r_und[2]),
+                Psr::from(emulator.arm7.r_fiq[7]),
+                Psr::from(emulator.arm7.r_irq[2]),
+                Psr::from(emulator.arm7.r_svc[2]),
+                Psr::from(emulator.arm7.r_abt[2]),
+                Psr::from(emulator.arm7.r_und[2]),
             ),
         };
 
@@ -213,7 +213,7 @@ impl ArmInfoWindow {
                         });
 
                         if i == 0 {
-                            let col = |row: &mut egui_extras::TableRow, psr: &PSR| {
+                            let col = |row: &mut egui_extras::TableRow, psr: &Psr| {
                                 row.col(|ui| {
                                     ui.label(psr.get_mode().to_string());
                                 });
@@ -226,7 +226,7 @@ impl ArmInfoWindow {
                             col(&mut row, &psr_abt);
                             col(&mut row, &psr_und);
                         } else {
-                            let getter = |psr: &PSR| match i {
+                            let getter = |psr: &Psr| match i {
                                 1 => psr.get_thumb(),
                                 2 => psr.get_fiq_interrupt(),
                                 3 => psr.get_irq_interrupt(),
@@ -237,7 +237,7 @@ impl ArmInfoWindow {
                                 8 => psr.get_negative(),
                                 _ => unreachable!(),
                             };
-                            let col = |row: &mut egui_extras::TableRow, psr: &PSR| {
+                            let col = |row: &mut egui_extras::TableRow, psr: &Psr| {
                                 row.col(|ui| {
                                     let mut v = getter(psr);
                                     ui.checkbox(&mut v, "");
@@ -264,19 +264,19 @@ impl ArmInfoWindow {
         let (cpsr, psr_fiq, psr_irq, psr_svc, psr_abt, psr_und) = match ARM_BOOL {
             ArmBool::ARM9 => (
                 emulator.arm9.cpsr.value(),
-                PSR::from(emulator.arm9.r_fiq[7]).value(),
-                PSR::from(emulator.arm9.r_irq[2]).value(),
-                PSR::from(emulator.arm9.r_svc[2]).value(),
-                PSR::from(emulator.arm9.r_abt[2]).value(),
-                PSR::from(emulator.arm9.r_und[2]).value(),
+                Psr::from(emulator.arm9.r_fiq[7]).value(),
+                Psr::from(emulator.arm9.r_irq[2]).value(),
+                Psr::from(emulator.arm9.r_svc[2]).value(),
+                Psr::from(emulator.arm9.r_abt[2]).value(),
+                Psr::from(emulator.arm9.r_und[2]).value(),
             ),
             ArmBool::ARM7 => (
                 emulator.arm7.cpsr.value(),
-                PSR::from(emulator.arm7.r_fiq[7]).value(),
-                PSR::from(emulator.arm7.r_irq[2]).value(),
-                PSR::from(emulator.arm7.r_svc[2]).value(),
-                PSR::from(emulator.arm7.r_abt[2]).value(),
-                PSR::from(emulator.arm7.r_und[2]).value(),
+                Psr::from(emulator.arm7.r_fiq[7]).value(),
+                Psr::from(emulator.arm7.r_irq[2]).value(),
+                Psr::from(emulator.arm7.r_svc[2]).value(),
+                Psr::from(emulator.arm7.r_abt[2]).value(),
+                Psr::from(emulator.arm7.r_und[2]).value(),
             ),
         };
 

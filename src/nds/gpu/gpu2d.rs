@@ -4,12 +4,12 @@ use crate::nds::{
     Bits,
 };
 
-use super::models::{DISPCNT, DISPSTAT};
+use super::models::{DispCnt, DispStat};
 
 #[derive(Default)]
 pub struct Gpu2d {
-    pub dispcnt: DISPCNT,   // 0x04000000
-    pub dispstat: DISPSTAT, // 0x04000004
+    pub dispcnt: DispCnt,   // 0x04000000
+    pub dispstat: DispStat, // 0x04000004
     pub vcount: u16,        // 0x04000006
 
     x: u32,

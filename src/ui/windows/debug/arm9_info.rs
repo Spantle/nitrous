@@ -177,7 +177,7 @@ impl Arm9LegacyInfoWindow {
                                 });
                             })
                             .body(|mut body| {
-                                let mut display_psr = |name: &str, psr: &arm::models::PSR| {
+                                let mut display_psr = |name: &str, psr: &arm::models::Psr| {
                                     body.row(20.0, |mut row| {
                                         let flag = |ui: &mut egui::Ui, flag: bool| {
                                             let v = format!("{}", flag);
