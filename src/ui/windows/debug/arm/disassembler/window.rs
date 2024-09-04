@@ -81,6 +81,16 @@ impl ArmDisassemblerWindow {
                     });
 
                 ui.checkbox(&mut self.follow_pc, "Follow PC");
+
+                if ui.button("Generate Stacktrace").clicked() {
+                    let (stacktrace, log_source) = match ARM_BOOL {
+                        ArmBool::ARM9 => (&emulator.arm9.stacktrace, logger::LogSource::Arm9(0)),
+                        ArmBool::ARM7 => (&emulator.arm7.stacktrace, logger::LogSource::Arm7(0)),
+                    };
+
+                    let stacktrace = stacktrace.generate("Requested by user".to_string());
+                    logger::debug(log_source, stacktrace);
+                }
             });
 
             ui.horizontal(|ui| {

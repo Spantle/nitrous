@@ -19,13 +19,21 @@ pub fn bx<const L: bool>(ctx: &mut Context<Instruction, impl ContextTrait>) -> u
     ctx.dis.push_reg_arg(rm, None);
     let rm = arm.er(inst.get_byte(0, 3));
 
+    let pc = arm.r()[15];
     if L {
-        arm.set_r(14, arm.r()[15].wrapping_add(4));
+        arm.set_r(14, pc.wrapping_add(4));
     }
 
     let thumb = rm.get_bit(0);
     arm.cpsr_mut().set_thumb(thumb);
     arm.set_r(15, rm & 0xFFFFFFFE);
+
+    if L {
+        arm.stacktrace_mut().branch_link(pc);
+    } else {
+        arm.stacktrace_mut()
+            .branch_exchange(pc, (rm & 0xFFFFFFFE).wrapping_sub(4));
+    }
 
     1 // TODO: this is wrong
 }

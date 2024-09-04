@@ -16,8 +16,9 @@ pub fn b<const L: bool, const X: bool>(ctx: &mut Context<Instruction, impl Conte
     }
 
     let (arm, inst) = (&mut ctx.arm, &ctx.inst);
+    let pc = arm.r()[15];
     if L {
-        arm.set_r(14, arm.r()[15].wrapping_add(4));
+        arm.set_r(14, pc.wrapping_add(4));
     }
 
     let signed_immed_24 = inst.get_word(0, 23).sign_extend(24);
@@ -30,6 +31,12 @@ pub fn b<const L: bool, const X: bool>(ctx: &mut Context<Instruction, impl Conte
     let result = (arm.er(15) as i32).wrapping_add(signed_immed_24) as u32; // TODO: probably not the best conversion?
     ctx.dis.push_word_arg(result);
     arm.set_r(15, result);
+
+    if L {
+        arm.stacktrace_mut().branch_link(pc);
+    } else {
+        arm.stacktrace_mut().branch(pc);
+    }
 
     3
 }

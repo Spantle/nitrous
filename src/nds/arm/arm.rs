@@ -2,7 +2,7 @@ use crate::nds::{bus::BusTrait, cp15::CP15, logger, shared::Shared};
 
 use super::{
     instructions::lookup_instruction_set,
-    models::{Context, FakeDisassembly, ProcessorMode, Psr, Registers},
+    models::{Context, FakeDisassembly, ProcessorMode, Psr, Registers, StackTrace},
     ArmKind, ArmTrait,
 };
 
@@ -29,6 +29,7 @@ pub struct Arm<Bus: BusTrait> {
 
     // emulator variables
     pub pc_changed: bool,
+    pub stacktrace: StackTrace,
 }
 
 impl<Bus: BusTrait> Default for Arm<Bus> {
@@ -55,17 +56,19 @@ impl<Bus: BusTrait> Default for Arm<Bus> {
             wram7: vec![0; 1024 * 64],
 
             pc_changed: true,
+            stacktrace: StackTrace::default(),
         }
     }
 }
 
 impl<Bus: BusTrait> Arm<Bus> {
     pub fn clock(&mut self, bus: &mut Bus, shared: &mut Shared) -> u32 {
+        let pc = self.r[15];
         let is_thumb = self.cpsr.get_thumb();
         let inst = if is_thumb {
-            self.read_halfword(bus, shared, self.r[15]) as u32
+            self.read_halfword(bus, shared, pc) as u32
         } else {
-            self.read_word(bus, shared, self.r[15])
+            self.read_word(bus, shared, pc)
         };
         // print as binary
         // if Bus::kind() == ArmKind::ARM7 {
@@ -109,6 +112,25 @@ impl<Bus: BusTrait> Arm<Bus> {
             };
         } else {
             cycles += 2;
+
+            let next_inst = if is_thumb {
+                self.read_halfword(bus, shared, self.r[15]) as u32
+            } else {
+                self.read_word(bus, shared, self.r[15])
+            };
+            if next_inst == 0 {
+                let log_source = if Bus::KIND == ArmKind::Arm9 {
+                    logger::LogSource::Arm9(self.r[15])
+                } else {
+                    logger::LogSource::Arm7(self.r[15])
+                };
+
+                logger::error(
+                    log_source,
+                    self.stacktrace
+                        .generate("PC sent to the shadow realm".to_string()),
+                );
+            }
         }
 
         self.pc_changed = false;

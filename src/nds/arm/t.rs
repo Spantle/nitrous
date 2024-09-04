@@ -3,7 +3,7 @@ use core::mem::swap;
 use crate::nds::{bus::BusTrait, cp15::CP15, logger, shared::Shared};
 
 use super::{
-    models::{ProcessorMode, Psr, Registers},
+    models::{ProcessorMode, Psr, Registers, StackTrace},
     Arm, ArmInternalRW, ArmKind,
 };
 
@@ -25,6 +25,8 @@ pub trait ArmTrait<Bus: BusTrait> {
         mode: ProcessorMode,
         copy_cpsr_to_spsr: bool,
     );
+
+    fn stacktrace_mut(&mut self) -> &mut StackTrace;
 
     fn cp15(&self) -> &CP15;
     fn cp15_mut(&mut self) -> &mut CP15;
@@ -198,6 +200,10 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
         }
 
         self.cpsr.set_mode(new_mode);
+    }
+
+    fn stacktrace_mut(&mut self) -> &mut StackTrace {
+        &mut self.stacktrace
     }
 
     fn cp15(&self) -> &CP15 {

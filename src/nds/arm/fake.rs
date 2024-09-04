@@ -1,13 +1,14 @@
 use crate::nds::{bus::BusTrait, cp15::CP15, shared::Shared};
 
 use super::{
-    models::{ProcessorMode, Psr, Registers},
+    models::{ProcessorMode, Psr, Registers, StackTrace},
     ArmTrait,
 };
 
 pub struct FakeArm {
     r: Registers,
     cpsr: Psr,
+    stacktrace: StackTrace,
     cp15: CP15,
 }
 
@@ -16,6 +17,7 @@ impl FakeArm {
         FakeArm {
             r: Registers::new_with_pc(r15),
             cpsr: Psr::default(),
+            stacktrace: StackTrace::default(),
             cp15: CP15::default(),
         }
     }
@@ -71,6 +73,10 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
         _mode: ProcessorMode,
         _copy_cpsr_to_spsr: bool,
     ) {
+    }
+
+    fn stacktrace_mut(&mut self) -> &mut StackTrace {
+        &mut self.stacktrace
     }
 
     fn cp15(&self) -> &CP15 {
