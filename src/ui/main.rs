@@ -194,75 +194,11 @@ impl eframe::App for NitrousGUI {
 
         let target_cycles_arm9 = target_cycles_current_frame;
 
-        let mut cycles_ran_arm9 = 0;
-        let mut cycles_ran_arm7 = self.last_cycle_arm7_discrepency as u64;
-        let mut cycles_ran_gpu = 0;
-
-        if self.emulator.is_running() {
-            while cycles_ran_arm9 < target_cycles_arm9 {
-                if !self.emulator.is_running() {
-                    break;
-                }
-
-                let arm9_cycles = self
-                    .emulator
-                    .arm9
-                    .clock(&mut self.emulator.bus9, &mut self.emulator.shared);
-
-                cycles_ran_arm9 += arm9_cycles as u64;
-
-                let target_cycles_arm7 = cycles_ran_arm9 / 2;
-                let target_cycles_gpu = cycles_ran_arm9 / 2;
-
-                while cycles_ran_arm7 < target_cycles_arm7 {
-                    let arm7_cycles = self
-                        .emulator
-                        .arm7
-                        .clock(&mut self.emulator.bus7, &mut self.emulator.shared);
-                    cycles_ran_arm7 += arm7_cycles as u64;
-                }
-
-                while cycles_ran_gpu < target_cycles_gpu {
-                    self.emulator
-                        .shared
-                        .gpu2d_a
-                        .clock(&mut self.emulator.bus9, &mut self.emulator.bus7);
-                    self.emulator
-                        .shared
-                        .gpu2d_b
-                        .clock(&mut self.emulator.bus9, &mut self.emulator.bus7);
-                    cycles_ran_gpu += 1;
-                }
-
-                // this sucks lmao
-                self.emulator.shared.dma9 = self
-                    .emulator
-                    .shared
-                    .dma9
-                    .clone()
-                    .check_immediately(&mut self.emulator.bus9, &mut self.emulator.shared);
-                self.emulator.shared.dma7 = self
-                    .emulator
-                    .shared
-                    .dma7
-                    .clone()
-                    .check_immediately(&mut self.emulator.bus7, &mut self.emulator.shared);
-
-                self.emulator.shared.ipcsync.update_interrupts(
-                    &mut self.emulator.bus9.interrupts,
-                    &mut self.emulator.bus7.interrupts,
-                );
-                self.emulator.shared.ipcfifo.update_interrupts(
-                    &mut self.emulator.bus9.interrupts,
-                    &mut self.emulator.bus7.interrupts,
-                );
-
-                self.arm9_disassembler
-                    .check_breakpoints::<{ ArmBool::ARM9 }>(&mut self.emulator);
-                self.arm7_disassembler
-                    .check_breakpoints::<{ ArmBool::ARM7 }>(&mut self.emulator);
-            }
-        }
+        let (cycles_ran_arm9, cycles_ran_arm7, cycles_ran_gpu) = self.emulator.run_for(
+            target_cycles_arm9,
+            self.last_cycle_arm7_discrepency as u64,
+            (&mut self.arm9_disassembler, &mut self.arm7_disassembler),
+        );
 
         let arm7_discrepency = (cycles_ran_arm7 as i32) - (cycles_ran_arm9 / 2) as i32;
         self.last_cycle_arm7_discrepency = arm7_discrepency;

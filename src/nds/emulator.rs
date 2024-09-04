@@ -1,7 +1,9 @@
 use std::sync::atomic::AtomicBool;
 
+use crate::ui::windows::debug::arm::disassembler::ArmDisassemblerWindow;
+
 use super::{
-    arm::Arm,
+    arm::{Arm, ArmBool},
     bus::{bus7::Bus7, bus9::Bus9, BusTrait},
     shared::Shared,
 };
@@ -115,7 +117,7 @@ impl Emulator {
     // NOTE: do not use this in a loop, it is slow
     pub fn step(&mut self) -> u32 {
         let cycles = match self.cycle_state {
-            CycleState::Arm9_1 => {
+            CycleState::Arm9_1 | CycleState::Arm9_2 => {
                 let cycles = self.arm9.clock(&mut self.bus9, &mut self.shared);
                 self.shared.dma9 = self
                     .shared
@@ -123,18 +125,6 @@ impl Emulator {
                     .clone()
                     .check_immediately(&mut self.bus9, &mut self.shared);
 
-                self.cycle_state = CycleState::Arm9_2;
-                cycles
-            }
-            CycleState::Arm9_2 => {
-                let cycles = self.arm9.clock(&mut self.bus9, &mut self.shared);
-                self.shared.dma9 = self
-                    .shared
-                    .dma9
-                    .clone()
-                    .check_immediately(&mut self.bus9, &mut self.shared);
-
-                self.cycle_state = CycleState::Arm7;
                 cycles
             }
             CycleState::Arm7 => {
@@ -147,7 +137,6 @@ impl Emulator {
                     .clone()
                     .check_immediately(&mut self.bus7, &mut self.shared);
 
-                self.cycle_state = CycleState::Arm9_1;
                 cycles
             }
         };
@@ -159,7 +148,80 @@ impl Emulator {
             .ipcfifo
             .update_interrupts(&mut self.bus9.interrupts, &mut self.bus7.interrupts);
 
+        self.cycle_state = match self.cycle_state {
+            CycleState::Arm9_1 => CycleState::Arm9_2,
+            CycleState::Arm9_2 => CycleState::Arm7,
+            CycleState::Arm7 => CycleState::Arm9_1,
+        };
+
         cycles
+    }
+
+    pub fn run_for(
+        &mut self,
+        target_cycles_arm9: u64,
+        last_cycle_arm7_discrepency: u64,
+        disassembler_windows: (&mut ArmDisassemblerWindow, &mut ArmDisassemblerWindow),
+    ) -> (u64, u64, u64) {
+        let mut cycles_ran_arm9 = 0;
+        let mut cycles_ran_arm7 = last_cycle_arm7_discrepency;
+        let mut cycles_ran_gpu = 0;
+
+        if !self.is_running() {
+            return (0, last_cycle_arm7_discrepency, 0);
+        }
+
+        while cycles_ran_arm9 < target_cycles_arm9 {
+            if !self.is_running() {
+                break;
+            }
+
+            let arm9_cycles = self.arm9.clock(&mut self.bus9, &mut self.shared);
+
+            cycles_ran_arm9 += arm9_cycles as u64;
+
+            let target_cycles_arm7 = cycles_ran_arm9 / 2;
+            let target_cycles_gpu = cycles_ran_arm9 / 2;
+
+            while cycles_ran_arm7 < target_cycles_arm7 {
+                let arm7_cycles = self.arm7.clock(&mut self.bus7, &mut self.shared);
+                cycles_ran_arm7 += arm7_cycles as u64;
+            }
+
+            while cycles_ran_gpu < target_cycles_gpu {
+                self.shared.gpu2d_a.clock(&mut self.bus9, &mut self.bus7);
+                self.shared.gpu2d_b.clock(&mut self.bus9, &mut self.bus7);
+                cycles_ran_gpu += 1;
+            }
+
+            // this sucks lmao
+            self.shared.dma9 = self
+                .shared
+                .dma9
+                .clone()
+                .check_immediately(&mut self.bus9, &mut self.shared);
+            self.shared.dma7 = self
+                .shared
+                .dma7
+                .clone()
+                .check_immediately(&mut self.bus7, &mut self.shared);
+
+            self.shared
+                .ipcsync
+                .update_interrupts(&mut self.bus9.interrupts, &mut self.bus7.interrupts);
+            self.shared
+                .ipcfifo
+                .update_interrupts(&mut self.bus9.interrupts, &mut self.bus7.interrupts);
+
+            disassembler_windows
+                .0
+                .check_breakpoints::<{ ArmBool::ARM9 }>(self);
+            disassembler_windows
+                .1
+                .check_breakpoints::<{ ArmBool::ARM7 }>(self);
+        }
+
+        (cycles_ran_arm9, cycles_ran_arm7, cycles_ran_gpu)
     }
 }
 
