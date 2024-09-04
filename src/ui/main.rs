@@ -1,6 +1,5 @@
 use std::sync::mpsc::{channel, Receiver, Sender};
 
-use egui::load::SizedTexture;
 use web_time::{Duration, Instant};
 
 use crate::nds::{arm::ArmBool, Emulator};
@@ -223,49 +222,7 @@ impl eframe::App for NitrousGUI {
             },
         );
 
-        egui::CentralPanel::default().show(ctx, |ui| {
-            egui_extras::StripBuilder::new(ui)
-                .size(egui_extras::Size::exact(192.0))
-                .size(egui_extras::Size::exact(192.0))
-                .vertical(|mut strip| {
-                    strip.strip(|builder| {
-                        builder
-                            .size(egui_extras::Size::exact(256.0))
-                            .horizontal(|mut strip| {
-                                strip.cell(|ui| {
-                                    let image =
-                                        self.emulator.shared.gpu2d_a.render(&self.emulator.shared);
-                                    let texture = ui.ctx().load_texture(
-                                        "top_screen",
-                                        image,
-                                        Default::default(),
-                                    );
-                                    ui.add(egui::Image::from_texture(SizedTexture::from_handle(
-                                        &texture,
-                                    )));
-                                });
-                            });
-                    });
-                    strip.strip(|builder| {
-                        builder
-                            .size(egui_extras::Size::exact(256.0))
-                            .horizontal(|mut strip| {
-                                strip.cell(|ui| {
-                                    let image =
-                                        self.emulator.shared.gpu2d_b.render(&self.emulator.shared);
-                                    let texture = ui.ctx().load_texture(
-                                        "bottom_screen",
-                                        image,
-                                        Default::default(),
-                                    );
-                                    ui.add(egui::Image::from_texture(SizedTexture::from_handle(
-                                        &texture,
-                                    )));
-                                });
-                            });
-                    })
-                });
-        });
+        self.render_screens(ctx);
 
         // Debug
         self.arm9_disassembler
