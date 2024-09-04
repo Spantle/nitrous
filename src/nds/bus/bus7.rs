@@ -66,24 +66,32 @@ impl BusTrait for Bus7 {
                 bytes.copy_from_slice(&self.bios[addr..addr + T]);
                 bytes
             }
+
             0x02000000..=0x02FFFFFF => {
                 let addr = (addr - 0x02000000) % 0x400000;
                 bytes.copy_from_slice(&shared.psram[addr..addr + T]);
                 bytes
             }
+
             0x03000000..=0x037FFFFF => {
                 let addr = (addr - 0x03000000) % 0x8000;
                 bytes.copy_from_slice(&shared.wram[addr..addr + T]);
                 bytes
             }
+
             0x04000004..=0x04000005 => shared.gpu2d_a.dispstat.value().to_bytes::<T>(),
+
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
+
             0x04000180..=0x04000183 => shared.ipcsync.value::<false>().to_bytes::<T>(),
             0x04000184..=0x04000187 => shared.ipcfifo.get_cnt::<false>().to_bytes::<T>(),
+
             0x04000208..=0x0400020B => self.interrupts.me.value().to_bytes::<T>(),
             0x04000210..=0x04000213 => self.interrupts.e.value().to_bytes::<T>(),
             0x04000214..=0x04000217 => self.interrupts.f.value().to_bytes::<T>(),
+
             0x04100000..=0x04100003 => shared.ipcfifo.receive::<false>().to_bytes::<T>(),
+
             _ => {
                 if let Some(bytes) = shared.dma7.read_slice::<T>(addr) {
                     return bytes;
@@ -106,30 +114,22 @@ impl BusTrait for Bus7 {
                 let addr = (addr - 0x02000000) % 0x400000;
                 shared.psram[addr..addr + T].copy_from_slice(&value);
             }
+
             0x03000000..=0x037FFFFF => {
                 let addr = (addr - 0x03000000) % 0x8000;
                 shared.wram[addr..addr + T].copy_from_slice(&value);
             }
-            0x04000180..=0x04000183 => {
-                shared.ipcsync.set::<false>(value.into_word());
-            }
-            0x04000184..=0x04000187 => {
-                shared
-                    .ipcfifo
-                    .set_cnt::<false>(&mut self.interrupts, value.into_word());
-            }
-            0x04000188..=0x0400018B => {
-                shared.ipcfifo.send::<false>(value.into_word());
-            }
-            0x04000208..=0x0400020B => {
-                self.interrupts.me = value.into_word().into();
-            }
-            0x04000210..=0x04000213 => {
-                self.interrupts.e = value.into_word().into();
-            }
-            0x04000214..=0x04000217 => {
-                self.interrupts.f.write_and_ack(value.into_word());
-            }
+
+            0x04000180..=0x04000183 => shared.ipcsync.set::<false>(value.into_word()),
+            0x04000184..=0x04000187 => shared
+                .ipcfifo
+                .set_cnt::<false>(&mut self.interrupts, value.into_word()),
+            0x04000188..=0x0400018B => shared.ipcfifo.send::<false>(value.into_word()),
+
+            0x04000208..=0x0400020B => self.interrupts.me = value.into_word().into(),
+            0x04000210..=0x04000213 => self.interrupts.e = value.into_word().into(),
+            0x04000214..=0x04000217 => self.interrupts.f.write_and_ack(value.into_word()),
+
             _ => {
                 let success = shared.dma7.write_slice::<T>(addr, value);
                 if !success {
