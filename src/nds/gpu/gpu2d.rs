@@ -1,5 +1,5 @@
 use crate::nds::{
-    arm::bus::{bus7::Bus7, bus9::Bus9},
+    bus::{bus7::Bus7, bus9::Bus9},
     shared::Shared,
     Bits,
 };

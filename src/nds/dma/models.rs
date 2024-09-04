@@ -1,9 +1,4 @@
-use crate::nds::{
-    arm::{bus::BusTrait, ArmKind},
-    logger,
-    shared::Shared,
-    Bits,
-};
+use crate::nds::{arm::ArmKind, bus::BusTrait, logger, shared::Shared, Bits};
 
 // TODO: cycle timing
 // TODO: GamePak DRQ

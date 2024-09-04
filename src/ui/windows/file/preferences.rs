@@ -1,7 +1,7 @@
 use std::sync::mpsc::{channel, Receiver, Sender};
 
 use crate::{
-    nds::arm::{bus::BusTrait, ArmKind},
+    nds::{arm::ArmKind, bus::BusTrait},
     ui::NitrousWindow,
 };
 

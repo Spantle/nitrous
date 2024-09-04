@@ -1,9 +1,8 @@
 use core::mem::swap;
 
-use crate::nds::{cp15::CP15, logger, shared::Shared};
+use crate::nds::{bus::BusTrait, cp15::CP15, logger, shared::Shared};
 
 use super::{
-    bus::BusTrait,
     instructions::lookup_instruction_set,
     models::{Context, FakeDisassembly, ProcessorMode, Registers, PSR},
 };

@@ -1,5 +1,6 @@
 pub mod arm;
 mod bits;
+pub mod bus;
 mod cartridge;
 mod cp15;
 mod dma;

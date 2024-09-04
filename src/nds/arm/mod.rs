@@ -1,6 +1,5 @@
 #[allow(clippy::module_inception)]
 mod arm; // this is intentional shut up
-pub mod bus;
 pub mod instructions;
 pub mod models;
 

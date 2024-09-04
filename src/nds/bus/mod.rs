@@ -2,7 +2,7 @@
 
 use crate::nds::shared::Shared;
 
-use super::ArmKind;
+use super::arm::ArmKind;
 
 pub trait BusTrait {
     const KIND: ArmKind;

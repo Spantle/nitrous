@@ -2,8 +2,8 @@
 
 use crate::{
     nds::{
-        arm::{self, bus, instructions, models::Disassembly, ArmBool},
-        logger, shared, CycleState, Emulator,
+        arm::{self, instructions, models::Disassembly, ArmBool},
+        bus, logger, shared, CycleState, Emulator,
     },
     ui::{NitrousUI, NitrousWindow},
 };

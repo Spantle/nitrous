@@ -1,7 +1,7 @@
 use models::{IPCFIFO, IPCSYNC, KEYINPUT, POWCNT1};
 
 use super::{
-    arm::bus::{bus7::Bus7, bus9::Bus9},
+    bus::{bus7::Bus7, bus9::Bus9},
     cartridge::Cartridge,
     dma::DMA,
     gpu::gpu2d::Gpu2d,

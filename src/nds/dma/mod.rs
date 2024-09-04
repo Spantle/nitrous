@@ -2,11 +2,7 @@ mod models;
 
 use models::DMA_Channel;
 
-use super::{
-    arm::{bus::BusTrait, ArmKind},
-    shared::Shared,
-    Bits, Bytes,
-};
+use super::{arm::ArmKind, bus::BusTrait, shared::Shared, Bits, Bytes};
 
 #[allow(clippy::upper_case_acronyms)]
 pub struct DMA<Bus: BusTrait> {
