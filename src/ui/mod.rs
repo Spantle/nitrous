@@ -1,4 +1,3 @@
-mod fps_info;
 mod helpers;
 mod input;
 mod main;

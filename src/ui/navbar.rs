@@ -37,10 +37,10 @@ impl NitrousGUI {
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     if ui
-                        .selectable_label(self.fps_info, format!("FPS: {}", estimated_fps))
+                        .selectable_label(self.fps_info.show, format!("FPS: {}", estimated_fps))
                         .clicked()
                     {
-                        self.fps_info = !self.fps_info;
+                        self.fps_info.show = !self.fps_info.show;
                     }
                 });
             });

@@ -1,7 +1,4 @@
-use std::{
-    collections::VecDeque,
-    sync::mpsc::{channel, Receiver, Sender},
-};
+use std::sync::mpsc::{channel, Receiver, Sender};
 
 use egui::load::SizedTexture;
 use web_time::{Duration, Instant};
@@ -19,6 +16,7 @@ use super::windows::{
         test_window::TestWindow,
     },
     file::preferences::PreferencesWindow,
+    fps_info::{FpsInfo, FpsInfoWindow},
 };
 
 // this whole file needs a good clean
@@ -70,8 +68,6 @@ pub struct NitrousGUI {
     #[serde(skip)]
     pub load_rom_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
 
-    pub fps_info: bool,
-
     // Debug Windows
     pub arm9_disassembler: ArmDisassemblerWindow,
     pub arm9_info: ArmInfoWindow,
@@ -89,8 +85,9 @@ pub struct NitrousGUI {
     // File Windows
     pub preferences: PreferencesWindow,
 
-    #[serde(skip)]
-    fps_counter: FpsCounter,
+    // Other Windows
+    pub fps_info: FpsInfoWindow,
+
     #[serde(skip)]
     last_cycle_count: u64,
     #[serde(skip)]
@@ -113,8 +110,6 @@ impl Default for NitrousGUI {
 
             load_rom_channel: channel(),
 
-            fps_info: false,
-
             arm9_disassembler: ArmDisassemblerWindow::default(),
             arm9_info: ArmInfoWindow::default(),
             arm9_info_legacy: Arm9LegacyInfoWindow::default(),
@@ -130,7 +125,8 @@ impl Default for NitrousGUI {
 
             preferences: PreferencesWindow::default(),
 
-            fps_counter: FpsCounter::new(),
+            fps_info: FpsInfoWindow::default(),
+
             last_cycle_count: 0,
             last_frame_cycles_execution_time: Duration::ZERO,
             last_cycle_arm7_discrepency: 0,
@@ -167,8 +163,8 @@ impl eframe::App for NitrousGUI {
 
         self.handle_input(ctx);
 
-        self.fps_counter.push_current_time();
-        let measured_fps = self.fps_counter.average_fps();
+        self.fps_info.fps_counter.push_current_time();
+        let measured_fps = self.fps_info.fps_counter.average_fps();
 
         let target_frame_time_secs = 1.0 / measured_fps as f64;
         let target_frame_cycle_execution_time_secs = target_frame_time_secs * 0.75;
@@ -212,7 +208,7 @@ impl eframe::App for NitrousGUI {
 
         self.show_navbar(ctx, measured_fps as u32);
 
-        self.show_fps_info(
+        self.fps_info.show(
             ctx,
             FpsInfo {
                 measured_fps: measured_fps as u32,
@@ -315,57 +311,6 @@ impl eframe::App for NitrousGUI {
 
         self.last_ui_time = ui_start_time.elapsed();
         self.last_end_instant = Instant::now();
-    }
-}
-
-pub struct FpsInfo {
-    pub measured_fps: u32,
-    pub emulation_time: u32,
-    pub last_ui_time: u32,
-    pub last_idle_time: u32,
-    pub last_cycles_ran_arm9: u64,
-    pub target_cycles_arm9: u64,
-    pub cycles_ran_arm9: u64,
-    pub cycles_ran_arm7: u64,
-    pub cycles_ran_gpu: u64,
-}
-
-struct FpsCounter {
-    last_frame_times: VecDeque<Instant>,
-}
-
-impl FpsCounter {
-    pub fn new() -> Self {
-        FpsCounter {
-            last_frame_times: VecDeque::new(),
-        }
-    }
-
-    pub fn push_current_time(&mut self) {
-        // Strip times that are over 500ms old, always keep the last one
-        let now = Instant::now();
-        while self.last_frame_times.len() > 1 {
-            let second_last_time = self.last_frame_times[1];
-            if now.duration_since(second_last_time) > Duration::from_millis(500) {
-                self.last_frame_times.pop_front();
-            } else {
-                break;
-            }
-        }
-
-        // Push current time
-        self.last_frame_times.push_back(now);
-    }
-
-    pub fn average_fps(&self) -> f32 {
-        // Calculate the average duration between pairs
-        let mut total_duration = Duration::ZERO;
-        for i in 1..self.last_frame_times.len() {
-            total_duration += self.last_frame_times[i].duration_since(self.last_frame_times[i - 1]);
-        }
-
-        let frame_time = total_duration.as_secs_f32() / (self.last_frame_times.len() - 1) as f32;
-        1.0 / frame_time
     }
 }
 
