@@ -101,7 +101,7 @@ impl<Bus: BusTrait> DMA<Bus> {
     pub fn check_immediately(&mut self, bus: &mut Bus, shared: &mut Shared) -> Self {
         for channel in self.channel.iter_mut() {
             let matches = channel.dmacnt.get_dma_enable()
-                && if Bus::KIND == ArmKind::ARM9 {
+                && if Bus::KIND == ArmKind::Arm9 {
                     channel.dmacnt.get_dma9_start_timing()
                 } else {
                     channel.dmacnt.get_dma7_start_timing()

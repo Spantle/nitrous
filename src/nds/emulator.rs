@@ -3,7 +3,7 @@ use std::sync::atomic::AtomicBool;
 use crate::ui::windows::debug::arm::disassembler::ArmDisassemblerWindow;
 
 use super::{
-    arm::{Arm, ArmBool},
+    arm::{Arm, ArmBool, ArmInternalRW},
     bus::{bus7::Bus7, bus9::Bus9, BusTrait},
     shared::Shared,
 };

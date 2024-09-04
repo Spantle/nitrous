@@ -134,8 +134,8 @@ impl PreferencesWindow {
 
     pub fn try_load_bios<Bus: BusTrait>(&mut self, bus: &mut Bus) {
         let bios_path = match Bus::KIND {
-            ArmKind::ARM9 => &self.arm9_bios_path,
-            ArmKind::ARM7 => &self.arm7_bios_path,
+            ArmKind::Arm9 => &self.arm9_bios_path,
+            ArmKind::Arm7 => &self.arm7_bios_path,
         };
         if !bios_path.is_empty() {
             bus.load_bios_from_path(bios_path);
@@ -145,8 +145,8 @@ impl PreferencesWindow {
     pub fn load_bios_from_channel<Bus: BusTrait>(&mut self, bus: &mut Bus) {
         #[allow(unused_variables)]
         let (bios_channel, bios_path) = match Bus::KIND {
-            ArmKind::ARM9 => (&self.load_arm9_bios_channel, &mut self.arm9_bios_path),
-            ArmKind::ARM7 => (&self.load_arm7_bios_channel, &mut self.arm7_bios_path),
+            ArmKind::Arm9 => (&self.load_arm9_bios_channel, &mut self.arm9_bios_path),
+            ArmKind::Arm7 => (&self.load_arm7_bios_channel, &mut self.arm7_bios_path),
         };
 
         if let Ok(content) = bios_channel.1.try_recv() {

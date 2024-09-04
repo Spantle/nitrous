@@ -1,8 +1,8 @@
 use crate::nds::{
     arm::{
-        arm::ArmTrait,
         instructions::thumb::Instruction,
         models::{Context, ContextTrait, DisassemblyTrait},
+        ArmTrait,
     },
     logger::LoggerTrait,
     Bits,

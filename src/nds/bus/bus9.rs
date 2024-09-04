@@ -9,7 +9,7 @@ pub struct Bus9 {
 }
 
 impl BusTrait for Bus9 {
-    const KIND: ArmKind = ArmKind::ARM9;
+    const KIND: ArmKind = ArmKind::Arm9;
 
     fn reset(&mut self) {
         self.interrupts = Interrupts::default();

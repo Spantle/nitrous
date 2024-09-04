@@ -1,7 +1,7 @@
 use crate::nds::arm::{
-    arm::ArmTrait,
     instructions::arm::classes::load_store::word_or_ubyte::LoadStoreInstruction,
     models::{Context, ContextTrait},
+    ArmTrait,
 };
 
 // STR

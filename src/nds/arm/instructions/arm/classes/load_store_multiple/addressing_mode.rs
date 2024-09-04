@@ -1,7 +1,7 @@
 use crate::nds::arm::{
-    arm::ArmTrait,
     instructions::arm::Instruction,
     models::{Context, ContextTrait, DisassemblyTrait},
+    ArmTrait,
 };
 
 pub fn parse(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> (u32, u32, u32) {

@@ -40,7 +40,7 @@ pub trait BusTrait {
 #[derive(Default)]
 pub struct FakeBus;
 impl BusTrait for FakeBus {
-    const KIND: ArmKind = ArmKind::ARM9;
+    const KIND: ArmKind = ArmKind::Arm9;
 
     fn reset(&mut self) {}
 

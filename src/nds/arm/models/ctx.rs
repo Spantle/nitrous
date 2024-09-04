@@ -1,6 +1,6 @@
 // thank you for the help with this Leo (@Arduano)
 
-use crate::nds::{arm::arm::ArmTrait, bus::BusTrait, logger::LoggerTrait, shared::Shared};
+use crate::nds::{arm::ArmTrait, bus::BusTrait, logger::LoggerTrait, shared::Shared};
 
 use super::disassembly::DisassemblyTrait;
 

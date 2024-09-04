@@ -71,7 +71,7 @@ impl<Bus: BusTrait> DMA_Channel<Bus> {
     }
 
     fn log_source(&self) -> logger::LogSource {
-        if Bus::KIND == ArmKind::ARM9 {
+        if Bus::KIND == ArmKind::Arm9 {
             logger::LogSource::DMA9
         } else {
             logger::LogSource::DMA7
@@ -95,7 +95,7 @@ impl<Bus: BusTrait> DMA_Channel<Bus> {
             return;
         }
 
-        let start_timing = if Bus::KIND == ArmKind::ARM9 {
+        let start_timing = if Bus::KIND == ArmKind::Arm9 {
             self.dmacnt.get_dma9_start_timing()
         } else {
             self.dmacnt.get_dma7_start_timing()
@@ -177,7 +177,7 @@ impl<Bus: BusTrait> DMA_Channel<Bus> {
     }
 
     fn get_word_count(&self) -> u32 {
-        if Bus::KIND == ArmKind::ARM9 {
+        if Bus::KIND == ArmKind::Arm9 {
             let value = self.dmacnt.get().get_bits(0, 21);
             if value == 0 {
                 0x200000

@@ -1,7 +1,7 @@
 use crate::nds::{
     arm::{
-        arm::ArmTrait,
         models::{Context, ContextTrait},
+        ArmTrait,
     },
     logger::{self, LoggerTrait},
 };

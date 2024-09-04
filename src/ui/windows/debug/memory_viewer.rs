@@ -1,5 +1,5 @@
 use crate::{
-    nds::Emulator,
+    nds::{arm::ArmInternalRW, Emulator},
     ui::{NitrousUI, NitrousWindow},
 };
 
