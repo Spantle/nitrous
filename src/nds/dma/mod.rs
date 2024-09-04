@@ -1,19 +1,14 @@
 mod models;
 
-use models::DMA_Channel;
+use models::DmaChannel;
 
-use super::{
-    arm::{bus::BusTrait, ArmKind},
-    shared::Shared,
-    Bits, Bytes,
-};
+use super::{arm::ArmKind, bus::BusTrait, shared::Shared, Bits, Bytes};
 
-#[allow(clippy::upper_case_acronyms)]
-pub struct DMA<Bus: BusTrait> {
-    channel: [DMA_Channel<Bus>; 4],
+pub struct Dma<Bus: BusTrait> {
+    channel: [DmaChannel<Bus>; 4],
 }
 
-impl<Bus: BusTrait> Clone for DMA<Bus> {
+impl<Bus: BusTrait> Clone for Dma<Bus> {
     fn clone(&self) -> Self {
         Self {
             channel: [
@@ -26,20 +21,20 @@ impl<Bus: BusTrait> Clone for DMA<Bus> {
     }
 }
 
-impl<Bus: BusTrait> Default for DMA<Bus> {
+impl<Bus: BusTrait> Default for Dma<Bus> {
     fn default() -> Self {
         Self {
             channel: [
-                DMA_Channel::new(0),
-                DMA_Channel::new(1),
-                DMA_Channel::new(2),
-                DMA_Channel::new(3),
+                DmaChannel::new(0),
+                DmaChannel::new(1),
+                DmaChannel::new(2),
+                DmaChannel::new(3),
             ],
         }
     }
 }
 
-impl<Bus: BusTrait> DMA<Bus> {
+impl<Bus: BusTrait> Dma<Bus> {
     pub fn read_slice<const T: usize>(&self, addr: usize) -> Option<[u8; T]> {
         match addr {
             0x040000B0 => Some(self.channel[0].dmasad.to_bytes::<T>()),
@@ -105,7 +100,7 @@ impl<Bus: BusTrait> DMA<Bus> {
     pub fn check_immediately(&mut self, bus: &mut Bus, shared: &mut Shared) -> Self {
         for channel in self.channel.iter_mut() {
             let matches = channel.dmacnt.get_dma_enable()
-                && if Bus::KIND == ArmKind::ARM9 {
+                && if Bus::KIND == ArmKind::Arm9 {
                     channel.dmacnt.get_dma9_start_timing()
                 } else {
                     channel.dmacnt.get_dma7_start_timing()

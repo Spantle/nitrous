@@ -3,6 +3,27 @@
 version = 3
 
 [[package]]
+name = "NitrousDS"
+version = "0.0.0"
+dependencies = [
+ "bitflags 2.6.0",
+ "chrono",
+ "eframe",
+ "egui",
+ "egui-phosphor",
+ "egui_extras",
+ "env_logger",
+ "futures",
+ "limited-queue",
+ "log",
+ "once_cell",
+ "rfd",
+ "serde",
+ "wasm-bindgen-futures",
+ "web-time 1.1.0",
+]
+
+[[package]]
 name = "ab_glyph"
 version = "0.2.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1828,27 +1849,6 @@ dependencies = [
  "block2 0.3.0",
  "dispatch",
  "objc2 0.4.1",
-]
-
-[[package]]
-name = "idea"
-version = "0.0.0"
-dependencies = [
- "bitflags 2.6.0",
- "chrono",
- "eframe",
- "egui",
- "egui-phosphor",
- "egui_extras",
- "env_logger",
- "futures",
- "limited-queue",
- "log",
- "once_cell",
- "rfd",
- "serde",
- "wasm-bindgen-futures",
- "web-time 1.1.0",
 ]
 
 [[package]]

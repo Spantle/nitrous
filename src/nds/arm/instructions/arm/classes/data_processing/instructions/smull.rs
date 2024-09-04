@@ -1,7 +1,7 @@
 use crate::nds::arm::{
-    arm::ArmTrait,
     instructions::arm::Instruction,
     models::{Bits, Context, ContextTrait, DisassemblyTrait},
+    ArmTrait,
 };
 
 // SMULL, SMULLS

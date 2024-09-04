@@ -1,8 +1,7 @@
-mod arm9_info;
-pub mod arm_disassembler;
-mod arm_info;
-mod emulation_log;
-mod ipcsync;
-mod memory_viewer;
-mod register_viewer;
-mod test_window;
+pub mod arm;
+pub mod arm9_info;
+pub mod emulation_log;
+pub mod ipcsync;
+pub mod memory_viewer;
+pub mod register_viewer;
+pub mod test_window;

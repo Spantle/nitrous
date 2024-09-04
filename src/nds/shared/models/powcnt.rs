@@ -1,15 +1,13 @@
-#![allow(dead_code)]
-
 #[derive(Default)]
-pub struct POWCNT1(u32);
+pub struct PowCnt1(u32);
 
-impl From<u32> for POWCNT1 {
+impl From<u32> for PowCnt1 {
     fn from(value: u32) -> Self {
         Self(value)
     }
 }
 
-impl POWCNT1 {
+impl PowCnt1 {
     const BOTH_LCDS_ENABLED_OFFSET: u32 = 0;
     const ENG_2D_A_OFFSET: u32 = 1;
     const ENG_3D_RENDERING_OFFSET: u32 = 2;

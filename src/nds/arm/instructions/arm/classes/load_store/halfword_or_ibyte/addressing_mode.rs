@@ -3,9 +3,9 @@
 // either that or i did all the hard ones first
 
 use crate::nds::arm::{
-    arm::ArmTrait,
     instructions::arm::Instruction,
     models::{Context, ContextTrait, DisassemblyTrait},
+    ArmTrait,
 };
 
 #[inline(always)]

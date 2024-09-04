@@ -37,10 +37,10 @@ impl NitrousGUI {
 
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
                     if ui
-                        .selectable_label(self.fps_info, format!("FPS: {}", estimated_fps))
+                        .selectable_label(self.fps_info.show, format!("FPS: {}", estimated_fps))
                         .clicked()
                     {
-                        self.fps_info = !self.fps_info;
+                        self.fps_info.show = !self.fps_info.show;
                     }
                 });
             });
@@ -69,7 +69,7 @@ impl NitrousGUI {
 
         ui.separator();
 
-        ui.checkbox(&mut self.preferences, "Preferences");
+        ui.checkbox(&mut self.preferences.open, "Preferences");
 
         if ui.button("Organize windows").clicked() {
             ui.ctx().memory_mut(|mem| mem.reset_areas());
@@ -99,21 +99,21 @@ impl NitrousGUI {
         ui.menu_button("ARM9", |ui| {
             ui.set_width(150.0);
 
-            ui.checkbox(&mut self.arm9_disassembler, "ARM9 Disassembler");
-            ui.checkbox(&mut self.arm9_info, "ARM9 Info");
-            ui.checkbox(&mut self.arm9_info_legacy, "(Legacy) ARM9 Info");
+            ui.checkbox(&mut self.arm9_disassembler.open, "ARM9 Disassembler");
+            ui.checkbox(&mut self.arm9_info.open, "ARM9 Info");
+            ui.checkbox(&mut self.arm9_info_legacy.open, "(Legacy) ARM9 Info");
         });
         ui.menu_button("ARM7", |ui| {
             ui.set_width(150.0);
 
-            ui.checkbox(&mut self.arm7_disassembler, "ARM7 Disassembler");
-            ui.checkbox(&mut self.arm7_info, "ARM7 Info");
+            ui.checkbox(&mut self.arm7_disassembler.open, "ARM7 Disassembler");
+            ui.checkbox(&mut self.arm7_info.open, "ARM7 Info");
         });
-        ui.checkbox(&mut self.emulation_log, "Emulation Log");
-        ui.checkbox(&mut self.ipcsync_log, "IPCSYNC Log");
-        ui.checkbox(&mut self.memory_viewer, "Memory Viewer");
-        ui.checkbox(&mut self.register_viewer, "Register Viewer");
-        ui.checkbox(&mut self.test_window, "Test Window");
+        ui.checkbox(&mut self.emulation_log.open, "Emulation Log");
+        ui.checkbox(&mut self.ipcsync_log.open, "IPCSYNC Log");
+        ui.checkbox(&mut self.memory_viewer.open, "Memory Viewer");
+        ui.checkbox(&mut self.register_viewer.open, "Register Viewer");
+        ui.checkbox(&mut self.test_window.open, "Test Window");
 
         if ui.button("Test button").clicked() {
             debug!("Test button clicked");

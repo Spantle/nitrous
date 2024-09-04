@@ -1,9 +1,9 @@
-use models::{IPCFIFO, IPCSYNC, KEYINPUT, POWCNT1};
+use models::{IpcFifo, IpcSync, KeyInput, PowCnt1};
 
 use super::{
-    arm::bus::{bus7::Bus7, bus9::Bus9},
+    bus::{bus7::Bus7, bus9::Bus9},
     cartridge::Cartridge,
-    dma::DMA,
+    dma::Dma,
     gpu::gpu2d::Gpu2d,
 };
 
@@ -14,14 +14,14 @@ pub struct Shared {
     pub psram: Vec<u8>,
     pub wram: Vec<u8>, // 32kb
 
-    pub keyinput: KEYINPUT, // 0x04000130
+    pub keyinput: KeyInput, // 0x04000130
     pub vramcnt: [u8; 10],  // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
-    pub ipcsync: IPCSYNC,   // 0x04000180
-    pub ipcfifo: IPCFIFO,   // 0x04000184, 0x04000188, 0x04100000
-    pub powcnt1: POWCNT1,   // 0x04000304
+    pub ipcsync: IpcSync,   // 0x04000180
+    pub ipcfifo: IpcFifo,   // 0x04000184, 0x04000188, 0x04100000
+    pub powcnt1: PowCnt1,   // 0x04000304
 
-    pub dma9: DMA<Bus9>,
-    pub dma7: DMA<Bus7>,
+    pub dma9: Dma<Bus9>,
+    pub dma7: Dma<Bus7>,
 
     pub vram_lcdc_alloc: Vec<u8>, // 0x06800000
 }
@@ -35,14 +35,14 @@ impl Default for Shared {
             psram: vec![0; 1024 * 1024 * 4],
             wram: vec![0; 1024 * 32],
 
-            keyinput: KEYINPUT::default(),
+            keyinput: KeyInput::default(),
             vramcnt: [0; 10],
-            ipcsync: IPCSYNC::default(),
-            ipcfifo: IPCFIFO::default(),
-            powcnt1: POWCNT1::default(),
+            ipcsync: IpcSync::default(),
+            ipcfifo: IpcFifo::default(),
+            powcnt1: PowCnt1::default(),
 
-            dma9: DMA::default(),
-            dma7: DMA::default(),
+            dma9: Dma::default(),
+            dma7: Dma::default(),
 
             vram_lcdc_alloc: vec![0; 1024 * 656],
         }
@@ -58,14 +58,14 @@ impl Shared {
             psram: vec![0; 0],
             wram: vec![0; 0],
 
-            keyinput: KEYINPUT::default(),
+            keyinput: KeyInput::default(),
             vramcnt: [0; 10],
-            ipcsync: IPCSYNC::default(),
-            ipcfifo: IPCFIFO::default(),
-            powcnt1: POWCNT1::default(),
+            ipcsync: IpcSync::default(),
+            ipcfifo: IpcFifo::default(),
+            powcnt1: PowCnt1::default(),
 
-            dma9: DMA::default(),
-            dma7: DMA::default(),
+            dma9: Dma::default(),
+            dma7: Dma::default(),
 
             vram_lcdc_alloc: vec![0; 0],
         }
@@ -77,12 +77,12 @@ impl Shared {
         self.wram = vec![0; 1024 * 32];
 
         self.vramcnt = [0; 10];
-        self.ipcsync = IPCSYNC::default();
-        self.ipcfifo = IPCFIFO::default();
-        self.powcnt1 = POWCNT1::default();
+        self.ipcsync = IpcSync::default();
+        self.ipcfifo = IpcFifo::default();
+        self.powcnt1 = PowCnt1::default();
 
-        self.dma9 = DMA::default();
-        self.dma7 = DMA::default();
+        self.dma9 = Dma::default();
+        self.dma7 = Dma::default();
 
         self.vram_lcdc_alloc = vec![0; 1024 * 656];
     }

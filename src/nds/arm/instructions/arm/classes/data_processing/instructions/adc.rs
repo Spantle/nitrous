@@ -1,7 +1,7 @@
 use crate::nds::arm::{
-    arm::ArmTrait,
     instructions::arm::classes::data_processing::DataProcessingInstruction,
     models::{Bits, Context, ContextTrait, DisassemblyTrait},
+    ArmTrait,
 };
 
 // ADC, ADCS

@@ -1,23 +1,20 @@
-#![allow(dead_code)]
-
 use crate::nds::Bits;
 
-#[allow(clippy::upper_case_acronyms)]
-pub struct DISPSTAT(u16);
+pub struct DispStat(u16);
 
-impl Default for DISPSTAT {
+impl Default for DispStat {
     fn default() -> Self {
         Self(0x4)
     }
 }
 
-impl From<u16> for DISPSTAT {
+impl From<u16> for DispStat {
     fn from(value: u16) -> Self {
         Self(value)
     }
 }
 
-impl DISPSTAT {
+impl DispStat {
     const VBLANK_FLAG_OFFSET: u16 = 0;
     const HBLANK_FLAG_OFFSET: u16 = 1;
     const VCOUNTER_FLAG_OFFSET: u16 = 2;

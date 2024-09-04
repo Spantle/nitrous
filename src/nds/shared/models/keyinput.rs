@@ -1,23 +1,20 @@
-#![allow(dead_code)]
-
 use crate::nds::Bits;
 
-#[allow(clippy::upper_case_acronyms)]
-pub struct KEYINPUT(u16);
+pub struct KeyInput(u16);
 
-impl Default for KEYINPUT {
+impl Default for KeyInput {
     fn default() -> Self {
         Self(0b1111111111) // 10 bits
     }
 }
 
-impl From<u16> for KEYINPUT {
+impl From<u16> for KeyInput {
     fn from(value: u16) -> Self {
         Self(value)
     }
 }
 
-impl KEYINPUT {
+impl KeyInput {
     const BUTTON_A_OFFSET: u16 = 0;
     const BUTTON_B_OFFSET: u16 = 1;
     const BUTTON_SELECT_OFFSET: u16 = 2;

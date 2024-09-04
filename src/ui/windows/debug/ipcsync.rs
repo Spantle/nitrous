@@ -1,20 +1,26 @@
 use crate::{
-    nds::shared::models::IpcsyncLog,
-    ui::{NitrousGUI, NitrousUI, NitrousWindow},
+    nds::{shared::models::IpcsyncLog, Emulator},
+    ui::{NitrousUI, NitrousWindow},
 };
 
-impl NitrousGUI {
-    pub fn show_ipcsync_log(&mut self, ctx: &egui::Context) {
-        self.emulator.shared.ipcsync.logging_enabled = self.ipcsync_log;
+#[derive(Default, serde::Deserialize, serde::Serialize)]
+#[serde(default)]
+pub struct IpcsyncLogWindow {
+    pub open: bool,
+}
+
+impl IpcsyncLogWindow {
+    pub fn show(&mut self, emulator: &mut Emulator, ctx: &egui::Context) {
+        emulator.shared.ipcsync.logging_enabled = self.open;
 
         egui::Window::new_nitrous("IPCSYNC Log", ctx)
             .default_width(100.0)
-            .open(&mut self.ipcsync_log)
+            .open(&mut self.open)
             .show(ctx, |ui| {
                 egui::TopBottomPanel::top("ipcsync_log_navbar").show_inside(ui, |ui| {
                     ui.horizontal(|ui| {
                         if ui.button("Clear").clicked() {
-                            self.emulator.shared.ipcsync.log = Vec::new();
+                            emulator.shared.ipcsync.log = Vec::new();
                         }
                     });
 
@@ -23,7 +29,7 @@ impl NitrousGUI {
 
                 ui.add_space(4.0);
 
-                let log = &self.emulator.shared.ipcsync.log;
+                let log = &emulator.shared.ipcsync.log;
                 let text_style = egui::TextStyle::Monospace;
                 let height = ui.text_style_height(&text_style);
                 egui::ScrollArea::vertical()

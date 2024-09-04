@@ -1,7 +1,7 @@
 use crate::nds::arm::{
-    arm::ArmTrait,
     instructions::arm::classes::load_store::halfword_or_ibyte::LoadStoreInstruction,
     models::{Context, ContextTrait},
+    ArmTrait,
 };
 
 // STRH

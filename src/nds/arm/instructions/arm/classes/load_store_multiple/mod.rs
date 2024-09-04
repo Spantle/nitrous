@@ -5,9 +5,9 @@ mod lookup;
 pub use lookup::lookup;
 
 use crate::nds::arm::{
-    arm::ArmTrait,
     instructions::arm::Instruction,
     models::{Bits, Context, ContextTrait, DisassemblyTrait},
+    ArmTrait,
 };
 
 pub struct LoadStoreMultipleInstruction {

@@ -1,8 +1,8 @@
 use crate::nds::{
     arm::{
-        arm::ArmTrait,
         instructions::{conditions::calculate_cond, thumb::Instruction},
         models::{Context, ContextTrait, DisassemblyTrait},
+        ArmTrait,
     },
     Bits,
 };

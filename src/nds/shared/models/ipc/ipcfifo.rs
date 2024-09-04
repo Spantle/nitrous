@@ -2,10 +2,9 @@ use limited_queue::LimitedQueue;
 
 use crate::nds::{interrupts::Interrupts, Bits};
 
-#[allow(clippy::upper_case_acronyms)]
-pub struct IPCFIFO {
-    cnt9: IPCFIFOCNT,
-    cnt7: IPCFIFOCNT,
+pub struct IpcFifo {
+    cnt9: IpcFifoCnt,
+    cnt7: IpcFifoCnt,
     send_queue9: LimitedQueue<u32>,
     send_queue7: LimitedQueue<u32>,
     recent9: u32,
@@ -15,11 +14,11 @@ pub struct IPCFIFO {
     did_receive: bool,
 }
 
-impl Default for IPCFIFO {
+impl Default for IpcFifo {
     fn default() -> Self {
         Self {
-            cnt9: IPCFIFOCNT::default(),
-            cnt7: IPCFIFOCNT::default(),
+            cnt9: IpcFifoCnt::default(),
+            cnt7: IpcFifoCnt::default(),
             send_queue9: LimitedQueue::with_capacity(16),
             send_queue7: LimitedQueue::with_capacity(16),
             recent9: 0,
@@ -32,15 +31,14 @@ impl Default for IPCFIFO {
 }
 
 #[derive(Default)]
-#[allow(clippy::upper_case_acronyms)]
-struct IPCFIFOCNT {
+struct IpcFifoCnt {
     send_fifo_empty_irq: bool,
     receive_fifo_not_empty_irq: bool,
     error: bool,
     enabled: bool,
 }
 
-impl IPCFIFO {
+impl IpcFifo {
     pub fn set_cnt<const ARM_BOOL: bool>(&mut self, interrupts: &mut Interrupts, value: u32) {
         let (cnt, send_queue, receive_queue) = if ARM_BOOL {
             (&mut self.cnt9, &mut self.send_queue9, &mut self.send_queue7)

@@ -1,11 +1,8 @@
-#![allow(dead_code)]
-
 use bitflags::bitflags;
 
 use crate::nds::Bits;
 
-#[allow(clippy::upper_case_acronyms)]
-pub struct PSR(pub u32);
+pub struct Psr(pub u32);
 
 bitflags! {
     #[derive(Debug, Eq, PartialEq)]
@@ -37,19 +34,19 @@ impl std::fmt::Display for ProcessorMode {
     }
 }
 
-impl Default for PSR {
-    fn default() -> PSR {
-        PSR(ProcessorMode::SYS.bits())
+impl Default for Psr {
+    fn default() -> Psr {
+        Psr(ProcessorMode::SYS.bits())
     }
 }
 
-impl From<u32> for PSR {
+impl From<u32> for Psr {
     fn from(val: u32) -> Self {
-        PSR(val)
+        Psr(val)
     }
 }
 
-impl PSR {
+impl Psr {
     const THUMB_OFFSET: u32 = 5; // T
     const FIQ_INTERRUPT_OFFSET: u32 = 6; // F
     const IRQ_INTERRUPT_OFFSET: u32 = 7; // I
@@ -63,8 +60,8 @@ impl PSR {
         self.0
     }
 
-    pub fn from(value: u32) -> PSR {
-        PSR(value)
+    pub fn from(value: u32) -> Psr {
+        Psr(value)
     }
 
     #[inline(always)]

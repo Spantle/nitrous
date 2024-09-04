@@ -1,122 +1,111 @@
 // TODO: this needs a good clean
 
-use std::fmt::Display;
-
 use crate::{
     nds::{
-        arm::{self, bus, instructions, models::Disassembly, ArmBool},
-        logger, shared, CycleState,
+        arm::{self, instructions, models::Disassembly, ArmBool, ArmInternalRW},
+        bus, logger, shared, CycleState, Emulator,
     },
-    ui::{NitrousGUI, NitrousUI, NitrousWindow},
+    ui::{NitrousUI, NitrousWindow},
 };
 
-#[derive(PartialEq)]
-pub enum DisassemblerInstructionSet {
-    Follow,
-    Arm,
-    Thumb,
-}
+use super::{
+    models::{match_color, DisassemblerInstructionSet},
+    ArmDisassemblerWindow,
+};
 
-impl Display for DisassemblerInstructionSet {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            DisassemblerInstructionSet::Follow => write!(f, "Follow CPU"),
-            DisassemblerInstructionSet::Arm => write!(f, "ARM"),
-            DisassemblerInstructionSet::Thumb => write!(f, "THUMB"),
+impl ArmDisassemblerWindow {
+    pub fn check_breakpoints<const ARM_BOOL: bool>(&mut self, emulator: &mut Emulator) {
+        let pc = match ARM_BOOL {
+            ArmBool::ARM9 => emulator.arm9.r[15],
+            ArmBool::ARM7 => emulator.arm7.r[15],
+        };
+
+        if self.open {
+            if self.step_until == Some(pc) {
+                emulator.pause();
+                self.step_until = None;
+            }
+
+            if self.breakpoints.contains(&pc) {
+                emulator.pause();
+                self.selected_breakpoint =
+                    Some(self.breakpoints.iter().position(|&x| x == pc).unwrap());
+            }
         }
     }
-}
 
-impl NitrousGUI {
-    pub fn show_arm_disassembler<const ARM_BOOL: bool>(&mut self, ctx: &egui::Context) {
-        let mut arm_disassembler = match ARM_BOOL {
-            ArmBool::ARM9 => self.arm9_disassembler,
-            ArmBool::ARM7 => self.arm7_disassembler,
-        };
+    pub fn show<const ARM_BOOL: bool>(&mut self, emulator: &mut Emulator, ctx: &egui::Context) {
+        let mut open = self.open;
         let title = match ARM_BOOL {
             ArmBool::ARM9 => "ARM9 Disassembler",
             ArmBool::ARM7 => "ARM7 Disassembler",
         };
 
         egui::Window::new_nitrous(title, ctx)
-            .open(&mut arm_disassembler)
+            .open(&mut open)
             .show(ctx, |ui| {
-                self.render_navbar::<ARM_BOOL>(ui);
-                self.render_instructions::<ARM_BOOL>(ui);
+                self.render_navbar::<ARM_BOOL>(emulator, ui);
+                self.render_instructions::<ARM_BOOL>(emulator, ui);
             });
 
-        match ARM_BOOL {
-            ArmBool::ARM9 => self.arm9_disassembler = arm_disassembler,
-            ArmBool::ARM7 => self.arm7_disassembler = arm_disassembler,
-        };
+        self.open = open;
     }
 
-    fn render_navbar<const ARM_BOOL: bool>(&mut self, ui: &mut egui::Ui) {
+    fn render_navbar<const ARM_BOOL: bool>(&mut self, emulator: &mut Emulator, ui: &mut egui::Ui) {
         let id = match ARM_BOOL {
             ArmBool::ARM9 => "arm9_disassembler_navbar",
             ArmBool::ARM7 => "arm7_disassembler_navbar",
         };
+
         egui::TopBottomPanel::top(id).show_inside(ui, |ui| {
             ui.horizontal(|ui| {
-                let selected_instruction_set = match ARM_BOOL {
-                    ArmBool::ARM9 => &mut self.arm9_disassembler_instruction_set,
-                    ArmBool::ARM7 => &mut self.arm7_disassembler_instruction_set,
-                };
                 let label = ui.label("Instruction Set");
                 egui::ComboBox::from_id_source(label.id)
-                    .selected_text(selected_instruction_set.to_string())
+                    .selected_text(self.instruction_set.to_string())
                     .show_ui(ui, |ui| {
                         ui.selectable_value(
-                            selected_instruction_set,
+                            &mut self.instruction_set,
                             DisassemblerInstructionSet::Follow,
                             DisassemblerInstructionSet::Follow.to_string(),
                         );
                         ui.selectable_value(
-                            selected_instruction_set,
+                            &mut self.instruction_set,
                             DisassemblerInstructionSet::Arm,
                             DisassemblerInstructionSet::Arm.to_string(),
                         );
                         ui.selectable_value(
-                            selected_instruction_set,
+                            &mut self.instruction_set,
                             DisassemblerInstructionSet::Thumb,
                             DisassemblerInstructionSet::Thumb.to_string(),
                         );
                     });
 
-                let follow_pc = match ARM_BOOL {
-                    ArmBool::ARM9 => &mut self.arm9_disassembler_follow_pc,
-                    ArmBool::ARM7 => &mut self.arm7_disassembler_follow_pc,
-                };
-                ui.checkbox(follow_pc, "Follow PC");
+                ui.checkbox(&mut self.follow_pc, "Follow PC");
             });
 
             ui.horizontal(|ui| {
-                let step_amount = match ARM_BOOL {
-                    ArmBool::ARM9 => &mut self.arm9_disassembler_step_amount,
-                    ArmBool::ARM7 => &mut self.arm7_disassembler_step_amount,
-                };
                 ui.add(
-                    egui::TextEdit::singleline(step_amount)
+                    egui::TextEdit::singleline(&mut self.step_amount)
                         .hint_text("1")
                         .desired_width(40.0),
                 );
 
                 if ui.button("Step").clicked() {
-                    let mut steps_remaining = step_amount.parse().unwrap_or(0);
+                    let mut steps_remaining = self.step_amount.parse().unwrap_or(0);
                     loop {
-                        self.emulator.step();
+                        emulator.step();
 
                         let mut ran = false;
                         match ARM_BOOL {
                             ArmBool::ARM9 => {
-                                if self.emulator.cycle_state == CycleState::Arm9_2
-                                    || self.emulator.cycle_state == CycleState::Arm7
+                                if emulator.cycle_state == CycleState::Arm9_2
+                                    || emulator.cycle_state == CycleState::Arm7
                                 {
                                     ran = true;
                                 }
                             }
                             ArmBool::ARM7 => {
-                                if self.emulator.cycle_state == CycleState::Arm9_1 {
+                                if emulator.cycle_state == CycleState::Arm9_1 {
                                     ran = true;
                                 }
                             }
@@ -137,20 +126,17 @@ impl NitrousGUI {
                     .clicked()
                 {
                     let pc = match ARM_BOOL {
-                        ArmBool::ARM9 => self.emulator.arm9.r[15],
-                        ArmBool::ARM7 => self.emulator.arm7.r[15],
+                        ArmBool::ARM9 => emulator.arm9.r[15],
+                        ArmBool::ARM7 => emulator.arm7.r[15],
                     };
                     let is_thumb = match ARM_BOOL {
-                        ArmBool::ARM9 => self.emulator.arm9.cpsr.get_thumb(),
-                        ArmBool::ARM7 => self.emulator.arm7.cpsr.get_thumb(),
+                        ArmBool::ARM9 => emulator.arm9.cpsr.get_thumb(),
+                        ArmBool::ARM7 => emulator.arm7.cpsr.get_thumb(),
                     };
                     let next_inst = if is_thumb { pc + 2 } else { pc + 4 };
-                    match ARM_BOOL {
-                        ArmBool::ARM9 => self.arm9_disassembler_step_until = Some(next_inst),
-                        ArmBool::ARM7 => self.arm7_disassembler_step_until = Some(next_inst),
-                    }
+                    self.step_until = Some(next_inst);
 
-                    self.emulator.start();
+                    emulator.start();
                 }
 
                 if ui
@@ -159,40 +145,33 @@ impl NitrousGUI {
                     .clicked()
                 {
                     let is_thumb = match ARM_BOOL {
-                        ArmBool::ARM9 => self.emulator.arm9.cpsr.get_thumb(),
-                        ArmBool::ARM7 => self.emulator.arm7.cpsr.get_thumb(),
+                        ArmBool::ARM9 => emulator.arm9.cpsr.get_thumb(),
+                        ArmBool::ARM7 => emulator.arm7.cpsr.get_thumb(),
                     };
                     let lr = match ARM_BOOL {
-                        ArmBool::ARM9 => self.emulator.arm9.r[14],
-                        ArmBool::ARM7 => self.emulator.arm7.r[14],
+                        ArmBool::ARM9 => emulator.arm9.r[14],
+                        ArmBool::ARM7 => emulator.arm7.r[14],
                     };
                     let lr = if is_thumb { lr & 0xFFFFFFFE } else { lr };
-                    match ARM_BOOL {
-                        ArmBool::ARM9 => self.arm9_disassembler_step_until = Some(lr),
-                        ArmBool::ARM7 => self.arm7_disassembler_step_until = Some(lr),
-                    }
+                    self.step_until = Some(lr);
 
-                    self.emulator.start();
+                    emulator.start();
                 }
 
-                let is_running = self.emulator.is_running();
+                let is_running = emulator.is_running();
                 let resume_text = if is_running { "Pause" } else { "Resume" };
                 if ui.button(resume_text).clicked() {
                     if is_running {
-                        self.emulator.pause();
+                        emulator.pause();
                     } else {
-                        self.emulator.start();
+                        emulator.start();
                     }
                 }
             });
 
             ui.horizontal(|ui| {
-                let jump_value = match ARM_BOOL {
-                    ArmBool::ARM9 => &mut self.arm9_disassembler_jump_value,
-                    ArmBool::ARM7 => &mut self.arm7_disassembler_jump_value,
-                };
                 ui.add(
-                    egui::TextEdit::singleline(jump_value)
+                    egui::TextEdit::singleline(&mut self.jump_value)
                         .hint_text("0xFFFFFFFF")
                         .desired_width(80.0)
                         .font(egui::TextStyle::Monospace),
@@ -200,66 +179,48 @@ impl NitrousGUI {
 
                 if ui.button("Jump").clicked() {
                     let jump_value = Some(
-                        u32::from_str_radix(jump_value.trim_start_matches("0x"), 16).unwrap_or(0),
+                        u32::from_str_radix(self.jump_value.trim_start_matches("0x"), 16)
+                            .unwrap_or(0),
                     );
-                    match ARM_BOOL {
-                        ArmBool::ARM9 => self.arm9_disassembler_jump_now = jump_value,
-                        ArmBool::ARM7 => self.arm7_disassembler_jump_now = jump_value,
-                    }
+                    self.jump_now = jump_value;
                 }
 
                 if ui.button("Jump to PC").clicked() {
                     let pc = match ARM_BOOL {
-                        ArmBool::ARM9 => self.emulator.arm9.r[15],
-                        ArmBool::ARM7 => self.emulator.arm7.r[15],
+                        ArmBool::ARM9 => emulator.arm9.r[15],
+                        ArmBool::ARM7 => emulator.arm7.r[15],
                     };
-                    *jump_value = format!("{:08X}", pc);
-                    match ARM_BOOL {
-                        ArmBool::ARM9 => self.arm9_disassembler_jump_now = Some(pc),
-                        ArmBool::ARM7 => self.arm7_disassembler_jump_now = Some(pc),
-                    }
+                    self.jump_value = format!("{:08X}", pc);
+                    self.jump_now = Some(pc);
                 }
                 if ui.button("Add breakpoint").clicked() {
                     let jump_value =
-                        u32::from_str_radix(jump_value.trim_start_matches("0x"), 16).unwrap_or(0);
-                    let breakpoints = match ARM_BOOL {
-                        ArmBool::ARM9 => &mut self.arm9_disassembler_breakpoints,
-                        ArmBool::ARM7 => &mut self.arm7_disassembler_breakpoints,
-                    };
-                    breakpoints.push(jump_value);
+                        u32::from_str_radix(self.jump_value.trim_start_matches("0x"), 16)
+                            .unwrap_or(0);
+                    self.breakpoints.push(jump_value);
 
-                    let selected_breakpoint = match ARM_BOOL {
-                        ArmBool::ARM9 => &mut self.arm9_disassembler_selected_breakpoint,
-                        ArmBool::ARM7 => &mut self.arm7_disassembler_selected_breakpoint,
-                    };
-                    *selected_breakpoint = Some(breakpoints.len() - 1);
+                    self.selected_breakpoint = Some(self.breakpoints.len() - 1);
                 }
             });
 
             ui.horizontal(|ui| {
-                let breakpoints = match ARM_BOOL {
-                    ArmBool::ARM9 => &mut self.arm9_disassembler_breakpoints,
-                    ArmBool::ARM7 => &mut self.arm7_disassembler_breakpoints,
-                };
-                let selected_breakpoint = match ARM_BOOL {
-                    ArmBool::ARM9 => &mut self.arm9_disassembler_selected_breakpoint,
-                    ArmBool::ARM7 => &mut self.arm7_disassembler_selected_breakpoint,
-                };
                 let label = ui.label("Breakpoints");
                 ui.add_visible_ui(true, |ui| {
                     ui.make_monospace();
 
                     let mut combobox = egui::ComboBox::from_id_source(label.id);
-                    if let Some(selected_breakpoint) = selected_breakpoint {
-                        combobox = combobox
-                            .selected_text(format!("{:08X}", breakpoints[*selected_breakpoint]));
+                    if let Some(selected_breakpoint) = self.selected_breakpoint {
+                        combobox = combobox.selected_text(format!(
+                            "{:08X}",
+                            self.breakpoints[selected_breakpoint]
+                        ));
                     }
                     combobox.show_ui(ui, |ui| {
                         ui.make_monospace();
 
-                        for (i, breakpoint) in breakpoints.iter().enumerate() {
+                        for (i, breakpoint) in self.breakpoints.iter().enumerate() {
                             ui.selectable_value(
-                                selected_breakpoint,
+                                &mut self.selected_breakpoint,
                                 Some(i),
                                 format!("{:08X}", breakpoint),
                             );
@@ -268,30 +229,19 @@ impl NitrousGUI {
                 });
 
                 if ui.button("Jump to BP").clicked() {
-                    let selected_breakpoint = match ARM_BOOL {
-                        ArmBool::ARM9 => &self.arm9_disassembler_selected_breakpoint,
-                        ArmBool::ARM7 => &self.arm7_disassembler_selected_breakpoint,
-                    };
-                    if let Some(value) = selected_breakpoint {
-                        let breakpoint = breakpoints[*value];
-                        match ARM_BOOL {
-                            ArmBool::ARM9 => self.arm9_disassembler_jump_now = Some(breakpoint),
-                            ArmBool::ARM7 => self.arm7_disassembler_jump_now = Some(breakpoint),
-                        }
+                    if let Some(value) = self.selected_breakpoint {
+                        let breakpoint = self.breakpoints[value];
+                        self.jump_now = Some(breakpoint);
                     }
                 }
 
                 if ui.button("Delete BP").clicked() {
-                    let selected_breakpoint = match ARM_BOOL {
-                        ArmBool::ARM9 => &mut self.arm9_disassembler_selected_breakpoint,
-                        ArmBool::ARM7 => &mut self.arm7_disassembler_selected_breakpoint,
-                    };
-                    if let Some(value) = selected_breakpoint {
-                        breakpoints.remove(*value);
-                        if breakpoints.is_empty() {
-                            *selected_breakpoint = None;
+                    if let Some(value) = self.selected_breakpoint {
+                        self.breakpoints.remove(value);
+                        if self.breakpoints.is_empty() {
+                            self.selected_breakpoint = None;
                         } else {
-                            *selected_breakpoint = Some(*value.max(&mut 1) - 1);
+                            self.selected_breakpoint = Some(value.max(1) - 1);
                         }
                     }
                 }
@@ -299,7 +249,11 @@ impl NitrousGUI {
         });
     }
 
-    fn render_instructions<const ARM_BOOL: bool>(&mut self, ui: &mut egui::Ui) {
+    fn render_instructions<const ARM_BOOL: bool>(
+        &mut self,
+        emulator: &mut Emulator,
+        ui: &mut egui::Ui,
+    ) {
         let mut fake_bus = bus::FakeBus;
         let mut fake_shared = shared::Shared::new_fake();
 
@@ -307,16 +261,16 @@ impl NitrousGUI {
 
         let (pc, bios_size, arm_load_address, arm_size) = match ARM_BOOL {
             ArmBool::ARM9 => (
-                self.emulator.arm9.r[15] as usize,
-                self.emulator.bus9.bios.len(),
-                self.emulator.shared.cart.arm9_load_address as usize,
-                self.emulator.shared.cart.arm9_size as usize,
+                emulator.arm9.r[15] as usize,
+                emulator.bus9.bios.len(),
+                emulator.shared.cart.arm9_load_address as usize,
+                emulator.shared.cart.arm9_size as usize,
             ),
             ArmBool::ARM7 => (
-                self.emulator.arm7.r[15] as usize,
+                emulator.arm7.r[15] as usize,
                 0,
-                self.emulator.shared.cart.arm7_load_address as usize,
-                self.emulator.shared.cart.arm7_size as usize,
+                emulator.shared.cart.arm7_load_address as usize,
+                emulator.shared.cart.arm7_size as usize,
             ),
         };
 
@@ -336,14 +290,10 @@ impl NitrousGUI {
             (0, 0)
         };
 
-        let instruction_set = match ARM_BOOL {
-            ArmBool::ARM9 => &self.arm9_disassembler_instruction_set,
-            ArmBool::ARM7 => &self.arm7_disassembler_instruction_set,
-        };
-        let is_thumb = match instruction_set {
+        let is_thumb = match self.instruction_set {
             DisassemblerInstructionSet::Follow => match ARM_BOOL {
-                ArmBool::ARM9 => self.emulator.arm9.cpsr.get_thumb(),
-                ArmBool::ARM7 => self.emulator.arm7.cpsr.get_thumb(),
+                ArmBool::ARM9 => emulator.arm9.cpsr.get_thumb(),
+                ArmBool::ARM7 => emulator.arm7.cpsr.get_thumb(),
             },
             DisassemblerInstructionSet::Arm => false,
             DisassemblerInstructionSet::Thumb => true,
@@ -359,20 +309,12 @@ impl NitrousGUI {
             .column(egui_extras::Column::auto())
             .column(egui_extras::Column::remainder());
 
-        let follow_pc = match ARM_BOOL {
-            ArmBool::ARM9 => self.arm9_disassembler_follow_pc,
-            ArmBool::ARM7 => self.arm7_disassembler_follow_pc,
-        };
-        if follow_pc {
+        if self.follow_pc {
             let pc_row = (pc - mem_start) / instruction_width;
             table_builder = table_builder.scroll_to_row(pc_row, Some(egui::Align::Center));
         };
 
-        let jump_now = match ARM_BOOL {
-            ArmBool::ARM9 => self.arm9_disassembler_jump_now,
-            ArmBool::ARM7 => self.arm7_disassembler_jump_now,
-        };
-        if let Some(jump_value) = jump_now {
+        if let Some(jump_value) = self.jump_now {
             let jump_value = jump_value as usize;
             if jump_value >= mem_start && jump_value < mem_start + mem_size {
                 let jump_row = (jump_value - mem_start) / instruction_width;
@@ -380,14 +322,7 @@ impl NitrousGUI {
             }
         };
 
-        match ARM_BOOL {
-            ArmBool::ARM9 => self.arm9_disassembler_jump_now = None,
-            ArmBool::ARM7 => self.arm7_disassembler_jump_now = None,
-        }
-        let breakpoints = match ARM_BOOL {
-            ArmBool::ARM9 => &mut self.arm9_disassembler_breakpoints,
-            ArmBool::ARM7 => &mut self.arm7_disassembler_breakpoints,
-        };
+        self.jump_now = None;
 
         table_builder
             .header(height, |mut header| {
@@ -410,15 +345,15 @@ impl NitrousGUI {
                     };
 
                     let mem = match ARM_BOOL {
-                        ArmBool::ARM9 => self.emulator.arm9.read_bulk(
-                            &mut self.emulator.bus9,
-                            &mut self.emulator.shared,
+                        ArmBool::ARM9 => emulator.arm9.read_bulk(
+                            &mut emulator.bus9,
+                            &mut emulator.shared,
                             address as u32,
                             instruction_width as u32,
                         ),
-                        ArmBool::ARM7 => self.emulator.arm7.read_bulk(
-                            &mut self.emulator.bus7,
-                            &mut self.emulator.shared,
+                        ArmBool::ARM7 => emulator.arm7.read_bulk(
+                            &mut emulator.bus7,
+                            &mut emulator.shared,
                             address as u32,
                             instruction_width as u32,
                         ),
@@ -457,7 +392,7 @@ impl NitrousGUI {
                         )
                     };
                     row.col(|ui| {
-                        let is_breakpoint = breakpoints.contains(&(address as u32));
+                        let is_breakpoint = self.breakpoints.contains(&(address as u32));
                         let text = format!("{:08X}", address);
                         let label = if is_breakpoint {
                             ui.colored_strong(egui::Color32::RED, text)
@@ -467,21 +402,12 @@ impl NitrousGUI {
                         if label.clicked() {
                             ui.input(|r| {
                                 if r.modifiers.ctrl {
-                                    let selected_breakpoint = match ARM_BOOL {
-                                        ArmBool::ARM9 => {
-                                            &mut self.arm9_disassembler_selected_breakpoint
-                                        }
-                                        ArmBool::ARM7 => {
-                                            &mut self.arm7_disassembler_selected_breakpoint
-                                        }
-                                    };
-
                                     if is_breakpoint {
-                                        breakpoints.retain(|&x| x != address as u32);
-                                        *selected_breakpoint = None;
+                                        self.breakpoints.retain(|&x| x != address as u32);
+                                        self.selected_breakpoint = None;
                                     } else {
-                                        breakpoints.push(address as u32);
-                                        *selected_breakpoint = Some(breakpoints.len() - 1);
+                                        self.breakpoints.push(address as u32);
+                                        self.selected_breakpoint = Some(self.breakpoints.len() - 1);
                                     }
                                 };
                             });
@@ -522,15 +448,7 @@ impl NitrousGUI {
                                 {
                                     ui.input(|r| {
                                         if r.modifiers.ctrl {
-                                            let jump_now = match ARM_BOOL {
-                                                ArmBool::ARM9 => {
-                                                    &mut self.arm9_disassembler_jump_now
-                                                }
-                                                ArmBool::ARM7 => {
-                                                    &mut self.arm7_disassembler_jump_now
-                                                }
-                                            };
-                                            *jump_now = Some(arg.raw);
+                                            self.jump_now = Some(arg.raw);
                                         }
                                     });
                                 }
@@ -559,14 +477,5 @@ impl NitrousGUI {
                     });
                 })
             })
-    }
-}
-
-fn match_color(kind: &arm::models::ChunkKind) -> egui::Color32 {
-    match kind {
-        arm::models::ChunkKind::Register => egui::Color32::from_rgb(190, 240, 250),
-        arm::models::ChunkKind::Immediate => egui::Color32::from_rgb(250, 90, 70),
-        arm::models::ChunkKind::Modifier => egui::Color32::from_rgb(210, 110, 210),
-        arm::models::ChunkKind::Punctuation => egui::Color32::from_rgb(140, 140, 140),
     }
 }

@@ -1,9 +1,6 @@
-use crate::nds::{
-    arm::{
-        instructions::arm::Instruction,
-        models::{Context, ContextTrait, DisassemblyTrait},
-    },
-    // logger::LoggerTrait,
+use crate::nds::arm::{
+    instructions::arm::Instruction,
+    models::{Context, ContextTrait, DisassemblyTrait},
 };
 
 use super::{classes::lookup_instruction_class, conditions::calculate_cond};

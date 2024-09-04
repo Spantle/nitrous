@@ -1,7 +1,7 @@
 use crate::nds::arm::{
-    arm::ArmTrait,
     instructions::arm::classes::load_store_multiple::{do_writeback, LoadStoreMultipleInstruction},
     models::{Bits, Context, ContextTrait},
+    ArmTrait,
 };
 
 // STM (1)
