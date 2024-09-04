@@ -9,6 +9,8 @@ use super::{
 pub struct Arm<Bus: BusTrait> {
     _phantom: std::marker::PhantomData<Bus>,
 
+    pub halted: bool,
+
     // R13: Stack Pointer
     // R14: Link Register
     // R15: Program Counter
@@ -44,6 +46,8 @@ impl<Bus: BusTrait> Default for Arm<Bus> {
         Arm::<Bus> {
             _phantom: std::marker::PhantomData,
 
+            halted: false,
+
             r: Registers::new_with_sp(sp),
             r_fiq: [0, 0, 0, 0, 0, 0, 0, 0],
             r_irq: [irq_sp, 0, 0],
@@ -63,6 +67,14 @@ impl<Bus: BusTrait> Default for Arm<Bus> {
 
 impl<Bus: BusTrait> Arm<Bus> {
     pub fn clock(&mut self, bus: &mut Bus, shared: &mut Shared) -> u32 {
+        if self.halted {
+            if !self.cpsr().get_irq_interrupt() && bus.is_requesting_interrupt() {
+                self.handle_irq();
+            }
+
+            return 1; // TODO: how many cycles is a halted cpu lmao
+        }
+
         let pc = self.r[15];
         let is_thumb = self.cpsr.get_thumb();
         let inst = if is_thumb {
@@ -154,5 +166,7 @@ impl<Bus: BusTrait> Arm<Bus> {
         } else {
             self.set_r(15, 0x00000018);
         }
+
+        self.halted = false;
     }
 }

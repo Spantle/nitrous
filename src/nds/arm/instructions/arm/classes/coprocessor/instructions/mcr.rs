@@ -81,6 +81,10 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             // ctx.logger
             //     .log_warn("MCR: unimplemented \"Protection Unit Instruction Region\"");
         }
+        (7, 0, 4) => {
+            // Wait For Interrupt (Halt)
+            arm.halt();
+        }
         (7, 5, 0) => {
             // Invalidate Entire Instruction Cache
             arm.cp15_mut().inst_tcm = vec![0; arm.cp15().inst_tcm_size as usize];

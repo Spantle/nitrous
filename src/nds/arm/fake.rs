@@ -75,6 +75,8 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
     ) {
     }
 
+    fn halt(&mut self) {}
+
     fn stacktrace_mut(&mut self) -> &mut StackTrace {
         &mut self.stacktrace
     }

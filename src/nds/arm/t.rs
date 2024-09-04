@@ -26,6 +26,8 @@ pub trait ArmTrait<Bus: BusTrait> {
         copy_cpsr_to_spsr: bool,
     );
 
+    fn halt(&mut self);
+
     fn stacktrace_mut(&mut self) -> &mut StackTrace;
 
     fn cp15(&self) -> &CP15;
@@ -200,6 +202,10 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
         }
 
         self.cpsr.set_mode(new_mode);
+    }
+
+    fn halt(&mut self) {
+        self.halted = true;
     }
 
     fn stacktrace_mut(&mut self) -> &mut StackTrace {
