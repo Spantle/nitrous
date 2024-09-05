@@ -33,7 +33,7 @@ pub fn b<const L: bool, const X: bool>(ctx: &mut Context<Instruction, impl Conte
     arm.set_r(15, result);
 
     if L {
-        arm.stacktrace_mut().branch_link(pc);
+        arm.stacktrace_mut().link(pc);
     }
 
     3

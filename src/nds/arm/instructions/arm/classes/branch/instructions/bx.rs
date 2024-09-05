@@ -29,10 +29,10 @@ pub fn bx<const L: bool>(ctx: &mut Context<Instruction, impl ContextTrait>) -> u
     arm.set_r(15, rm & 0xFFFFFFFE);
 
     if L {
-        arm.stacktrace_mut().branch_link(pc);
+        arm.stacktrace_mut().link(pc);
     } else {
         arm.stacktrace_mut()
-            .branch_exchange(pc, (rm & 0xFFFFFFFE).wrapping_sub(4));
+            .exchange((rm & 0xFFFFFFFE).wrapping_sub(4));
     }
 
     1 // TODO: this is wrong
