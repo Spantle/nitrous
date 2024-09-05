@@ -24,7 +24,7 @@ pub fn bx<const L: bool>(ctx: &mut Context<Instruction, impl ContextTrait>) -> u
     let rm = ctx.inst.get_rh(h2, rm);
     ctx.dis.push_reg_arg(rm, None);
 
-    let rm = ctx.arm.r()[rm];
+    let rm = ctx.arm.ert(rm);
     ctx.arm.cpsr_mut().set_thumb(rm.get_bit(0));
     ctx.arm.set_r(15, rm.get_bits(1, 31) << 1);
 

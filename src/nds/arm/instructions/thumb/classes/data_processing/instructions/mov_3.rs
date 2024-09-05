@@ -18,5 +18,5 @@ pub fn mov_3(ctx: &mut Context<Instruction, impl ContextTrait>) {
     ctx.dis.push_str_arg(", ");
     ctx.dis.push_reg_arg(rm, None);
 
-    ctx.arm.set_r(rd, ctx.arm.r()[rm]);
+    ctx.arm.set_r(rd, ctx.arm.ert(rm));
 }
