@@ -157,8 +157,7 @@ impl<Bus: BusTrait> Arm<Bus> {
     }
 
     fn handle_irq(&mut self) {
-        let instruction_width = if self.cpsr().get_thumb() { 2 } else { 4 };
-        self.set_mode_r(ProcessorMode::IRQ, 1, self.r[15] + instruction_width + 4);
+        self.set_mode_r(ProcessorMode::IRQ, 1, self.r[15] + 4);
         self.switch_mode::<false>(ProcessorMode::IRQ, true);
         self.cpsr_mut().set_thumb(false);
         self.cpsr_mut().set_irq_interrupt(true);
