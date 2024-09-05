@@ -14,7 +14,6 @@ dependencies = [
  "egui_extras",
  "env_logger",
  "futures",
- "limited-queue",
  "log",
  "once_cell",
  "rfd",
@@ -2007,12 +2006,6 @@ dependencies = [
  "libc",
  "redox_syscall 0.4.1",
 ]
-
-[[package]]
-name = "limited-queue"
-version = "0.1.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "269d398f3d564f4b511e6aadb0407b46181aee259cd3b9a702e3b2f19a9b6f8b"
 
 [[package]]
 name = "linux-raw-sys"

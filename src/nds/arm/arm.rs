@@ -125,6 +125,8 @@ impl<Bus: BusTrait> Arm<Bus> {
         } else {
             cycles += 2;
 
+            self.stacktrace.branch(pc);
+
             let next_inst = if is_thumb {
                 self.read_halfword(bus, shared, self.r[15]) as u32
             } else {
@@ -132,15 +134,15 @@ impl<Bus: BusTrait> Arm<Bus> {
             };
             if next_inst == 0 {
                 let log_source = if Bus::KIND == ArmKind::Arm9 {
-                    logger::LogSource::Arm9(self.r[15])
+                    logger::LogSource::Arm9(0)
                 } else {
-                    logger::LogSource::Arm7(self.r[15])
+                    logger::LogSource::Arm7(0)
                 };
 
                 logger::error(
                     log_source,
                     self.stacktrace
-                        .generate("PC sent to the shadow realm".to_string()),
+                        .generate(self.r(), "PC sent to the shadow realm".to_string()),
                 );
             }
         }

@@ -1,33 +1,18 @@
-use limited_queue::LimitedQueue;
+use std::collections::VecDeque;
 
 use crate::nds::{interrupts::Interrupts, Bits};
 
+#[derive(Default)]
 pub struct IpcFifo {
     cnt9: IpcFifoCnt,
     cnt7: IpcFifoCnt,
-    send_queue9: LimitedQueue<u32>,
-    send_queue7: LimitedQueue<u32>,
+    send_queue9: VecDeque<u32>,
+    send_queue7: VecDeque<u32>,
     recent9: u32,
     recent7: u32,
 
     did_send: bool,
     did_receive: bool,
-}
-
-impl Default for IpcFifo {
-    fn default() -> Self {
-        Self {
-            cnt9: IpcFifoCnt::default(),
-            cnt7: IpcFifoCnt::default(),
-            send_queue9: LimitedQueue::with_capacity(16),
-            send_queue7: LimitedQueue::with_capacity(16),
-            recent9: 0,
-            recent7: 0,
-
-            did_send: false,
-            did_receive: false,
-        }
-    }
 }
 
 #[derive(Default)]
@@ -75,11 +60,11 @@ impl IpcFifo {
         let mut value = 0;
 
         value.set_bit(0, send_queue.is_empty());
-        value.set_bit(1, send_queue.is_full());
+        value.set_bit(1, send_queue.len() == 16);
         value.set_bit(2, cnt.send_fifo_empty_irq);
 
         value.set_bit(8, receive_queue.is_empty());
-        value.set_bit(9, receive_queue.is_full());
+        value.set_bit(9, receive_queue.len() == 16);
         value.set_bit(10, cnt.receive_fifo_not_empty_irq);
 
         value.set_bit(14, cnt.error);
@@ -99,8 +84,11 @@ impl IpcFifo {
             return;
         }
 
-        send_queue.push(value);
-        cnt.error = send_queue.is_full();
+        if send_queue.len() == 16 {
+            send_queue.pop_back();
+        }
+        send_queue.push_back(value);
+        cnt.error = send_queue.len() == 16;
         self.did_send = true;
     }
 
@@ -120,7 +108,7 @@ impl IpcFifo {
             return *recent;
         }
 
-        let value = receive_queue.pop().unwrap();
+        let value = receive_queue.pop_front().unwrap();
         *recent = value;
         self.did_receive = true;
         value

@@ -34,8 +34,6 @@ pub fn b<const L: bool, const X: bool>(ctx: &mut Context<Instruction, impl Conte
 
     if L {
         arm.stacktrace_mut().branch_link(pc);
-    } else {
-        arm.stacktrace_mut().branch(pc);
     }
 
     3
