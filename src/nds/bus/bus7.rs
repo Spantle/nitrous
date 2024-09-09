@@ -120,6 +120,16 @@ impl BusTrait for Bus7 {
                 shared.wram[addr..addr + T].copy_from_slice(&value);
             }
 
+            0x04000138 => logger::warn(
+                logger::LogSource::Bus7,
+                format!(
+                    "RTC not implemented (W{} {:#010X}:{:#010X})",
+                    T,
+                    addr,
+                    value.into_word()
+                ),
+            ),
+
             0x04000180..=0x04000183 => shared.ipcsync.set::<false>(value.into_word()),
             0x04000184..=0x04000187 => shared
                 .ipcfifo
@@ -129,6 +139,16 @@ impl BusTrait for Bus7 {
             0x04000208..=0x0400020B => self.interrupts.me = value.into_word().into(),
             0x04000210..=0x04000213 => self.interrupts.e = value.into_word().into(),
             0x04000214..=0x04000217 => self.interrupts.f.write_and_ack(value.into_word()),
+
+            0x04000400..=0x0400051F => logger::warn(
+                logger::LogSource::Bus7,
+                format!(
+                    "Sound channels not implemented (W{} {:#010X}:{:#010X})",
+                    T,
+                    addr,
+                    value.into_word()
+                ),
+            ),
 
             _ => {
                 let success = shared.dma7.write_slice::<T>(addr, value);
