@@ -97,7 +97,7 @@ impl BusTrait for Bus7 {
                     return bytes;
                 }
 
-                logger::warn(
+                logger::error(
                     logger::LogSource::Bus7,
                     format!("Invalid read {} byte(s) at address {:#010X}", T, addr),
                 );
@@ -153,7 +153,7 @@ impl BusTrait for Bus7 {
             _ => {
                 let success = shared.dma7.write_slice::<T>(addr, value);
                 if !success {
-                    logger::warn(
+                    logger::error(
                         logger::LogSource::Bus7,
                         format!(
                             "Invalid write {} byte(s) at address {:#010X}: {:#010X}",

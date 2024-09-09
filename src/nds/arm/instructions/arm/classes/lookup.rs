@@ -79,7 +79,7 @@ pub fn lookup_instruction_class(
         }
         _ => {
             ctx.logger
-                .log_warn(format!("unknown instruction class {:03b}", class));
+                .log_error(format!("unknown instruction class {:03b}", class));
             1
         }
     }
@@ -102,7 +102,8 @@ fn lookup_multiples_and_extra_load_store_instructions(
                 return data_processing::lookup_multiply(inst_set, ctx);
             } else {
                 // Semaphore
-                ctx.logger.log_warn("semaphore instruction not implemented");
+                ctx.logger
+                    .log_error("semaphore instruction not implemented");
                 return 1;
             }
         } else {
@@ -123,7 +124,7 @@ fn lookup_multiples_and_extra_load_store_instructions(
     if inst_set & 1 == 0 {
         // Load/store two words
         ctx.logger
-            .log_warn("load/store two words instruction not implemented");
+            .log_error("load/store two words instruction not implemented");
         // bit 22
         if inst_set >> 2 & 1 == 0 {
             // Load/store two words (register offset)
@@ -172,7 +173,7 @@ fn lookup_miscellaneous_instructions(
                 misc::instructions::clz(ctx)
             } else {
                 ctx.logger
-                    .log_warn("clz on armv4 undefined instruction not implemented");
+                    .log_error("clz on armv4 undefined instruction not implemented");
                 1
             }
         }
@@ -183,24 +184,24 @@ fn lookup_miscellaneous_instructions(
         0b0101 => {
             // Enhanced DSP add/subtracts
             ctx.logger
-                .log_warn("enhanced DSP add/subtracts instruction not implemented");
+                .log_error("enhanced DSP add/subtracts instruction not implemented");
             0
         }
         0b0111 => {
             // Software breakpoint
             ctx.logger
-                .log_warn("software breakpoint instruction not implemented");
+                .log_error("software breakpoint instruction not implemented");
             0
         }
         0b1000 | 0b1010 | 0b1100 | 0b1110 => {
             // Enhanced DSP multiplies
             ctx.logger
-                .log_warn("enhanced DSP multiplies instruction not implemented");
+                .log_error("enhanced DSP multiplies instruction not implemented");
             0
         }
         _ => {
             ctx.logger
-                .log_warn(format!("unknown miscellaneous instruction {:04b}", bits));
+                .log_error(format!("unknown miscellaneous instruction {:04b}", bits));
             1
         }
     }

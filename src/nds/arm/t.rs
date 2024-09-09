@@ -79,7 +79,7 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
                     ArmKind::Arm9 => logger::LogSource::Arm9(0),
                     ArmKind::Arm7 => logger::LogSource::Arm7(0),
                 };
-                logger::warn(
+                logger::error(
                     log_source,
                     "UNPREDICTABLE: r15 was specified in an invalid context",
                 );
@@ -129,7 +129,7 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
                     ArmKind::Arm9 => logger::LogSource::Arm9(0),
                     ArmKind::Arm7 => logger::LogSource::Arm7(0),
                 };
-                logger::warn(
+                logger::error(
                     log_source,
                     "UNPREDICTABLE: attempt to get SPSR in non-exception mode.",
                 );

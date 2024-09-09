@@ -119,7 +119,7 @@ impl BusTrait for Bus9 {
                     return bytes;
                 }
 
-                logger::warn(
+                logger::error(
                     logger::LogSource::Bus9,
                     format!("Invalid read {} byte(s) at address {:#010X}", T, addr),
                 );
@@ -215,7 +215,7 @@ impl BusTrait for Bus9 {
             _ => {
                 let success = shared.dma9.write_slice::<T>(addr, value);
                 if !success {
-                    logger::warn(
+                    logger::error(
                         logger::LogSource::Bus9,
                         format!(
                             "Invalid write {} byte(s) at address {:#010X}: {:#010X}",

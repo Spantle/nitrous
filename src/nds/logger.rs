@@ -11,6 +11,8 @@ use crate::nds::emulator::set_emulator_running;
 
 pub static LOGS: Lazy<Mutex<Vec<Log>>> = Lazy::new(|| Mutex::new(Vec::new()));
 static PAUSE_ON_WARN: AtomicBool = AtomicBool::new(false);
+static PAUSE_ON_ERROR: AtomicBool = AtomicBool::new(true);
+static HAS_ERROR_TO_SHOW: AtomicBool = AtomicBool::new(false);
 
 pub trait LoggerTrait {
     fn set_source(&mut self, source: LogSource);
@@ -175,7 +177,11 @@ pub fn warn<T: Into<String> + Display>(source: LogSource, content: T) {
 }
 
 pub fn error<T: Into<String> + Display>(source: LogSource, content: T) {
-    set_emulator_running(false);
+    if do_pause_on_error() {
+        set_emulator_running(false);
+    }
+
+    set_has_error_to_show(true);
 
     error!("[{}] {}", source, &content);
     LOGS.lock().unwrap().push(Log {
@@ -192,4 +198,18 @@ pub fn do_pause_on_warn() -> bool {
 
 pub fn set_pause_on_warn(pause: bool) {
     PAUSE_ON_WARN.store(pause, std::sync::atomic::Ordering::Relaxed);
+}
+
+pub fn do_pause_on_error() -> bool {
+    PAUSE_ON_ERROR.load(std::sync::atomic::Ordering::Relaxed)
+}
+pub fn set_pause_on_error(pause: bool) {
+    PAUSE_ON_ERROR.store(pause, std::sync::atomic::Ordering::Relaxed);
+}
+
+pub fn has_error_to_show() -> bool {
+    HAS_ERROR_TO_SHOW.load(std::sync::atomic::Ordering::Relaxed)
+}
+pub fn set_has_error_to_show(show: bool) {
+    HAS_ERROR_TO_SHOW.store(show, std::sync::atomic::Ordering::Relaxed);
 }

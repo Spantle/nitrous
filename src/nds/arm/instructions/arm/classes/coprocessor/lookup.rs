@@ -20,7 +20,7 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
     } else {
         // Coprocessor data processing
         ctx.logger
-            .log_warn("coprocessor data processing instructions not implemented");
+            .log_error("coprocessor data processing instructions not implemented");
         1
     }
 }

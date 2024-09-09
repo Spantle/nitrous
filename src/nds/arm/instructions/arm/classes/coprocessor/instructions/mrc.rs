@@ -127,7 +127,7 @@ pub fn mrc(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             Some(arm.cp15().inst_tcm_reg)
         }
         _ => {
-            ctx.logger.log_warn(format!(
+            ctx.logger.log_error(format!(
                 "MRC: unhandled instruction: CP{},{},{},CR{},CR{},{}",
                 cp_num, opcode_1, rd, crn, crm, opcode_2
             ));

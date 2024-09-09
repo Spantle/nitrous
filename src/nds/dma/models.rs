@@ -100,7 +100,7 @@ impl<Bus: BusTrait> DmaChannel<Bus> {
             self.dmacnt.get_dma7_start_timing()
         };
         if start_timing != 0 {
-            logger::warn(
+            logger::error(
                 self.log_source(),
                 format!(
                     "DMA{} has start timing {} which isn't supported",

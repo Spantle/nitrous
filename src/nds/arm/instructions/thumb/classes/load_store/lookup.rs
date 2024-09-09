@@ -20,7 +20,7 @@ pub fn lookup_register_offset(
         0b100 => instructions::ldr_2(ctx),
         0b101 => instructions::ldrh_2(ctx),
         _ => {
-            ctx.logger.log_warn(format!(
+            ctx.logger.log_error(format!(
                 "unknown load/store register offset opcode {:03b}",
                 opcode
             ));
@@ -78,7 +78,7 @@ pub fn lookup_stack(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTr
         1
     } else {
         ctx.logger
-            .log_warn("STR (3) store to stack not implemented");
+            .log_error("STR (3) store to stack not implemented");
         10000
     }
 }

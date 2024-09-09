@@ -132,7 +132,7 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
         }
         _ => {
             ctx.logger
-                .log_warn(format!("unknown data-processing opcode {:04b}", opcode));
+                .log_error(format!("unknown data-processing opcode {:04b}", opcode));
         }
     };
 

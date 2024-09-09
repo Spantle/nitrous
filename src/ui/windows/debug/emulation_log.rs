@@ -1,32 +1,66 @@
 use crate::{
-    nds::logger::{self, do_pause_on_warn, set_pause_on_warn},
+    nds::logger::{
+        self, has_error_to_show, set_has_error_to_show, set_pause_on_error, set_pause_on_warn,
+    },
     ui::{NitrousUI, NitrousWindow},
 };
 
-#[derive(Default, serde::Deserialize, serde::Serialize)]
+#[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct EmulationLogWindow {
     pub open: bool,
+
+    pub pause_on_warn: bool,
+    pub pause_on_error: bool,
+    pub show_on_error: bool,
+}
+
+impl Default for EmulationLogWindow {
+    fn default() -> Self {
+        Self {
+            open: false,
+            pause_on_warn: false,
+            pause_on_error: true,
+            show_on_error: true,
+        }
+    }
 }
 
 impl EmulationLogWindow {
     pub fn show(&mut self, ctx: &egui::Context) {
+        if self.show_on_error && has_error_to_show() {
+            self.open = true;
+        }
+
         egui::Window::new_nitrous("Emulation Log", ctx)
             .default_width(600.0)
             .open(&mut self.open)
             .show(ctx, |ui| {
+                set_has_error_to_show(false);
+
                 egui::TopBottomPanel::top("emulation_log_navbar").show_inside(ui, |ui| {
                     ui.horizontal(|ui| {
                         if ui.button("Clear").clicked() {
                             logger::LOGS.lock().unwrap().clear();
                         }
 
-                        let orig_pause_on_warn = do_pause_on_warn();
+                        let orig_pause_on_warn = self.pause_on_warn;
                         let mut pause_on_warn = orig_pause_on_warn;
                         ui.checkbox(&mut pause_on_warn, "Pause on Warn");
                         if pause_on_warn != orig_pause_on_warn {
                             set_pause_on_warn(pause_on_warn);
+                            self.pause_on_warn = pause_on_warn;
                         }
+
+                        let orig_pause_on_error = self.pause_on_error;
+                        let mut pause_on_error = orig_pause_on_error;
+                        ui.checkbox(&mut pause_on_error, "Pause on Error");
+                        if pause_on_error != orig_pause_on_error {
+                            set_pause_on_error(pause_on_error);
+                            self.pause_on_error = pause_on_error;
+                        }
+
+                        ui.checkbox(&mut self.show_on_error, "Show on Error");
                     });
 
                     ui.add_space(4.0);

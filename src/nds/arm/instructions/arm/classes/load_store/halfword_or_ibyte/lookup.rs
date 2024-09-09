@@ -62,11 +62,11 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
     match (s, h, is_load) {
         (true, true, true) => {
             ctx.dis.set_inst("LDRSH");
-            ctx.logger.log_warn("LDRSH not implemented");
+            ctx.logger.log_error("LDRSH not implemented");
         }
         (true, false, true) => {
             ctx.dis.set_inst("LDRSB");
-            ctx.logger.log_warn("LDRSB not implemented");
+            ctx.logger.log_error("LDRSB not implemented");
         }
         (false, true, true) => {
             ctx.dis.set_inst("LDRH");

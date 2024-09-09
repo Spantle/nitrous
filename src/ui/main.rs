@@ -2,7 +2,11 @@ use std::sync::mpsc::{channel, Receiver, Sender};
 
 use web_time::{Duration, Instant};
 
-use crate::nds::{arm::ArmBool, Emulator};
+use crate::nds::{
+    arm::ArmBool,
+    logger::{set_pause_on_error, set_pause_on_warn},
+    Emulator,
+};
 
 use super::windows::{
     debug::{
@@ -214,6 +218,9 @@ impl eframe::App for NitrousGUI {
             // do slow stuff if idle
             if self.is_first_run {
                 self.is_first_run = false;
+
+                set_pause_on_warn(self.emulation_log.pause_on_warn);
+                set_pause_on_error(self.emulation_log.pause_on_error);
 
                 self.preferences.try_load_bios(&mut self.emulator.bus9);
                 self.preferences.try_load_bios(&mut self.emulator.bus7);

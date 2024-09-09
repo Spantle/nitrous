@@ -74,7 +74,7 @@ pub fn lookup_instruction_class(
 
             if (inst_set >> 4) & 0b1 == 0 {
                 // Adjust stack pointer
-                ctx.logger.log_warn("Adjust stack pointer not implemented");
+                ctx.logger.log_error("Adjust stack pointer not implemented");
                 return 10000;
             }
 
@@ -84,7 +84,7 @@ pub fn lookup_instruction_class(
             }
 
             // Software breakpoint
-            ctx.logger.log_warn("Software breakpoint not implemented");
+            ctx.logger.log_error("Software breakpoint not implemented");
             10000
         }
         0b110 => {
@@ -95,7 +95,7 @@ pub fn lookup_instruction_class(
 
             if (inst_set >> 2) & 0b1111 == 0b1111 {
                 // Software interrupt
-                ctx.logger.log_warn("Software interrupt not implemented");
+                ctx.logger.log_error("Software interrupt not implemented");
                 return 10000;
             }
 
@@ -107,7 +107,7 @@ pub fn lookup_instruction_class(
         }
         _ => {
             ctx.logger
-                .log_warn(format!("unknown instruction class {:03b}", class));
+                .log_error(format!("unknown instruction class {:03b}", class));
             10000
         }
     }

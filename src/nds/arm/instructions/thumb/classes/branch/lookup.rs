@@ -26,7 +26,7 @@ pub fn lookup(
         0b01 => {
             if arm_bool == ArmBool::ARM7 {
                 // undefined instruction
-                ctx.logger.log_warn("undefined blx variant 01");
+                ctx.logger.log_error("undefined blx variant 01");
                 1
             } else {
                 // BLX suffix

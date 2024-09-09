@@ -46,7 +46,7 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
             }
         }
         _ => {
-            ctx.logger.log_warn(format!(
+            ctx.logger.log_error(format!(
                 "unknown data processing lookup opcode {:02b}",
                 opcode
             ));
@@ -101,7 +101,7 @@ pub fn lookup_register(inst_set: u16, ctx: &mut Context<Instruction, impl Contex
         0b1101 => instructions::mul(ctx),
         0b1111 => instructions::mvn(ctx),
         _ => {
-            ctx.logger.log_warn(format!(
+            ctx.logger.log_error(format!(
                 "unknown data processing register lookup opcode {:04b}",
                 opcode
             ));
@@ -127,7 +127,7 @@ pub fn lookup_special(inst_set: u16, ctx: &mut Context<Instruction, impl Context
             instructions::mov_3(ctx)
         }
         _ => {
-            ctx.logger.log_warn(format!(
+            ctx.logger.log_error(format!(
                 "unknown special data-processing opcode {:02b}",
                 opcode
             ));
