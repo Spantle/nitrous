@@ -82,13 +82,36 @@ impl BusTrait for Bus7 {
             0x04000004..=0x04000005 => shared.gpu2d_a.dispstat.value().to_bytes::<T>(),
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
+            0x04000138 => {
+                logger::warn(
+                    logger::LogSource::Bus7,
+                    format!("RTC not implemented (R{} {:#010X})", T, addr),
+                );
+                bytes
+            }
 
             0x04000180..=0x04000183 => shared.ipcsync.value::<false>().to_bytes::<T>(),
             0x04000184..=0x04000187 => shared.ipcfifo.get_cnt::<false>().to_bytes::<T>(),
 
+            0x040001C0..=0x040001C3 => {
+                logger::warn(
+                    logger::LogSource::Bus7,
+                    format!("SPI not implemented (R{} {:#010X})", T, addr),
+                );
+                bytes
+            }
+
             0x04000208..=0x0400020B => self.interrupts.me.value().to_bytes::<T>(),
             0x04000210..=0x04000213 => self.interrupts.e.value().to_bytes::<T>(),
             0x04000214..=0x04000217 => self.interrupts.f.value().to_bytes::<T>(),
+
+            0x04000500..=0x04000501 => {
+                logger::warn(
+                    logger::LogSource::Bus7,
+                    format!("SOUNDCNT not implemented (R{} {:#010X})", T, addr),
+                );
+                bytes
+            }
 
             0x04100000..=0x04100003 => shared.ipcfifo.receive::<false>().to_bytes::<T>(),
 
@@ -135,6 +158,16 @@ impl BusTrait for Bus7 {
                 .ipcfifo
                 .set_cnt::<false>(&mut self.interrupts, value.into_word()),
             0x04000188..=0x0400018B => shared.ipcfifo.send::<false>(value.into_word()),
+
+            0x040001C0..=0x040001C3 => logger::warn(
+                logger::LogSource::Bus7,
+                format!(
+                    "SPI not implemented (W{} {:#010X}:{:#010X})",
+                    T,
+                    addr,
+                    value.into_word()
+                ),
+            ),
 
             0x04000208..=0x0400020B => self.interrupts.me = value.into_word().into(),
             0x04000210..=0x04000213 => self.interrupts.e = value.into_word().into(),

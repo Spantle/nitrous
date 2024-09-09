@@ -98,6 +98,7 @@ impl BusTrait for Bus9 {
             0x04001000..=0x04001003 => shared.gpu2d_b.dispcnt.value().to_bytes::<T>(),
             0x04001004..=0x04001005 => shared.gpu2d_b.dispstat.value().to_bytes::<T>(),
 
+            0x04004000..=0x04004001 => bytes, // DSi Stuff, return nothing
             0x04004008..=0x0400400B => bytes, // DSi Stuff, return nothing
 
             0x04100000..=0x04100003 => shared.ipcfifo.receive::<true>().to_bytes::<T>(),
