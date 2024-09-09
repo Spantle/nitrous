@@ -2,7 +2,7 @@ use crate::nds::{
     arm::{
         instructions::thumb::Instruction,
         models::{Context, ContextTrait, DisassemblyTrait},
-        ArmTrait,
+        ArmBool, ArmTrait,
     },
     logger::LoggerTrait,
     Bits,
@@ -24,7 +24,7 @@ pub fn lookup(
             instructions::b_2(ctx)
         }
         0b01 => {
-            if !arm_bool {
+            if arm_bool == ArmBool::ARM7 {
                 // undefined instruction
                 ctx.logger.log_warn("undefined blx variant 01");
                 1
