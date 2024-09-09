@@ -138,3 +138,22 @@ pub fn lookup_special(inst_set: u16, ctx: &mut Context<Instruction, impl Context
 
     1 // TODO: this is wrong
 }
+
+#[inline(always)]
+pub fn lookup_adjust_stack_pointer(
+    inst_set: u16,
+    ctx: &mut Context<Instruction, impl ContextTrait>,
+) -> u32 {
+    let opcode = (inst_set >> 1) & 0b1;
+    match opcode {
+        0 => {
+            // ADD (7)
+            instructions::add_7(ctx)
+        }
+        1 => {
+            // SUB (4)
+            instructions::sub_4(ctx)
+        }
+        _ => unreachable!(),
+    }
+}

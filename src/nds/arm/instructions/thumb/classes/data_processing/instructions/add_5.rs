@@ -5,7 +5,7 @@ use crate::nds::arm::{
 };
 
 // ADD (5)
-pub fn add_5(ctx: &mut Context<Instruction, impl ContextTrait>) {
+pub fn add_5(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.dis.set_inst("ADD");
 
     let rd = ctx.inst.get_byte(8, 10);
@@ -20,4 +20,6 @@ pub fn add_5(ctx: &mut Context<Instruction, impl ContextTrait>) {
     let result = pc.wrapping_add(immed_8);
 
     ctx.arm.set_r(rd, result);
+
+    1 // TODO: this is wrong
 }

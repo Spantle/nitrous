@@ -69,13 +69,12 @@ pub fn lookup_instruction_class(
         0b101 => {
             if (inst_set >> 6) & 0b1 == 0 {
                 // Add to SP or PC
-                data_processing::instructions::add_5(ctx);
+                return data_processing::instructions::add_5(ctx);
             }
 
             if (inst_set >> 4) & 0b1 == 0 {
                 // Adjust stack pointer
-                ctx.logger.log_error("Adjust stack pointer not implemented");
-                return 10000;
+                return data_processing::lookup_adjust_stack_pointer(inst_set, ctx);
             }
 
             if (inst_set >> 3) & 0b1 == 0 {
