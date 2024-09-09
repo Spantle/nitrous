@@ -74,11 +74,9 @@ pub fn lookup_stack(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTr
     let l = (inst_set >> 5) & 0b1 == 1;
     if l {
         instructions::ldr_4(ctx);
-        // TODO: this is wrong
-        1
+        1 // TODO: this is wrong
     } else {
-        ctx.logger
-            .log_error("STR (3) store to stack not implemented");
-        10000
+        instructions::str_3(ctx);
+        1 // TODO: this is wrong
     }
 }
