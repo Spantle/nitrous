@@ -6,7 +6,7 @@ use crate::nds::{
     logger::LoggerTrait,
 };
 
-use super::{branch, data_processing, load_store, load_store_multiple};
+use super::{branch, data_processing, exceptions, load_store, load_store_multiple};
 
 #[inline(always)]
 pub fn lookup_instruction_class(
@@ -95,8 +95,7 @@ pub fn lookup_instruction_class(
 
             if (inst_set >> 2) & 0b1111 == 0b1111 {
                 // Software interrupt
-                ctx.logger.log_error("Software interrupt not implemented");
-                return 10000;
+                return exceptions::instructions::swi(arm_bool, ctx);
             }
 
             branch::instructions::b_1(inst_set, ctx)
