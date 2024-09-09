@@ -127,11 +127,8 @@ impl<Bus: BusTrait> Arm<Bus> {
 
             self.stacktrace.branch(pc);
 
-            let next_inst = if is_thumb {
-                self.read_halfword(bus, shared, self.r[15]) as u32
-            } else {
-                self.read_word(bus, shared, self.r[15])
-            };
+            // in thumb, "0" is a common valid instruction, so we check 2 instructions to avoid false positives
+            let next_inst = self.read_word(bus, shared, self.r[15]);
             if next_inst == 0 {
                 let log_source = if Bus::KIND == ArmKind::Arm9 {
                     logger::LogSource::Arm9(0)
