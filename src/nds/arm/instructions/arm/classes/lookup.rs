@@ -2,6 +2,7 @@ use crate::nds::{
     arm::{
         instructions::arm::Instruction,
         models::{Context, ContextTrait},
+        ArmBool,
     },
     logger::LoggerTrait,
 };
@@ -25,7 +26,7 @@ pub fn lookup_instruction_class(
                 // bit 20, and bits 23-24
                 if inst_set & 1 == 0 && inst_set >> 3 & 0b11 == 0b10 {
                     // Miscellaneous
-                    return lookup_miscellaneous_instructions(inst_set, ctx);
+                    return lookup_miscellaneous_instructions(arm_bool, inst_set, ctx);
                 } else {
                     // Data Processing (immediate shift / register shift)
                     return data_processing::lookup::<false, _>(inst_set, ctx);
@@ -38,7 +39,7 @@ pub fn lookup_instruction_class(
             // Data Processing (immediate)
             if inst_set & 0b11 == 0b10 && inst_set >> 3 & 0b11 == 0b10 {
                 // Miscellaneous
-                return lookup_miscellaneous_instructions(inst_set, ctx);
+                return lookup_miscellaneous_instructions(arm_bool, inst_set, ctx);
             }
 
             data_processing::lookup::<true, _>(inst_set, ctx)
@@ -145,6 +146,7 @@ fn lookup_multiples_and_extra_load_store_instructions(
 
 #[inline(always)]
 fn lookup_miscellaneous_instructions(
+    arm_bool: bool,
     inst_set: u16,
     ctx: &mut Context<Instruction, impl ContextTrait>,
 ) -> u32 {
@@ -165,9 +167,13 @@ fn lookup_miscellaneous_instructions(
             if inst_set >> 2 & 1 == 0 {
                 // Branch/exchange instruction set
                 branch::instructions::bx::<false>(ctx)
-            } else {
+            } else if arm_bool == ArmBool::ARM9 {
                 // Count leading zeroes
                 misc::instructions::clz(ctx)
+            } else {
+                ctx.logger
+                    .log_warn("clz on armv4 undefined instruction not implemented");
+                1
             }
         }
         0b0011 => {
