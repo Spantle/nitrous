@@ -7,7 +7,7 @@ pub use lookup::lookup;
 use crate::nds::arm::{
     instructions::arm::Instruction,
     models::{Bits, Context, ContextTrait, DisassemblyTrait},
-    ArmTrait,
+    ArmBool, ArmTrait,
 };
 
 pub struct LoadStoreMultipleInstruction {
@@ -43,12 +43,21 @@ impl LoadStoreMultipleInstruction {
     }
 }
 
-pub fn do_writeback(inst_set: u16, ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>) {
+#[inline(always)]
+pub fn do_writeback(
+    arm_bool_or_stm: bool,
+    inst_set: u16,
+    ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>,
+) {
     let (arm, inst) = (ctx.arm, ctx.inst);
 
     // this technically should be in the addressing mode
     let is_writeback = inst_set >> 1 & 1 == 1; // W
     if is_writeback {
+        if arm_bool_or_stm == ArmBool::ARM7 && inst.register_list.get_bit(inst.destination as u16) {
+            return;
+        }
+
         let is_load = inst_set & 1 == 1; // L
         let is_in_register_list = inst.register_list.get_bit(inst.destination as u16);
         let is_first = inst.register_list.trailing_zeros() as u8 == inst.destination;

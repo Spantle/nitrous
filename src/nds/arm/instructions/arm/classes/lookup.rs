@@ -53,7 +53,7 @@ pub fn lookup_instruction_class(
         }
         0b100 => {
             // Load/Store Multiple
-            load_store_multiple::lookup::<_>(inst_set, ctx)
+            load_store_multiple::lookup::<_>(arm_bool, inst_set, ctx)
         }
         0b101 => {
             // Branch

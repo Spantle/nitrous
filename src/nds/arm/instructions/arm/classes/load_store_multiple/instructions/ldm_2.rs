@@ -7,6 +7,7 @@ use crate::nds::arm::{
 // LDM (2)
 #[inline(always)]
 pub fn ldm_2(
+    arm_bool: bool,
     inst_set: u16,
     mut ctx: Context<LoadStoreMultipleInstruction, impl ContextTrait>,
 ) -> u32 {
@@ -27,7 +28,7 @@ pub fn ldm_2(
 
     // assert end_address = address - 4
 
-    do_writeback(inst_set, ctx);
+    do_writeback(arm_bool, inst_set, ctx);
 
     1 // TODO: this is not right
 }

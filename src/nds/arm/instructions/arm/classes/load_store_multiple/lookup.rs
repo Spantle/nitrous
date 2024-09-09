@@ -6,7 +6,11 @@ use crate::nds::arm::{
 use super::{instructions, LoadStoreMultipleInstruction};
 
 #[inline(always)]
-pub fn lookup<Ctx: ContextTrait>(inst_set: u16, ctx: &mut Context<Instruction, Ctx>) -> u32 {
+pub fn lookup<Ctx: ContextTrait>(
+    arm_bool: bool,
+    inst_set: u16,
+    ctx: &mut Context<Instruction, Ctx>,
+) -> u32 {
     let ctx = Context::new(
         LoadStoreMultipleInstruction::new(inst_set, ctx),
         ctx.arm,
@@ -27,13 +31,13 @@ pub fn lookup<Ctx: ContextTrait>(inst_set: u16, ctx: &mut Context<Instruction, C
             ctx.dis.push_str_end_arg("^", None);
 
             if has_15 {
-                instructions::ldm_3(inst_set, ctx)
+                instructions::ldm_3(arm_bool, inst_set, ctx)
             } else {
                 // assumes W bit is 0
-                instructions::ldm_2(inst_set, ctx)
+                instructions::ldm_2(arm_bool, inst_set, ctx)
             }
         } else {
-            instructions::ldm_1(inst_set, ctx)
+            instructions::ldm_1(arm_bool, inst_set, ctx)
         }
     } else {
         ctx.dis.set_inst("STM");

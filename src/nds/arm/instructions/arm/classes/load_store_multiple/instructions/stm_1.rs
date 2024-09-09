@@ -22,7 +22,7 @@ pub fn stm_1(
 
     // assert end_address = address - 4
 
-    do_writeback(inst_set, ctx);
+    do_writeback(true, inst_set, ctx);
 
     1 // TODO: this is not right
 }

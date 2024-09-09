@@ -33,7 +33,7 @@ pub fn stm_2(
         arm.set_r(inst.destination, inst.writeback_value);
     }
 
-    do_writeback(inst_set, ctx);
+    do_writeback(true, inst_set, ctx);
 
     1 // TODO: this is not right
 }
