@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use bitflags::bitflags;
 
 use crate::nds::Bits;

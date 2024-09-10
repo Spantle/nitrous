@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 #[derive(Default)]
 pub struct PowCnt1(u32);
 
