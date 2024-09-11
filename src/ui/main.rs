@@ -8,18 +8,21 @@ use crate::nds::{
     Emulator,
 };
 
-use super::windows::{
-    debug::{
-        arm::{disassembler::ArmDisassemblerWindow, info::ArmInfoWindow},
-        arm9_info::Arm9LegacyInfoWindow,
-        emulation_log::EmulationLogWindow,
-        ipcsync::IpcsyncLogWindow,
-        memory_viewer::MemoryViewerWindow,
-        register_viewer::RegisterViewerWindow,
-        test_window::TestWindow,
+use super::{
+    screens::ScreenOptions,
+    windows::{
+        debug::{
+            arm::{disassembler::ArmDisassemblerWindow, info::ArmInfoWindow},
+            arm9_info::Arm9LegacyInfoWindow,
+            emulation_log::EmulationLogWindow,
+            ipcsync::IpcsyncLogWindow,
+            memory_viewer::MemoryViewerWindow,
+            register_viewer::RegisterViewerWindow,
+            test_window::TestWindow,
+        },
+        file::preferences::PreferencesWindow,
+        fps_info::{FpsInfo, FpsInfoWindow},
     },
-    file::preferences::PreferencesWindow,
-    fps_info::{FpsInfo, FpsInfoWindow},
 };
 
 // this file needs a small clean
@@ -35,6 +38,9 @@ pub struct NitrousGUI {
 
     #[serde(skip)]
     pub load_rom_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
+
+    // Screen options
+    pub screen_options: ScreenOptions,
 
     // Debug Windows
     pub arm9_disassembler: ArmDisassemblerWindow,
@@ -77,6 +83,8 @@ impl Default for NitrousGUI {
             emulator: Emulator::default(),
 
             load_rom_channel: channel(),
+
+            screen_options: ScreenOptions::default(),
 
             arm9_disassembler: ArmDisassemblerWindow::default(),
             arm9_info: ArmInfoWindow::default(),

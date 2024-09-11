@@ -24,6 +24,14 @@ impl NitrousGUI {
                     }
                 });
 
+                ui.menu_button("Screens", |ui| {
+                    let close = Self::screens_menu(self, ui);
+
+                    if close {
+                        ui.close_menu();
+                    }
+                });
+
                 ui.menu_button("Debug", |ui| {
                     ui.set_width(150.0);
 
@@ -93,6 +101,64 @@ impl NitrousGUI {
         }
 
         started || paused || reset
+    }
+
+    fn screens_menu(&mut self, ui: &mut egui::Ui) -> bool {
+        if ui.button("Add top screen").clicked() {
+            self.screen_options
+                .top_screens
+                .push(self.screen_options.top_screen_count);
+            self.screen_options.top_screen_count += 1;
+        };
+        if ui.button("Add bottom screen").clicked() {
+            self.screen_options
+                .bot_screens
+                .push(self.screen_options.bot_screen_count);
+            self.screen_options.bot_screen_count += 1;
+        };
+        if ui.button("Add dual screen").clicked() {
+            self.screen_options
+                .duo_screens
+                .push(self.screen_options.duo_screen_count);
+            self.screen_options.duo_screen_count += 1;
+        };
+        if ui.button("Remove all screens").clicked() {
+            self.screen_options.top_screens.clear();
+            self.screen_options.bot_screens.clear();
+            self.screen_options.duo_screens.clear();
+            self.screen_options.top_screen_count = 0;
+            self.screen_options.bot_screen_count = 0;
+            self.screen_options.duo_screen_count = 0;
+        };
+
+        ui.separator();
+
+        ui.horizontal(|ui| {
+            ui.label("Scale:");
+            ui.add(egui::Slider::new(&mut self.screen_options.scale, 0.0..=8.0));
+        });
+        ui.checkbox(&mut self.screen_options.fit, "Fit to window");
+        ui.menu_button("Horizontal alignment", |ui| {
+            ui.set_width(100.0);
+
+            ui.selectable_value(
+                &mut self.screen_options.horizontal_alignment,
+                egui::Align::LEFT,
+                "Left",
+            );
+            ui.selectable_value(
+                &mut self.screen_options.horizontal_alignment,
+                egui::Align::Center,
+                "Center",
+            );
+            ui.selectable_value(
+                &mut self.screen_options.horizontal_alignment,
+                egui::Align::RIGHT,
+                "Right",
+            );
+        });
+
+        false
     }
 
     fn debug_menu(&mut self, ui: &mut egui::Ui) -> bool {
