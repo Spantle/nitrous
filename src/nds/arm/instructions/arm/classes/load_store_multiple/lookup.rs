@@ -43,6 +43,8 @@ pub fn lookup<Ctx: ContextTrait>(
         ctx.dis.set_inst("STM");
 
         if s {
+            ctx.dis.push_str_end_arg("^", None);
+
             // assumes W bit is 0
             instructions::stm_2(inst_set, ctx)
         } else {
