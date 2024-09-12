@@ -151,6 +151,7 @@ impl BusTrait for Bus7 {
                 shared.wram[addr..addr + T].copy_from_slice(&value);
             }
 
+            0x04000134..=0x04000135 => {} // Debug RCNT, doesn't really do anything apparently
             0x04000138 => logger::warn(
                 logger::LogSource::Bus7,
                 format!(
