@@ -69,7 +69,7 @@ pub fn lookup_instruction_class(
         0b101 => {
             if (inst_set >> 6) & 0b1 == 0 {
                 // Add to SP or PC
-                return data_processing::instructions::add_5(ctx);
+                return data_processing::lookup_add_to_sp_or_pc(inst_set, ctx);
             }
 
             if (inst_set >> 4) & 0b1 == 0 {

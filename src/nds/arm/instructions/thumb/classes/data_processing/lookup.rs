@@ -140,6 +140,19 @@ pub fn lookup_special(inst_set: u16, ctx: &mut Context<Instruction, impl Context
 }
 
 #[inline(always)]
+pub fn lookup_add_to_sp_or_pc(
+    inst_set: u16,
+    ctx: &mut Context<Instruction, impl ContextTrait>,
+) -> u32 {
+    let reg = (inst_set >> 5) & 0b1;
+    if reg == 1 {
+        instructions::add_6(ctx)
+    } else {
+        instructions::add_5(ctx)
+    }
+}
+
+#[inline(always)]
 pub fn lookup_adjust_stack_pointer(
     inst_set: u16,
     ctx: &mut Context<Instruction, impl ContextTrait>,
