@@ -14,7 +14,7 @@ use super::{
 };
 
 impl ArmDisassemblerWindow {
-    pub fn check_breakpoints<const ARM_BOOL: bool>(&mut self, emulator: &mut Emulator) {
+    pub fn check_breakpoints<const ARM_BOOL: bool>(&mut self, emulator: &mut Emulator) -> bool {
         let pc = match ARM_BOOL {
             ArmBool::ARM9 => emulator.arm9.r[15],
             ArmBool::ARM7 => emulator.arm7.r[15],
@@ -24,14 +24,20 @@ impl ArmDisassemblerWindow {
             if self.step_until == Some(pc) {
                 emulator.pause();
                 self.step_until = None;
+
+                return true;
             }
 
             if self.breakpoints.contains(&pc) {
                 emulator.pause();
                 self.selected_breakpoint =
                     Some(self.breakpoints.iter().position(|&x| x == pc).unwrap());
+
+                return true;
             }
         }
+
+        false
     }
 
     pub fn show<const ARM_BOOL: bool>(&mut self, emulator: &mut Emulator, ctx: &egui::Context) {

@@ -186,6 +186,14 @@ impl Emulator {
             while cycles_ran_arm7 < target_cycles_arm7 {
                 let arm7_cycles = self.arm7.clock(&mut self.bus7, &mut self.shared);
                 cycles_ran_arm7 += arm7_cycles as u64;
+
+                let hit_breakpoint = disassembler_windows
+                    .1
+                    .check_breakpoints::<{ ArmBool::ARM7 }>(self);
+                if hit_breakpoint {
+                    // TODO: the arm7 can fall behind if we stop it early and continue everything else. not sure if it matters
+                    break;
+                }
             }
 
             while cycles_ran_gpu < target_cycles_gpu {
@@ -216,9 +224,6 @@ impl Emulator {
             disassembler_windows
                 .0
                 .check_breakpoints::<{ ArmBool::ARM9 }>(self);
-            disassembler_windows
-                .1
-                .check_breakpoints::<{ ArmBool::ARM7 }>(self);
         }
 
         (cycles_ran_arm9, cycles_ran_arm7, cycles_ran_gpu)
