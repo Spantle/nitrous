@@ -21,7 +21,7 @@ pub struct FpsInfo {
     pub last_cycles_ran_arm9: u64,
     pub target_cycles_arm9: u64,
     pub cycles_ran_arm9: u64,
-    pub cycles_ran_arm7: u64,
+    pub cycles_ran_arm7: i32,
     pub cycles_ran_gpu: u64,
 }
 

@@ -168,11 +168,11 @@ impl eframe::App for NitrousGUI {
 
         let (cycles_ran_arm9, cycles_ran_arm7, cycles_ran_gpu) = self.emulator.run_for(
             target_cycles_arm9,
-            self.last_cycle_arm7_discrepency as u64,
+            self.last_cycle_arm7_discrepency,
             (&mut self.arm9_disassembler, &mut self.arm7_disassembler),
         );
 
-        let arm7_discrepency = (cycles_ran_arm7 as i32) - (cycles_ran_arm9 / 2) as i32;
+        let arm7_discrepency = cycles_ran_arm7 - (cycles_ran_arm9 / 2) as i32;
         self.last_cycle_arm7_discrepency = arm7_discrepency;
 
         self.last_cycle_count = cycles_ran_arm9;

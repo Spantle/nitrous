@@ -160,9 +160,9 @@ impl Emulator {
     pub fn run_for(
         &mut self,
         target_cycles_arm9: u64,
-        last_cycle_arm7_discrepency: u64,
+        last_cycle_arm7_discrepency: i32,
         disassembler_windows: (&mut ArmDisassemblerWindow, &mut ArmDisassemblerWindow),
-    ) -> (u64, u64, u64) {
+    ) -> (u64, i32, u64) {
         let mut cycles_ran_arm9 = 0;
         let mut cycles_ran_arm7 = last_cycle_arm7_discrepency;
         let mut cycles_ran_gpu = 0;
@@ -180,12 +180,12 @@ impl Emulator {
 
             cycles_ran_arm9 += arm9_cycles as u64;
 
-            let target_cycles_arm7 = cycles_ran_arm9 / 2;
+            let target_cycles_arm7 = (cycles_ran_arm9 / 2) as i32;
             let target_cycles_gpu = cycles_ran_arm9 / 2;
 
             while cycles_ran_arm7 < target_cycles_arm7 {
                 let arm7_cycles = self.arm7.clock(&mut self.bus7, &mut self.shared);
-                cycles_ran_arm7 += arm7_cycles as u64;
+                cycles_ran_arm7 += arm7_cycles as i32;
 
                 let hit_breakpoint = disassembler_windows
                     .1
