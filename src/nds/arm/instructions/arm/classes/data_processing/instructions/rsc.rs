@@ -12,12 +12,13 @@ pub fn rsc<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
     ctx.dis.push_reg_arg(ctx.inst.first_source_register, None);
 
     let (inst, arm) = (&mut ctx.inst, &mut ctx.arm);
+    let first_source_register = arm.er(inst.first_source_register);
+    let c_flag = !arm.cpsr().get_carry() as u32;
     if S {
-        let first_source_register = arm.er(inst.first_source_register);
-        let (result1, borrow1) = inst
+        let (result, borrow1) = inst
             .second_source_operand
             .overflowing_sub(first_source_register);
-        let (result, borrow2) = result1.overflowing_sub(!arm.cpsr().get_carry() as u32);
+        let (result, borrow2) = result.overflowing_sub(c_flag);
         let borrow = borrow1 || borrow2;
         arm.set_r(inst.destination_register, result);
 
@@ -27,18 +28,18 @@ pub fn rsc<const S: bool>(ctx: &mut Context<DataProcessingInstruction, impl Cont
             arm.cpsr_mut().set_negative(result.get_bit(31));
             arm.cpsr_mut().set_zero(result == 0);
             arm.cpsr_mut().set_carry(!borrow);
-            arm.cpsr_mut().set_overflow(
-                (first_source_register as i32)
-                    .overflowing_sub(inst.second_source_operand as i32)
-                    .1,
-            );
+
+            let (result, overflow1) =
+                (inst.second_source_operand as i32).overflowing_sub(first_source_register as i32);
+            let (_, overflow2) = result.overflowing_sub(c_flag as i32);
+            arm.cpsr_mut().set_overflow(overflow1 || overflow2);
         }
     } else {
         arm.set_r(
             inst.destination_register,
             inst.second_source_operand
-                .wrapping_sub(arm.er(inst.first_source_register))
-                .wrapping_sub(!arm.cpsr().get_carry() as u32),
+                .wrapping_sub(first_source_register)
+                .wrapping_sub(c_flag),
         );
     }
 }
