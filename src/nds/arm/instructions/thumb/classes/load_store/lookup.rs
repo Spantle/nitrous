@@ -19,6 +19,7 @@ pub fn lookup_register_offset(
         0b001 => instructions::strh_2(ctx),
         0b100 => instructions::ldr_2(ctx),
         0b101 => instructions::ldrh_2(ctx),
+        0b111 => instructions::ldrsh(ctx),
         _ => {
             ctx.logger.log_error(format!(
                 "unknown load/store register offset opcode {:03b}",
