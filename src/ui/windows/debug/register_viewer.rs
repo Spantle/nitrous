@@ -58,12 +58,10 @@ impl RegisterViewerWindow {
 
     fn names(&self) -> Vec<&str> {
         [
+            "DISPSTAT",
+            "VCOUNT",
             "[A]DISPCNT",
-            "[A]DISPSTAT",
-            "[A]VCOUNT",
             "[B]DISPCNT",
-            "[B]DISPSTAT",
-            "[B]VCOUNT",
             "KEYINPUT",
             "VRAMCNT_A",
             "VRAMCNT_B",
