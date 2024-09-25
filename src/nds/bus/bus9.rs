@@ -109,6 +109,8 @@ impl BusTrait for Bus9 {
                 bytes
             }
 
+            0x08000000..=0x0AFFFFFF => bytes, // gba slot, return nothing... for now?
+
             0xFFFF0000..=0xFFFF7FFF => {
                 let addr = addr - 0xFFFF0000;
                 bytes.copy_from_slice(&self.bios[addr..addr + T]);
