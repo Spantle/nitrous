@@ -2,7 +2,7 @@ use crate::nds::{bus::BusTrait, cp15::CP15, logger, shared::Shared};
 
 use super::{
     instructions::lookup_instruction_set,
-    models::{Context, FakeDisassembly, ProcessorMode, Psr, Registers, StackTrace},
+    models::{Context, FakeDisassembly, HaltCnt, ProcessorMode, Psr, Registers, StackTrace},
     ArmKind, ArmTrait,
 };
 
@@ -27,7 +27,8 @@ pub struct Arm<Bus: BusTrait> {
     // arm9 exclusives
     pub cp15: CP15,
     // arm7 exlusives
-    pub wram7: Vec<u8>, // 64kb
+    pub wram7: Vec<u8>,   // 64kb
+    pub haltcnt: HaltCnt, // 0x04000301
 
     // emulator variables
     pub pc_changed: bool,
@@ -58,6 +59,7 @@ impl<Bus: BusTrait> Default for Arm<Bus> {
 
             cp15: CP15::default(),
             wram7: vec![0; 1024 * 64],
+            haltcnt: HaltCnt::default(),
 
             pc_changed: true,
             stacktrace: StackTrace::default(),

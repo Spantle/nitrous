@@ -17,8 +17,10 @@ pub fn lookup_register_offset(
     match opcode {
         0b000 => instructions::str_2(ctx),
         0b001 => instructions::strh_2(ctx),
+        0b010 => instructions::strb_2(ctx),
         0b100 => instructions::ldr_2(ctx),
         0b101 => instructions::ldrh_2(ctx),
+        0b110 => instructions::ldrb_2(ctx),
         0b111 => instructions::ldrsh(ctx),
         _ => {
             ctx.logger.log_error(format!(
