@@ -1,6 +1,6 @@
-use crate::nds::{bus::BusTrait, shared::Shared};
+use crate::nds::{bus::BusTrait, logger, shared::Shared};
 
-use super::{Arm, ArmKind, ArmTrait};
+use super::{models::PowerDownMode, Arm, ArmKind, ArmTrait};
 
 pub trait ArmInternalRW<Bus: BusTrait> {
     fn read_bulk(&self, bus: &mut Bus, shared: &mut Shared, addr: u32, len: u32) -> Vec<u8>;
@@ -115,6 +115,29 @@ impl<Bus: BusTrait> ArmInternalRW<Bus> for Arm<Bus> {
                 bus.write_slice::<T>(shared, orig_addr, value)
             }
             ArmKind::Arm7 => match addr {
+                0x04000301 => {
+                    self.haltcnt.set(value[0]);
+
+                    // cannot be bothered doing this inside of a set function, i dont think it would be possible
+                    let log_source = logger::LogSource::Arm7(self.r[15]);
+                    let power_down_mode = self.haltcnt.get_power_down_mode();
+                    match power_down_mode {
+                        PowerDownMode::ENTER_GBA_MODE => {
+                            logger::error(
+                                log_source,
+                                "Processor tried to enter GBA mode! Not implemented!",
+                            );
+                        }
+                        PowerDownMode::HALT => self.halt(),
+                        PowerDownMode::SLEEP => {
+                            logger::error(
+                                log_source,
+                                "Processor tried to enter sleep mode! Not implemented!",
+                            );
+                        }
+                        _ => {}
+                    }
+                }
                 0x03800000..=0x03FFFFFF => {
                     let addr = (addr - 0x03800000) % 0x10000;
                     self.wram7[addr..addr + T].copy_from_slice(&value);
