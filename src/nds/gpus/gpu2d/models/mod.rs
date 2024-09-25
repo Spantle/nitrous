@@ -1,4 +1,4 @@
 mod bgxcnt;
 mod dispcnt;
 
-pub use dispcnt::DispCnt;
+pub use dispcnt::*;

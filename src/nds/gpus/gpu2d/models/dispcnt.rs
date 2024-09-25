@@ -12,20 +12,30 @@ impl From<u32> for DispCnt {
 }
 
 impl DispCnt {
-    const VRAM_BLOCK_OFFSET: u32 = 18;
+    const DISPLAY_MODE_START: u32 = 16;
+    const DISPLAY_MODE_END: u32 = 17;
+    const VRAM_BLOCK_START: u32 = 18;
     const VRAM_BLOCK_END: u32 = 19;
 
     pub fn value(&self) -> u32 {
         self.0
     }
 
+    pub fn get_display_mode(&self) -> DisplayMode {
+        DisplayMode::from_bits_truncate(
+            self.0
+                .get_bits(Self::DISPLAY_MODE_START, Self::DISPLAY_MODE_END),
+        )
+    }
+
     pub fn get_vram_block(&self) -> u32 {
         self.0
-            .get_bits(Self::VRAM_BLOCK_OFFSET, Self::VRAM_BLOCK_END)
+            .get_bits(Self::VRAM_BLOCK_START, Self::VRAM_BLOCK_END)
     }
 }
 
 bitflags! {
+    #[derive(PartialEq)]
     pub struct DisplayMode: u32 {
         const DISPLAY_OFF         = 0; // screen becomes white
         const GRAPHICS_DISPLAY    = 1; // normal BG and OBJ layers

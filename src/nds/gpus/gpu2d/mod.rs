@@ -1,10 +1,9 @@
-use models::DispCnt;
+use models::{DispCnt, DisplayMode};
 
-use crate::nds::{shared::Shared, Bits};
+use crate::nds::shared::Shared;
 
 pub mod models;
-
-const COLOUR_MULT: f32 = 255.0 / 31.0;
+mod rendering;
 
 #[derive(Default)]
 pub struct Gpu2d {
@@ -13,26 +12,29 @@ pub struct Gpu2d {
 
 impl Gpu2d {
     pub fn render(&self, shared: &Shared) -> egui::ImageData {
-        let mut pixels = Vec::with_capacity(256 * 192);
-        for y in 0..=191 {
-            for x in 0..=255 {
-                let vram_block = self.dispcnt.get_vram_block();
-                let addr_offset = (vram_block * 0x20000) as usize;
-                let addr = addr_offset + (y * 256 + x) as usize * 2;
-                let mut bytes = [0; 2];
-                bytes.copy_from_slice(&shared.vram_lcdc_alloc[addr..addr + 2]);
-                let halfword = u16::from_le_bytes(bytes);
-                let r = ((halfword.get_bits(0, 4) as f32) * COLOUR_MULT) as u8;
-                let g = ((halfword.get_bits(5, 9) as f32) * COLOUR_MULT) as u8;
-                let b = ((halfword.get_bits(10, 14) as f32) * COLOUR_MULT) as u8;
-
-                let pixel = egui::Color32::from_rgb(r, g, b);
-                pixels.push(pixel);
+        let display_mode = self.dispcnt.get_display_mode();
+        match display_mode {
+            DisplayMode::DISPLAY_OFF => {
+                return egui::ImageData::from(egui::ColorImage {
+                    pixels: vec![egui::Color32::WHITE; 256 * 192],
+                    size: [256, 192],
+                });
             }
-        }
+            DisplayMode::GRAPHICS_DISPLAY => {} // continue as normal
+            DisplayMode::VRAM_DISPLAY => {
+                return self.render_vram(shared);
+            }
+            DisplayMode::MAIN_MEMORY_DISPLAY => {
+                return egui::ImageData::from(egui::ColorImage {
+                    pixels: vec![egui::Color32::DARK_RED; 256 * 192],
+                    size: [256, 192],
+                });
+            }
+            _ => unreachable!("if you see this then i'm wrong. this is very much reachable"),
+        };
 
         egui::ImageData::from(egui::ColorImage {
-            pixels,
+            pixels: vec![egui::Color32::DARK_GREEN; 256 * 192],
             size: [256, 192],
         })
     }
