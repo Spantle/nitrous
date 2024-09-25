@@ -11,8 +11,8 @@ pub struct Gpus {
     pub dispstat: DispStat, // 0x04000004
     pub vcount: u16,        // 0x04000006
 
-    pub a: Gpu2d,
-    pub b: Gpu2d,
+    pub a: Gpu2d<true>,
+    pub b: Gpu2d<false>,
 
     x: u32, // TODO: this isn't real. ideally the clock function should just do an entire row at a time but I cannot be bothered touching cycle stuff rn. performance will suffer.
 }

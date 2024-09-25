@@ -2,7 +2,7 @@ use crate::nds::{gpus::gpu2d::Gpu2d, shared::Shared, Bits};
 
 const COLOUR_MULT: f32 = 255.0 / 31.0;
 
-impl Gpu2d {
+impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
     // Display Mode: VRAM Display
     pub fn render_vram(&self, shared: &Shared) -> egui::ImageData {
         let mut pixels = Vec::with_capacity(256 * 192);

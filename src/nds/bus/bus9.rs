@@ -176,20 +176,27 @@ impl BusTrait for Bus9 {
                 shared.vramcnt[..len].copy_from_slice(&value[..len]);
             }
 
-            0x05000000..=0x05FFFFFF => logger::warn(
-                logger::LogSource::Bus9,
-                format!(
-                    "Standard Palettes not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x05000000..=0x050003FF => {
+                let addr = addr - 0x05000000;
+                shared.gpus.a.palette[addr..addr + T].copy_from_slice(&value);
+            }
+            0x05000400..=0x050007FF => {
+                let addr = addr - 0x05000400;
+                shared.gpus.b.palette[addr..addr + T].copy_from_slice(&value);
+            }
 
-            0x06000000..=0x067FFFFF => logger::warn(
+            0x06000000..=0x061FFFFF => {
+                let addr = (addr - 0x06000000) % 0x80000;
+                shared.gpus.a.bg_vram[addr..addr + T].copy_from_slice(&value);
+            }
+            0x06200000..=0x063FFFFF => {
+                let addr = (addr - 0x06200000) % 0x20000;
+                shared.gpus.b.bg_vram[addr..addr + T].copy_from_slice(&value);
+            }
+            0x06400000..=0x067FFFFF => logger::warn(
                 logger::LogSource::Bus9,
                 format!(
-                    "VRAM not implemented (W{} {:#010X}:{:#010X})",
+                    "OBJ VRAM not implemented (W{} {:#010X}:{:#010X})",
                     T,
                     addr,
                     value.into_word()

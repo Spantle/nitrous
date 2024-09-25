@@ -5,12 +5,29 @@ use crate::nds::shared::Shared;
 pub mod models;
 mod rendering;
 
-#[derive(Default)]
-pub struct Gpu2d {
+// TODO: this might need to be refactored to be more like Bus
+//       where we have a trait and use an Enum for Kind rather than const ENGINE_A
+
+pub struct Gpu2d<const ENGINE_A: bool> {
     pub dispcnt: DispCnt,
+
+    pub bg_vram: Vec<u8>,
+    pub palette: Vec<u8>,
 }
 
-impl Gpu2d {
+impl<const ENGINE_A: bool> Default for Gpu2d<ENGINE_A> {
+    fn default() -> Self {
+        let bg_vram_size = if ENGINE_A { 512 * 1024 } else { 128 * 1024 };
+
+        Self {
+            dispcnt: DispCnt::default(),
+            bg_vram: vec![0; bg_vram_size],
+            palette: vec![0; 1024],
+        }
+    }
+}
+
+impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
     pub fn render(&self, shared: &Shared) -> egui::ImageData {
         let display_mode = self.dispcnt.get_display_mode();
         match display_mode {
