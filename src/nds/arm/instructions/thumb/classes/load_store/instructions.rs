@@ -10,6 +10,7 @@ mod str_1;
 mod str_2;
 mod str_3;
 mod strb_1;
+mod strb_2;
 mod strh_1;
 mod strh_2;
 
@@ -25,5 +26,6 @@ pub use str_1::*;
 pub use str_2::*;
 pub use str_3::*;
 pub use strb_1::*;
+pub use strb_2::*;
 pub use strh_1::*;
 pub use strh_2::*;
