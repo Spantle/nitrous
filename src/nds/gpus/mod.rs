@@ -1,23 +1,23 @@
-use crate::nds::{
-    bus::{bus7::Bus7, bus9::Bus9},
-    shared::Shared,
-    Bits,
-};
+mod gpu2d;
+mod models;
 
-use super::models::{DispCnt, DispStat};
+use gpu2d::Gpu2d;
+use models::DispStat;
+
+use crate::nds::bus::{bus7::Bus7, bus9::Bus9};
 
 #[derive(Default)]
-pub struct Gpu2d {
-    pub dispcnt: DispCnt,   // 0x04000000
+pub struct Gpus {
     pub dispstat: DispStat, // 0x04000004
     pub vcount: u16,        // 0x04000006
 
-    x: u32,
+    pub a: Gpu2d,
+    pub b: Gpu2d,
+
+    x: u32, // TODO: this isn't real. ideally the clock function should just do an entire row at a time but I cannot be bothered touching cycle stuff rn. performance will suffer.
 }
 
-const COLOUR_MULT: f32 = 255.0 / 31.0;
-
-impl Gpu2d {
+impl Gpus {
     pub fn clock(&mut self, bus9: &mut Bus9, bus7: &mut Bus7) {
         self.x = (self.x + 1) % (256 + 99);
         self.vcount = (self.vcount + (self.x == 0) as u16) % (192 + 71);
@@ -45,30 +45,5 @@ impl Gpu2d {
             bus9.interrupts.f.set_lcd_vcounter_match(true);
             bus7.interrupts.f.set_lcd_vcounter_match(true);
         }
-    }
-
-    pub fn render(&self, shared: &Shared) -> egui::ImageData {
-        let mut pixels = Vec::with_capacity(256 * 192);
-        for y in 0..=191 {
-            for x in 0..=255 {
-                let vram_block = self.dispcnt.get_vram_block();
-                let addr_offset = (vram_block * 0x20000) as usize;
-                let addr = addr_offset + (y * 256 + x) as usize * 2;
-                let mut bytes = [0; 2];
-                bytes.copy_from_slice(&shared.vram_lcdc_alloc[addr..addr + 2]);
-                let halfword = u16::from_le_bytes(bytes);
-                let r = ((halfword.get_bits(0, 4) as f32) * COLOUR_MULT) as u8;
-                let g = ((halfword.get_bits(5, 9) as f32) * COLOUR_MULT) as u8;
-                let b = ((halfword.get_bits(10, 14) as f32) * COLOUR_MULT) as u8;
-
-                let pixel = egui::Color32::from_rgb(r, g, b);
-                pixels.push(pixel);
-            }
-        }
-
-        egui::ImageData::from(egui::ColorImage {
-            pixels,
-            size: [256, 192],
-        })
     }
 }

@@ -79,7 +79,7 @@ impl BusTrait for Bus7 {
                 bytes
             }
 
-            0x04000004..=0x04000005 => shared.gpu2d_a.dispstat.value().to_bytes::<T>(),
+            0x04000004..=0x04000005 => shared.gpus.dispstat.value().to_bytes::<T>(),
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
             0x04000138 => {

@@ -5,7 +5,7 @@ mod cartridge;
 mod cp15;
 mod dma;
 mod emulator;
-pub mod gpu;
+pub mod gpus;
 mod interrupts;
 pub mod logger;
 pub mod shared;

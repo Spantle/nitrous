@@ -36,13 +36,13 @@ impl Default for ScreenOptions {
 
 impl NitrousGUI {
     pub fn render_screens(&mut self, ctx: &egui::Context) {
-        let top_image_data = self.emulator.shared.gpu2d_a.render(&self.emulator.shared);
+        let top_image_data = self.emulator.shared.gpus.a.render(&self.emulator.shared);
         let top_texture =
             ctx.load_texture("top_screen", top_image_data, egui::TextureOptions::NEAREST);
         let mut top_screen =
             egui::Image::from_texture(egui::load::SizedTexture::from_handle(&top_texture))
                 .shrink_to_fit();
-        let bot_image_data = self.emulator.shared.gpu2d_b.render(&self.emulator.shared);
+        let bot_image_data = self.emulator.shared.gpus.b.render(&self.emulator.shared);
         let bot_texture =
             ctx.load_texture("bot_screen", bot_image_data, egui::TextureOptions::NEAREST);
         let mut bot_screen =

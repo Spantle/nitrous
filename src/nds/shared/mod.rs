@@ -4,13 +4,12 @@ use super::{
     bus::{bus7::Bus7, bus9::Bus9},
     cartridge::Cartridge,
     dma::Dma,
-    gpu::gpu2d::Gpu2d,
+    gpus::Gpus,
 };
 
 pub struct Shared {
     pub cart: Cartridge,
-    pub gpu2d_a: Gpu2d,
-    pub gpu2d_b: Gpu2d,
+    pub gpus: Gpus,
     pub psram: Vec<u8>,
     pub wram: Vec<u8>, // 32kb
 
@@ -30,8 +29,7 @@ impl Default for Shared {
     fn default() -> Self {
         Self {
             cart: Cartridge::default(),
-            gpu2d_a: Gpu2d::default(),
-            gpu2d_b: Gpu2d::default(),
+            gpus: Gpus::default(),
             psram: vec![0; 1024 * 1024 * 4],
             wram: vec![0; 1024 * 32],
 
@@ -53,8 +51,7 @@ impl Shared {
     pub fn new_fake() -> Self {
         Self {
             cart: Cartridge::default(),
-            gpu2d_a: Gpu2d::default(),
-            gpu2d_b: Gpu2d::default(),
+            gpus: Gpus::default(),
             psram: vec![0; 0],
             wram: vec![0; 0],
 
@@ -72,7 +69,7 @@ impl Shared {
     }
 
     pub fn reset(&mut self) {
-        self.gpu2d_a = Gpu2d::default();
+        self.gpus = Gpus::default();
         self.psram = vec![0; 1024 * 1024 * 4];
         self.wram = vec![0; 1024 * 32];
 

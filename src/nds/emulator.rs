@@ -129,8 +129,7 @@ impl Emulator {
             }
             CycleState::Arm7 => {
                 let cycles = self.arm7.clock(&mut self.bus7, &mut self.shared);
-                self.shared.gpu2d_a.clock(&mut self.bus9, &mut self.bus7);
-                self.shared.gpu2d_b.clock(&mut self.bus9, &mut self.bus7);
+                self.shared.gpus.clock(&mut self.bus9, &mut self.bus7);
                 self.shared.dma7 = self
                     .shared
                     .dma7
@@ -198,8 +197,7 @@ impl Emulator {
             }
 
             while cycles_ran_gpu < target_cycles_gpu {
-                self.shared.gpu2d_a.clock(&mut self.bus9, &mut self.bus7);
-                self.shared.gpu2d_b.clock(&mut self.bus9, &mut self.bus7);
+                self.shared.gpus.clock(&mut self.bus9, &mut self.bus7);
                 cycles_ran_gpu += 1;
             }
 

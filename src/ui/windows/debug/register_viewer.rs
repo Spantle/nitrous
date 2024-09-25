@@ -95,12 +95,10 @@ impl RegisterViewerWindow {
 
     fn values(&self, emulator: &Emulator) -> Vec<u32> {
         [
-            emulator.shared.gpu2d_a.dispcnt.value(),
-            emulator.shared.gpu2d_a.dispstat.value() as u32,
-            emulator.shared.gpu2d_a.vcount as u32,
-            emulator.shared.gpu2d_b.dispcnt.value(),
-            emulator.shared.gpu2d_b.dispstat.value() as u32,
-            emulator.shared.gpu2d_b.vcount as u32,
+            emulator.shared.gpus.dispstat.value() as u32,
+            emulator.shared.gpus.vcount as u32,
+            emulator.shared.gpus.a.dispcnt.value(),
+            emulator.shared.gpus.b.dispcnt.value(),
             emulator.shared.keyinput.value() as u32,
             emulator.shared.vramcnt[0] as u32,
             emulator.shared.vramcnt[1] as u32,

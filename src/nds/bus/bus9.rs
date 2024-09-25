@@ -74,9 +74,9 @@ impl BusTrait for Bus9 {
                 bytes
             }
 
-            0x04000000..=0x04000003 => shared.gpu2d_a.dispcnt.value().to_bytes::<T>(),
-            0x04000004..=0x04000005 => shared.gpu2d_a.dispstat.value().to_bytes::<T>(),
-            0x04000006..=0x04000007 => shared.gpu2d_a.vcount.to_bytes::<T>(),
+            0x04000000..=0x04000003 => shared.gpus.a.dispcnt.value().to_bytes::<T>(),
+            0x04000004..=0x04000005 => shared.gpus.dispstat.value().to_bytes::<T>(),
+            0x04000006..=0x04000007 => shared.gpus.vcount.to_bytes::<T>(),
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
 
@@ -95,8 +95,8 @@ impl BusTrait for Bus9 {
 
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
 
-            0x04001000..=0x04001003 => shared.gpu2d_b.dispcnt.value().to_bytes::<T>(),
-            0x04001004..=0x04001005 => shared.gpu2d_b.dispstat.value().to_bytes::<T>(),
+            0x04001000..=0x04001003 => shared.gpus.b.dispcnt.value().to_bytes::<T>(),
+            0x04001004..=0x04001005 => shared.gpus.dispstat.value().to_bytes::<T>(),
 
             0x04004000..=0x04004001 => bytes, // DSi Stuff, return nothing
             0x04004008..=0x0400400B => bytes, // DSi Stuff, return nothing
@@ -143,9 +143,9 @@ impl BusTrait for Bus9 {
                 shared.wram[addr..addr + T].copy_from_slice(&value);
             }
 
-            0x04000000..=0x04000003 => shared.gpu2d_a.dispcnt = value.into_word().into(),
-            0x04001000..=0x04001003 => shared.gpu2d_b.dispcnt = value.into_word().into(),
-            0x04000004..=0x04000005 => shared.gpu2d_a.dispstat = value.into_halfword().into(),
+            0x04000000..=0x04000003 => shared.gpus.a.dispcnt = value.into_word().into(),
+            0x04001000..=0x04001003 => shared.gpus.b.dispcnt = value.into_word().into(),
+            0x04000004..=0x04000005 => shared.gpus.dispstat = value.into_halfword().into(),
 
             0x04000100..=0x0400010F => logger::warn(
                 logger::LogSource::Bus9,
