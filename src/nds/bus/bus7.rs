@@ -82,6 +82,7 @@ impl BusTrait for Bus7 {
             0x04000004..=0x04000005 => shared.gpus.dispstat.value().to_bytes::<T>(),
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
+            0x04000136..=0x04000137 => shared.extkeyin.value().to_bytes::<T>(),
             0x04000138 => {
                 logger::warn(
                     logger::LogSource::Bus7,

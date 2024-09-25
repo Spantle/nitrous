@@ -79,6 +79,7 @@ impl BusTrait for Bus9 {
             0x04000006..=0x04000007 => shared.gpus.vcount.to_bytes::<T>(),
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
+            0x04000136..=0x04000137 => shared.extkeyin.value().to_bytes::<T>(),
 
             0x04000180..=0x04000183 => shared.ipcsync.value::<true>().to_bytes::<T>(),
             0x04000184..=0x04000185 => shared.ipcfifo.get_cnt::<true>().to_bytes::<T>(),

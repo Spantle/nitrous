@@ -1,4 +1,4 @@
-use models::{IpcFifo, IpcSync, KeyInput, PowCnt1};
+use models::{ExtKeyIn, IpcFifo, IpcSync, KeyInput, PowCnt1};
 
 use super::{
     bus::{bus7::Bus7, bus9::Bus9},
@@ -14,6 +14,7 @@ pub struct Shared {
     pub wram: Vec<u8>, // 32kb
 
     pub keyinput: KeyInput, // 0x04000130
+    pub extkeyin: ExtKeyIn, // 0x04000136
     pub vramcnt: [u8; 10],  // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
     pub ipcsync: IpcSync,   // 0x04000180
     pub ipcfifo: IpcFifo,   // 0x04000184, 0x04000188, 0x04100000
@@ -34,6 +35,7 @@ impl Default for Shared {
             wram: vec![0; 1024 * 32],
 
             keyinput: KeyInput::default(),
+            extkeyin: ExtKeyIn::default(),
             vramcnt: [0; 10],
             ipcsync: IpcSync::default(),
             ipcfifo: IpcFifo::default(),
@@ -56,6 +58,7 @@ impl Shared {
             wram: vec![0; 0],
 
             keyinput: KeyInput::default(),
+            extkeyin: ExtKeyIn::default(),
             vramcnt: [0; 10],
             ipcsync: IpcSync::default(),
             ipcfifo: IpcFifo::default(),
