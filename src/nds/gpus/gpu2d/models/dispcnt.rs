@@ -12,13 +12,25 @@ impl From<u32> for DispCnt {
 }
 
 impl DispCnt {
+    const BG_MODE_START: u32 = 0;
+    const BG_MODE_END: u32 = 2;
+
     const DISPLAY_MODE_START: u32 = 16;
     const DISPLAY_MODE_END: u32 = 17;
     const VRAM_BLOCK_START: u32 = 18;
     const VRAM_BLOCK_END: u32 = 19;
 
+    const CHARACTER_BASE_START: u32 = 24;
+    const CHARACTER_BASE_END: u32 = 26;
+    const SCREEN_BASE_START: u32 = 27;
+    const SCREEN_BASE_END: u32 = 29;
+
     pub fn value(&self) -> u32 {
         self.0
+    }
+
+    pub fn get_bg_mode(&self) -> u8 {
+        self.0.get_bits(Self::BG_MODE_START, Self::BG_MODE_END) as u8
     }
 
     pub fn get_display_mode(&self) -> DisplayMode {
@@ -31,6 +43,16 @@ impl DispCnt {
     pub fn get_vram_block(&self) -> u32 {
         self.0
             .get_bits(Self::VRAM_BLOCK_START, Self::VRAM_BLOCK_END)
+    }
+
+    pub fn get_character_base(&self) -> u32 {
+        self.0
+            .get_bits(Self::CHARACTER_BASE_START, Self::CHARACTER_BASE_END)
+    }
+
+    pub fn get_screen_base(&self) -> u32 {
+        self.0
+            .get_bits(Self::SCREEN_BASE_START, Self::SCREEN_BASE_END)
     }
 }
 

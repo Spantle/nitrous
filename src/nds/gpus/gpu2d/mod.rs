@@ -53,9 +53,6 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
             _ => unreachable!("if you see this then i'm wrong. this is very much reachable"),
         };
 
-        egui::ImageData::from(egui::ColorImage {
-            pixels: vec![egui::Color32::DARK_GREEN; 256 * 192],
-            size: [256, 192],
-        })
+        self.render_graphics()
     }
 }
