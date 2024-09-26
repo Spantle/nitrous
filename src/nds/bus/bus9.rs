@@ -149,6 +149,14 @@ impl BusTrait for Bus9 {
             0x04000000..=0x04000003 => shared.gpus.a.dispcnt = value.into_word().into(),
             0x04001000..=0x04001003 => shared.gpus.b.dispcnt = value.into_word().into(),
             0x04000004..=0x04000005 => shared.gpus.dispstat = value.into_halfword().into(),
+            0x04000008..=0x0400000F => {
+                let addr = addr - 0x04000008;
+                shared.gpus.a.bgxcnt[addr / 2] = value.into_halfword().into();
+            }
+            0x04001008..=0x0400100F => {
+                let addr = addr - 0x04001008;
+                shared.gpus.b.bgxcnt[addr / 2] = value.into_halfword().into();
+            }
 
             0x04000100..=0x0400010F => logger::warn(
                 logger::LogSource::Bus9,

@@ -2,7 +2,14 @@
 
 use bitflags::bitflags;
 
+#[derive(Default)]
 pub struct BGxCNT(u16);
+
+impl From<u16> for BGxCNT {
+    fn from(value: u16) -> Self {
+        Self(value)
+    }
+}
 
 impl BGxCNT {
     const BG_PRIORITY_OFFSET: u16 = 0;

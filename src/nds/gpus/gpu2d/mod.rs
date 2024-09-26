@@ -1,4 +1,4 @@
-use models::{DispCnt, DisplayMode};
+use models::{BGxCNT, DispCnt, DisplayMode};
 
 use crate::nds::shared::Shared;
 
@@ -10,6 +10,7 @@ mod rendering;
 
 pub struct Gpu2d<const ENGINE_A: bool> {
     pub dispcnt: DispCnt,
+    pub bgxcnt: [BGxCNT; 4],
 
     pub bg_vram: Vec<u8>,
     pub palette: Vec<u8>,
@@ -21,6 +22,8 @@ impl<const ENGINE_A: bool> Default for Gpu2d<ENGINE_A> {
 
         Self {
             dispcnt: DispCnt::default(),
+            bgxcnt: core::array::from_fn(|_| BGxCNT::default()),
+
             bg_vram: vec![0; bg_vram_size],
             palette: vec![0; 1024],
         }
