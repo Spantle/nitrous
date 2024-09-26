@@ -36,15 +36,23 @@ impl Default for ScreenOptions {
 
 impl NitrousGUI {
     pub fn render_screens(&mut self, ctx: &egui::Context) {
-        let top_image_data = self.emulator.shared.gpus.a.render(&self.emulator.shared);
-        let top_texture =
-            ctx.load_texture("top_screen", top_image_data, egui::TextureOptions::NEAREST);
+        let engine_a_data = self.emulator.shared.gpus.a.render(&self.emulator.shared);
+        let engine_b_data = self.emulator.shared.gpus.b.render(&self.emulator.shared);
+        let (top_texture, bot_texture) = if self.emulator.shared.powcnt1.get_display_swap() {
+            (
+                ctx.load_texture("top_screen", engine_a_data, egui::TextureOptions::NEAREST),
+                ctx.load_texture("bot_screen", engine_b_data, egui::TextureOptions::NEAREST),
+            )
+        } else {
+            (
+                ctx.load_texture("top_screen", engine_b_data, egui::TextureOptions::NEAREST),
+                ctx.load_texture("bot_screen", engine_a_data, egui::TextureOptions::NEAREST),
+            )
+        };
+
         let mut top_screen =
             egui::Image::from_texture(egui::load::SizedTexture::from_handle(&top_texture))
                 .shrink_to_fit();
-        let bot_image_data = self.emulator.shared.gpus.b.render(&self.emulator.shared);
-        let bot_texture =
-            ctx.load_texture("bot_screen", bot_image_data, egui::TextureOptions::NEAREST);
         let mut bot_screen =
             egui::Image::from_texture(egui::load::SizedTexture::from_handle(&bot_texture))
                 .shrink_to_fit();
