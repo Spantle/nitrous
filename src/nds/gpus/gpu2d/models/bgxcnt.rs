@@ -10,6 +10,8 @@ impl From<u16> for BGxCNT {
 }
 
 impl BGxCNT {
+    const PRIORITY_START: u16 = 0;
+    const PRIORITY_END: u16 = 1;
     const CHARACTER_BASE_BLOCK_START: u16 = 2;
     const CHARACTER_BASE_BLOCK_END: u16 = 5;
 
@@ -22,6 +24,10 @@ impl BGxCNT {
 
     pub fn value(&self) -> u16 {
         self.0
+    }
+
+    pub fn get_priority(&self) -> u8 {
+        self.0.get_bits(Self::PRIORITY_START, Self::PRIORITY_END) as u8
     }
 
     pub fn get_character_base_block(&self) -> u16 {

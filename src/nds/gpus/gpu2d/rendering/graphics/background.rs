@@ -4,10 +4,9 @@ use crate::nds::{
 };
 
 type Size = (u32, u32, u32);
-const COLOUR_MULT: f32 = 255.0 / 31.0;
 
 impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
-    pub fn draw_background<const BG: u8>(&self) -> egui::ImageData {
+    pub fn draw_background<const BG: u8>(&self) -> Vec<u16> {
         let mode = self.dispcnt.get_bg_mode();
 
         let bgcnt = &self.bgxcnt[BG as usize];
@@ -26,7 +25,7 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
         let size = self.calculate_size::<BG>(); // TODO: use screen size to do stuff with the size of the screen lol
 
         let color_palette = bgcnt.get_color_palette();
-        let mut pixels: Vec<egui::Color32> = vec![egui::Color32::BLACK; (size.0 * size.1) as usize];
+        let mut pixels: Vec<u16> = vec![0; (size.0 * size.1) as usize];
         for map_tile_i in 0..=1023 {
             let map_tile_address = (screen_base + map_tile_i * 2) as usize;
             let mut map_tile_bytes = [0; 2];
@@ -51,10 +50,8 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                         let mut map_tile_bytes = [0; 2];
                         map_tile_bytes
                             .copy_from_slice(&self.palette[palette_address..palette_address + 2]);
-                        let color = u16::from_le_bytes(map_tile_bytes);
-                        let r = ((color.get_bits(0, 4) as f32) * COLOUR_MULT) as u8;
-                        let g = ((color.get_bits(5, 9) as f32) * COLOUR_MULT) as u8;
-                        let b = ((color.get_bits(10, 14) as f32) * COLOUR_MULT) as u8;
+                        let mut color = u16::from_le_bytes(map_tile_bytes);
+                        color.set_bit(15, tile_byte != 0); // MASSIVE NOTE: THIS IS NOT REAL!!!! I SET THE TRANSPARENCY BIT IN THIS MODE BECAUSE I AM CHEATING!!!!
 
                         // TODO: these will probably all need to be adjusted for different map sizes
                         let tile_byte_i = tile_byte_i as u32;
@@ -64,16 +61,13 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                         let tile_y = tile_byte_i / 8;
                         let pos = (map_tile_x * 8 + tile_x) + (map_tile_y * 8 + tile_y) * size.0;
 
-                        pixels[pos as usize] = egui::Color32::from_rgb(r, g, b);
+                        pixels[pos as usize] = color;
                     });
                 }
             }
         }
 
-        egui::ImageData::from(egui::ColorImage {
-            pixels,
-            size: [size.0 as usize, size.1 as usize], // TODO: this will need to be cropped based on the position of the backgroun
-        })
+        pixels
     }
 
     fn calculate_size<const BG: u8>(&self) -> Size {
