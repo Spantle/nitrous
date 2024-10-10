@@ -24,7 +24,10 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                 bg_pixels[2] = self.draw_background::<2>();
                 bg_pixels[3] = self.draw_background::<3>();
 
-                let mut pixels: Vec<u16> = vec![0; 256 * 192];
+                let mut backdrop_colour_bytes = [0; 2];
+                backdrop_colour_bytes.copy_from_slice(&self.palette[0..2]);
+                let backdrop_colour = u16::from_le_bytes(backdrop_colour_bytes);
+                let mut pixels: Vec<u16> = vec![backdrop_colour; 256 * 192];
                 for id in ids {
                     let bg = &bg_pixels[id].0;
                     let bg_width = bg_pixels[id].1 as usize;
