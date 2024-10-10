@@ -19,7 +19,7 @@ pub fn ldr_2(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.dis.push_reg_end_arg(rm, Some(", "));
     ctx.dis.push_str_end_arg("", Some("]"));
 
-    let address = ctx.arm.r()[rn] + ctx.arm.r()[rm];
+    let address = ctx.arm.r()[rn].wrapping_add(ctx.arm.r()[rm]);
     // NOTE: it's UNPREDICTABLE if bits 1-0 of address is not 0
     let bits = address.get_bits(0, 1);
     ctx.arm.set_r(

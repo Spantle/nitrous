@@ -79,9 +79,10 @@ impl BusTrait for Bus7 {
                 bytes
             }
 
-            0x04000004..=0x04000005 => shared.gpu2d_a.dispstat.value().to_bytes::<T>(),
+            0x04000004..=0x04000005 => shared.gpus.dispstat.value().to_bytes::<T>(),
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
+            0x04000136..=0x04000137 => shared.extkeyin.value().to_bytes::<T>(),
             0x04000138 => {
                 logger::warn(
                     logger::LogSource::Bus7,
@@ -105,13 +106,7 @@ impl BusTrait for Bus7 {
             0x04000210..=0x04000213 => self.interrupts.e.value().to_bytes::<T>(),
             0x04000214..=0x04000217 => self.interrupts.f.value().to_bytes::<T>(),
 
-            0x04000304..=0x04000307 => {
-                logger::warn(
-                    logger::LogSource::Bus7,
-                    format!("POWCNT not implemented (R{} {:#010X})", T, addr),
-                );
-                bytes
-            }
+            0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
 
             0x04000500..=0x04000501 => {
                 logger::warn(
@@ -151,7 +146,7 @@ impl BusTrait for Bus7 {
                 shared.wram[addr..addr + T].copy_from_slice(&value);
             }
 
-            0x04000004..=0x04000005 => shared.gpu2d_a.dispstat = value.into_halfword().into(),
+            0x04000004..=0x04000005 => shared.gpus.dispstat = value.into_halfword().into(),
 
             0x04000134..=0x04000135 => {} // Debug RCNT, doesn't really do anything apparently
             0x04000138 => logger::warn(
@@ -184,15 +179,7 @@ impl BusTrait for Bus7 {
             0x04000210..=0x04000213 => self.interrupts.e = value.into_word().into(),
             0x04000214..=0x04000217 => self.interrupts.f.write_and_ack(value.into_word()),
 
-            0x04000304..=0x04000307 => logger::warn(
-                logger::LogSource::Bus7,
-                format!(
-                    "POWCNT not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x04000304..=0x04000307 => shared.powcnt1 = value.into_word().into(),
 
             0x04000400..=0x0400051F => logger::warn(
                 logger::LogSource::Bus7,

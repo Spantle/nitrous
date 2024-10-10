@@ -74,11 +74,12 @@ impl BusTrait for Bus9 {
                 bytes
             }
 
-            0x04000000..=0x04000003 => shared.gpu2d_a.dispcnt.value().to_bytes::<T>(),
-            0x04000004..=0x04000005 => shared.gpu2d_a.dispstat.value().to_bytes::<T>(),
-            0x04000006..=0x04000007 => shared.gpu2d_a.vcount.to_bytes::<T>(),
+            0x04000000..=0x04000003 => shared.gpus.a.dispcnt.value().to_bytes::<T>(),
+            0x04000004..=0x04000005 => shared.gpus.dispstat.value().to_bytes::<T>(),
+            0x04000006..=0x04000007 => shared.gpus.vcount.to_bytes::<T>(),
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
+            0x04000136..=0x04000137 => shared.extkeyin.value().to_bytes::<T>(),
 
             0x04000180..=0x04000183 => shared.ipcsync.value::<true>().to_bytes::<T>(),
             0x04000184..=0x04000185 => shared.ipcfifo.get_cnt::<true>().to_bytes::<T>(),
@@ -95,8 +96,8 @@ impl BusTrait for Bus9 {
 
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
 
-            0x04001000..=0x04001003 => shared.gpu2d_b.dispcnt.value().to_bytes::<T>(),
-            0x04001004..=0x04001005 => shared.gpu2d_b.dispstat.value().to_bytes::<T>(),
+            0x04001000..=0x04001003 => shared.gpus.b.dispcnt.value().to_bytes::<T>(),
+            0x04001004..=0x04001005 => shared.gpus.dispstat.value().to_bytes::<T>(),
 
             0x04004000..=0x04004001 => bytes, // DSi Stuff, return nothing
             0x04004008..=0x0400400B => bytes, // DSi Stuff, return nothing
@@ -145,9 +146,17 @@ impl BusTrait for Bus9 {
                 shared.wram[addr..addr + T].copy_from_slice(&value);
             }
 
-            0x04000000..=0x04000003 => shared.gpu2d_a.dispcnt = value.into_word().into(),
-            0x04001000..=0x04001003 => shared.gpu2d_b.dispcnt = value.into_word().into(),
-            0x04000004..=0x04000005 => shared.gpu2d_a.dispstat = value.into_halfword().into(),
+            0x04000000..=0x04000003 => shared.gpus.a.dispcnt = value.into_word().into(),
+            0x04001000..=0x04001003 => shared.gpus.b.dispcnt = value.into_word().into(),
+            0x04000004..=0x04000005 => shared.gpus.dispstat = value.into_halfword().into(),
+            0x04000008..=0x0400000F => {
+                let addr = addr - 0x04000008;
+                shared.gpus.a.bgxcnt[addr / 2] = value.into_halfword().into();
+            }
+            0x04001008..=0x0400100F => {
+                let addr = addr - 0x04001008;
+                shared.gpus.b.bgxcnt[addr / 2] = value.into_halfword().into();
+            }
 
             0x04000100..=0x0400010F => logger::warn(
                 logger::LogSource::Bus9,
@@ -175,20 +184,27 @@ impl BusTrait for Bus9 {
                 shared.vramcnt[..len].copy_from_slice(&value[..len]);
             }
 
-            0x05000000..=0x05FFFFFF => logger::warn(
-                logger::LogSource::Bus9,
-                format!(
-                    "Standard Palettes not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x05000000..=0x050003FF => {
+                let addr = addr - 0x05000000;
+                shared.gpus.a.palette[addr..addr + T].copy_from_slice(&value);
+            }
+            0x05000400..=0x050007FF => {
+                let addr = addr - 0x05000400;
+                shared.gpus.b.palette[addr..addr + T].copy_from_slice(&value);
+            }
 
-            0x06000000..=0x067FFFFF => logger::warn(
+            0x06000000..=0x061FFFFF => {
+                let addr = (addr - 0x06000000) % 0x80000;
+                shared.gpus.a.bg_vram[addr..addr + T].copy_from_slice(&value);
+            }
+            0x06200000..=0x063FFFFF => {
+                let addr = (addr - 0x06200000) % 0x20000;
+                shared.gpus.b.bg_vram[addr..addr + T].copy_from_slice(&value);
+            }
+            0x06400000..=0x067FFFFF => logger::warn(
                 logger::LogSource::Bus9,
                 format!(
-                    "VRAM not implemented (W{} {:#010X}:{:#010X})",
+                    "OBJ VRAM not implemented (W{} {:#010X}:{:#010X})",
                     T,
                     addr,
                     value.into_word()
