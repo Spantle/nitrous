@@ -18,28 +18,33 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                         .then(a.cmp(&b))
                 });
 
-                let mut bg_pixels: Vec<Vec<u16>> = vec![vec![]; 4];
+                let mut bg_pixels: Vec<(Vec<u16>, u32, u32)> = vec![(vec![], 0, 0); 4];
                 bg_pixels[0] = self.draw_background::<0>();
                 bg_pixels[1] = self.draw_background::<1>();
                 bg_pixels[2] = self.draw_background::<2>();
                 bg_pixels[3] = self.draw_background::<3>();
 
-                let mut pixels: Vec<u16> = vec![0; 256 * 256];
+                let mut pixels: Vec<u16> = vec![0; 256 * 192];
                 for id in ids {
-                    let bg = &bg_pixels[id];
-                    let start = 0;
-                    let end = bg.len();
+                    let bg = &bg_pixels[id].0;
+                    let bg_width = bg_pixels[id].1 as usize;
+                    let bg_height = bg_pixels[id].2 as usize;
 
-                    for i in start..end {
+                    // TODO: translate the bg to the correct position
+
+                    (0..pixels.len()).for_each(|i| {
+                        let x = i % 256;
+                        let y = i / 256;
+
                         // leo taught me this fast conditional strat like a year ago
-                        let new_pixel = bg[i];
+                        let new_pixel = bg[(y % bg_height) * bg_width + (x % bg_width)];
                         let existing_pixel = pixels[i];
 
                         let is_transparent = !new_pixel.get_bit(15); // transparent: 0, normal: 1
                         let is_transparent_mask = (is_transparent as u16).wrapping_sub(1);
                         pixels[i] = (!is_transparent_mask & existing_pixel)
                             | (is_transparent_mask & new_pixel);
-                    }
+                    });
                 }
 
                 egui::ImageData::from(egui::ColorImage {
@@ -52,7 +57,7 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                             egui::Color32::from_rgb(r, g, b)
                         })
                         .collect(),
-                    size: [256, 256], // TODO: this is not how things work
+                    size: [256, 192],
                 })
             }
             _ => egui::ImageData::from(egui::ColorImage {

@@ -6,7 +6,7 @@ use crate::nds::{
 type Size = (u32, u32, u32);
 
 impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
-    pub fn draw_background<const BG: u8>(&self) -> Vec<u16> {
+    pub fn draw_background<const BG: u8>(&self) -> (Vec<u16>, u32, u32) {
         let mode = self.dispcnt.get_bg_mode();
 
         let bgcnt = &self.bgxcnt[BG as usize];
@@ -67,7 +67,7 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
             }
         }
 
-        pixels
+        (pixels, size.0, size.1)
     }
 
     fn calculate_size<const BG: u8>(&self) -> Size {
