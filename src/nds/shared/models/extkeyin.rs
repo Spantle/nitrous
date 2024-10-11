@@ -4,7 +4,7 @@ pub struct ExtKeyIn(u16);
 
 impl Default for ExtKeyIn {
     fn default() -> Self {
-        Self(0b111111) // 6 bits
+        Self(0b1111111) // 7 bits
     }
 }
 
