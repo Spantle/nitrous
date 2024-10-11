@@ -131,7 +131,7 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             ));
         }
         _ => {
-            ctx.logger.log_error(format!(
+            ctx.logger.log_error_once(format!(
                 "MCR: unhandled instruction: CP{},{},{},CR{},CR{},{}",
                 cp_num, opcode_1, rd, crn, crm, opcode_2
             ));

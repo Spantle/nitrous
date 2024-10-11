@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 
 use std::{
+    collections::HashSet,
     fmt::Display,
     sync::{atomic::AtomicBool, Mutex},
 };
@@ -14,6 +15,8 @@ static PAUSE_ON_WARN: AtomicBool = AtomicBool::new(false);
 static PAUSE_ON_ERROR: AtomicBool = AtomicBool::new(true);
 static HAS_ERROR_TO_SHOW: AtomicBool = AtomicBool::new(false);
 
+static ONCE_LOGS: Lazy<Mutex<HashSet<String>>> = Lazy::new(|| Mutex::new(HashSet::new()));
+
 pub trait LoggerTrait {
     fn set_source(&mut self, source: LogSource);
 
@@ -21,6 +24,9 @@ pub trait LoggerTrait {
     fn log_info<T: Into<String> + Display>(&self, content: T);
     fn log_warn<T: Into<String> + Display>(&self, content: T);
     fn log_error<T: Into<String> + Display>(&self, content: T);
+
+    fn log_warn_once<T: Into<String> + Display>(&self, content: T);
+    fn log_error_once<T: Into<String> + Display>(&self, content: T);
 }
 
 pub struct Logger(pub LogSource);
@@ -47,6 +53,14 @@ impl LoggerTrait for Logger {
     fn log_error<T: Into<String> + Display>(&self, content: T) {
         error(self.0, content);
     }
+
+    fn log_warn_once<T: Into<String> + Display>(&self, content: T) {
+        warn_once(self.0, content);
+    }
+
+    fn log_error_once<T: Into<String> + Display>(&self, content: T) {
+        error_once(self.0, content);
+    }
 }
 
 impl LoggerTrait for FakeLogger {
@@ -55,6 +69,8 @@ impl LoggerTrait for FakeLogger {
     fn log_info<T: Into<String> + Display>(&self, _content: T) {}
     fn log_warn<T: Into<String> + Display>(&self, _content: T) {}
     fn log_error<T: Into<String> + Display>(&self, _content: T) {}
+    fn log_warn_once<T: Into<String> + Display>(&self, _content: T) {}
+    fn log_error_once<T: Into<String> + Display>(&self, _content: T) {}
 }
 
 pub struct Log {
@@ -176,9 +192,47 @@ pub fn warn<T: Into<String> + Display>(source: LogSource, content: T) {
     });
 }
 
+pub fn warn_once<T: Into<String> + Display>(source: LogSource, content: T) {
+    if do_pause_on_warn() {
+        set_emulator_running(false);
+    }
+
+    if !ONCE_LOGS.lock().unwrap().insert(content.to_string()) {
+        return;
+    }
+
+    warn!("[{}] {}", source, &content);
+    LOGS.lock().unwrap().push(Log {
+        kind: LogKind::Warn,
+        source,
+        content: content.to_string(),
+        timestamp: now(),
+    });
+}
+
 pub fn error<T: Into<String> + Display>(source: LogSource, content: T) {
     if do_pause_on_error() {
         set_emulator_running(false);
+    }
+
+    set_has_error_to_show(true);
+
+    error!("[{}] {}", source, &content);
+    LOGS.lock().unwrap().push(Log {
+        kind: LogKind::Error,
+        source,
+        content: content.to_string(),
+        timestamp: now(),
+    })
+}
+
+pub fn error_once<T: Into<String> + Display>(source: LogSource, content: T) {
+    if do_pause_on_error() {
+        set_emulator_running(false);
+    }
+
+    if !ONCE_LOGS.lock().unwrap().insert(content.to_string()) {
+        return;
     }
 
     set_has_error_to_show(true);

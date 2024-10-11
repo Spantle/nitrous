@@ -84,7 +84,7 @@ impl BusTrait for Bus7 {
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
             0x04000136..=0x04000137 => shared.extkeyin.value().to_bytes::<T>(),
             0x04000138 => {
-                logger::warn(
+                logger::warn_once(
                     logger::LogSource::Bus7,
                     format!("RTC not implemented (R{} {:#010X})", T, addr),
                 );
@@ -95,7 +95,7 @@ impl BusTrait for Bus7 {
             0x04000184..=0x04000187 => shared.ipcfifo.get_cnt::<false>().to_bytes::<T>(),
 
             0x040001C0..=0x040001C3 => {
-                logger::warn(
+                logger::warn_once(
                     logger::LogSource::Bus7,
                     format!("SPI not implemented (R{} {:#010X})", T, addr),
                 );
@@ -149,7 +149,7 @@ impl BusTrait for Bus7 {
             0x04000004..=0x04000005 => shared.gpus.dispstat = value.into_halfword().into(),
 
             0x04000134..=0x04000135 => {} // Debug RCNT, doesn't really do anything apparently
-            0x04000138 => logger::warn(
+            0x04000138 => logger::warn_once(
                 logger::LogSource::Bus7,
                 format!(
                     "RTC not implemented (W{} {:#010X}:{:#010X})",
@@ -165,7 +165,7 @@ impl BusTrait for Bus7 {
                 .set_cnt::<false>(&mut self.interrupts, value.into_word()),
             0x04000188..=0x0400018B => shared.ipcfifo.send::<false>(value.into_word()),
 
-            0x040001C0..=0x040001C3 => logger::warn(
+            0x040001C0..=0x040001C3 => logger::warn_once(
                 logger::LogSource::Bus7,
                 format!(
                     "SPI not implemented (W{} {:#010X}:{:#010X})",
@@ -181,7 +181,7 @@ impl BusTrait for Bus7 {
 
             0x04000304..=0x04000307 => shared.powcnt1 = value.into_word().into(),
 
-            0x04000400..=0x0400051F => logger::warn(
+            0x04000400..=0x0400051F => logger::warn_once(
                 logger::LogSource::Bus7,
                 format!(
                     "Sound channels not implemented (W{} {:#010X}:{:#010X})",
