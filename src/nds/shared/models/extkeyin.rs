@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use crate::nds::Bits;
 
 pub struct ExtKeyIn(u16);

@@ -15,10 +15,6 @@ impl HaltCnt {
     const POWER_DOWN_MODE_START: u8 = 6;
     const POWER_DOWN_MODE_END: u8 = 7;
 
-    pub fn value(&self) -> u8 {
-        self.0
-    }
-
     pub fn set(&mut self, value: u8) {
         self.0 = value;
     }
