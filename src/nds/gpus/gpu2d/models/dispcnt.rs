@@ -15,6 +15,11 @@ impl DispCnt {
     const BG_MODE_START: u32 = 0;
     const BG_MODE_END: u32 = 2;
 
+    const SCREEN_DISPLAY_BG0: u32 = 8;
+    const SCREEN_DISPLAY_BG1: u32 = 9;
+    const SCREEN_DISPLAY_BG2: u32 = 10;
+    const SCREEN_DISPLAY_BG3: u32 = 11;
+
     const DISPLAY_MODE_START: u32 = 16;
     const DISPLAY_MODE_END: u32 = 17;
     const VRAM_BLOCK_START: u32 = 18;
@@ -31,6 +36,22 @@ impl DispCnt {
 
     pub fn get_bg_mode(&self) -> u8 {
         self.0.get_bits(Self::BG_MODE_START, Self::BG_MODE_END) as u8
+    }
+
+    pub fn get_screen_display_bg0(&self) -> bool {
+        self.0.get_bit(Self::SCREEN_DISPLAY_BG0)
+    }
+
+    pub fn get_screen_display_bg1(&self) -> bool {
+        self.0.get_bit(Self::SCREEN_DISPLAY_BG1)
+    }
+
+    pub fn get_screen_display_bg2(&self) -> bool {
+        self.0.get_bit(Self::SCREEN_DISPLAY_BG2)
+    }
+
+    pub fn get_screen_display_bg3(&self) -> bool {
+        self.0.get_bit(Self::SCREEN_DISPLAY_BG3)
     }
 
     pub fn get_display_mode(&self) -> DisplayMode {

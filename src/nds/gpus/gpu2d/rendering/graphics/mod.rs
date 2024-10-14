@@ -12,23 +12,37 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
             0 => {
                 let mut ids: Vec<usize> = (0..=3).collect();
                 ids.sort_by(|&a, &b| {
-                    self.bgxcnt[a]
+                    self.bgxcnt[b]
                         .get_priority()
-                        .cmp(&self.bgxcnt[b].get_priority())
-                        .then(a.cmp(&b))
+                        .cmp(&self.bgxcnt[a].get_priority())
+                        .then(b.cmp(&a))
                 });
 
                 let mut bg_pixels: Vec<(Vec<u16>, u32, u32)> = vec![(vec![], 0, 0); 4];
-                bg_pixels[0] = self.draw_background::<0>();
-                bg_pixels[1] = self.draw_background::<1>();
-                bg_pixels[2] = self.draw_background::<2>();
-                bg_pixels[3] = self.draw_background::<3>();
+                // TODO: these can be improved (part 1)
+                if self.dispcnt.get_screen_display_bg0() {
+                    bg_pixels[0] = self.draw_background::<0>();
+                }
+                if self.dispcnt.get_screen_display_bg1() {
+                    bg_pixels[1] = self.draw_background::<1>();
+                }
+                if self.dispcnt.get_screen_display_bg2() {
+                    bg_pixels[2] = self.draw_background::<2>();
+                }
+                if self.dispcnt.get_screen_display_bg3() {
+                    bg_pixels[3] = self.draw_background::<3>();
+                }
 
                 let mut backdrop_colour_bytes = [0; 2];
                 backdrop_colour_bytes.copy_from_slice(&self.palette[0..2]);
                 let backdrop_colour = u16::from_le_bytes(backdrop_colour_bytes);
                 let mut pixels: Vec<u16> = vec![backdrop_colour; 256 * 192];
                 for id in ids {
+                    // TODO: this can be improved (part 2)
+                    if bg_pixels[id].0.is_empty() {
+                        continue;
+                    }
+
                     let bg = &bg_pixels[id].0;
                     let bg_width = bg_pixels[id].1 as usize;
                     let bg_height = bg_pixels[id].2 as usize;
