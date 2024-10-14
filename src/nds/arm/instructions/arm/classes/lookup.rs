@@ -9,7 +9,7 @@ use crate::nds::{
 
 use super::{
     branch, coprocessor, data_processing, exceptions, load_store, load_store_multiple, misc,
-    status_register_access,
+    semaphore, status_register_access,
 };
 
 #[inline(always)]
@@ -102,9 +102,7 @@ fn lookup_multiples_and_extra_load_store_instructions(
                 return data_processing::lookup_multiply(inst_set, ctx);
             } else {
                 // Semaphore
-                ctx.logger
-                    .log_error("semaphore instruction not implemented");
-                return 1;
+                return semaphore::lookup(inst_set, ctx);
             }
         } else {
             // bit 22
