@@ -175,6 +175,11 @@ impl NitrousGUI {
             ui.checkbox(&mut self.arm7_disassembler.open, "ARM7 Disassembler");
             ui.checkbox(&mut self.arm7_info.open, "ARM7 Info");
         });
+        ui.menu_button("GPU", |ui| {
+            ui.set_width(150.0);
+
+            ui.checkbox(&mut self.gpu_palette_viewer.open, "Palette Viewer");
+        });
         ui.checkbox(&mut self.emulation_log.open, "Emulation Log");
         ui.checkbox(&mut self.ipcsync_log.open, "IPCSYNC Log");
         ui.checkbox(&mut self.memory_viewer.open, "Memory Viewer");
