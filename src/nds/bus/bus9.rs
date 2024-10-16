@@ -216,7 +216,7 @@ impl BusTrait for Bus9 {
                 shared.vram_lcdc_alloc[addr..addr + T].copy_from_slice(&value);
             }
 
-            0x07000000..=0x07FFFFFF => logger::warn(
+            0x07000000..=0x07FFFFFF => logger::warn_once(
                 logger::LogSource::Bus9,
                 format!(
                     "OAM not implemented (W{} {:#010X}:{:#010X})",
