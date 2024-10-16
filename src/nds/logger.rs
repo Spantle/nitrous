@@ -197,17 +197,7 @@ pub fn warn_once<T: Into<String> + Display>(source: LogSource, content: T) {
         return;
     }
 
-    if do_pause_on_warn() {
-        set_emulator_running(false);
-    }
-
-    warn!("[{}] {}", source, &content);
-    LOGS.lock().unwrap().push(Log {
-        kind: LogKind::Warn,
-        source,
-        content: content.to_string(),
-        timestamp: now(),
-    });
+    warn(source, content);
 }
 
 pub fn error<T: Into<String> + Display>(source: LogSource, content: T) {
@@ -231,19 +221,7 @@ pub fn error_once<T: Into<String> + Display>(source: LogSource, content: T) {
         return;
     }
 
-    if do_pause_on_error() {
-        set_emulator_running(false);
-    }
-
-    set_has_error_to_show(true);
-
-    error!("[{}] {}", source, &content);
-    LOGS.lock().unwrap().push(Log {
-        kind: LogKind::Error,
-        source,
-        content: content.to_string(),
-        timestamp: now(),
-    })
+    error(source, content);
 }
 
 pub fn do_pause_on_warn() -> bool {
