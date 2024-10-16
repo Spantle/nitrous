@@ -193,12 +193,12 @@ pub fn warn<T: Into<String> + Display>(source: LogSource, content: T) {
 }
 
 pub fn warn_once<T: Into<String> + Display>(source: LogSource, content: T) {
-    if do_pause_on_warn() {
-        set_emulator_running(false);
-    }
-
     if !ONCE_LOGS.lock().unwrap().insert(content.to_string()) {
         return;
+    }
+
+    if do_pause_on_warn() {
+        set_emulator_running(false);
     }
 
     warn!("[{}] {}", source, &content);
@@ -227,12 +227,12 @@ pub fn error<T: Into<String> + Display>(source: LogSource, content: T) {
 }
 
 pub fn error_once<T: Into<String> + Display>(source: LogSource, content: T) {
-    if do_pause_on_error() {
-        set_emulator_running(false);
-    }
-
     if !ONCE_LOGS.lock().unwrap().insert(content.to_string()) {
         return;
+    }
+
+    if do_pause_on_error() {
+        set_emulator_running(false);
     }
 
     set_has_error_to_show(true);
