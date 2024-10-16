@@ -178,7 +178,8 @@ impl NitrousGUI {
         ui.menu_button("GPU", |ui| {
             ui.set_width(150.0);
 
-            ui.checkbox(&mut self.gpu_palette_viewer.open, "Palette Viewer");
+            ui.checkbox(&mut self.gpu_map_viewer.open, "Map Viewer (WIP)");
+            ui.checkbox(&mut self.gpu_palette_viewer.open, "Palette Viewer (WIP)");
         });
         ui.checkbox(&mut self.emulation_log.open, "Emulation Log");
         ui.checkbox(&mut self.ipcsync_log.open, "IPCSYNC Log");

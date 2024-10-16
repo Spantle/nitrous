@@ -15,7 +15,7 @@ const COLOUR_MULT: f32 = 255.0 / 31.0;
 // TODO: improve or finish this, i threw this together in a few minutes and don't care
 impl PaletteViewerWindow {
     pub fn show(&mut self, emulator: &Emulator, ctx: &egui::Context) {
-        egui::Window::new_nitrous("Palette Viewer", ctx)
+        egui::Window::new_nitrous("Palette Viewer (WIP)", ctx)
             .open(&mut self.open)
             .show(ctx, |ui| {
                 let table = egui_extras::TableBuilder::new(ui)

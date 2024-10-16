@@ -1,4 +1,4 @@
-mod gpu2d;
+pub mod gpu2d;
 mod models;
 
 use gpu2d::Gpu2d;

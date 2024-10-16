@@ -15,7 +15,7 @@ use super::{
             arm::{disassembler::ArmDisassemblerWindow, info::ArmInfoWindow},
             arm9_info::Arm9LegacyInfoWindow,
             emulation_log::EmulationLogWindow,
-            gpu::palette_viewer::PaletteViewerWindow,
+            gpu::{map_viewer::MapViewerWindow, palette_viewer::PaletteViewerWindow},
             ipcsync::IpcsyncLogWindow,
             memory_viewer::MemoryViewerWindow,
             register_viewer::RegisterViewerWindow,
@@ -51,6 +51,7 @@ pub struct NitrousGUI {
     pub arm7_disassembler: ArmDisassemblerWindow,
     pub arm7_info: ArmInfoWindow,
 
+    pub gpu_map_viewer: MapViewerWindow,
     pub gpu_palette_viewer: PaletteViewerWindow,
 
     pub emulation_log: EmulationLogWindow,
@@ -96,6 +97,7 @@ impl Default for NitrousGUI {
             arm7_disassembler: ArmDisassemblerWindow::default(),
             arm7_info: ArmInfoWindow::default(),
 
+            gpu_map_viewer: MapViewerWindow::default(),
             gpu_palette_viewer: PaletteViewerWindow::default(),
 
             emulation_log: EmulationLogWindow::default(),

@@ -160,6 +160,24 @@ impl BusTrait for Bus9 {
             0x0400100C..=0x0400100D => shared.gpus.b.bgxcnt[2] = value.into_halfword().into(),
             0x0400100E..=0x0400100F => shared.gpus.b.bgxcnt[3] = value.into_halfword().into(),
 
+            0x04000010..=0x04000011 => shared.gpus.a.bghofs[0] = value.into_halfword(),
+            0x04000012..=0x04000013 => shared.gpus.a.bgvofs[0] = value.into_halfword(),
+            0x04000014..=0x04000015 => shared.gpus.a.bghofs[1] = value.into_halfword(),
+            0x04000016..=0x04000017 => shared.gpus.a.bgvofs[1] = value.into_halfword(),
+            0x04000018..=0x04000019 => shared.gpus.a.bghofs[2] = value.into_halfword(),
+            0x0400001A..=0x0400001B => shared.gpus.a.bgvofs[2] = value.into_halfword(),
+            0x0400001C..=0x0400001D => shared.gpus.a.bghofs[3] = value.into_halfword(),
+            0x0400001E..=0x0400001F => shared.gpus.a.bgvofs[3] = value.into_halfword(),
+
+            0x04001010..=0x04001011 => shared.gpus.b.bghofs[0] = value.into_halfword(),
+            0x04001012..=0x04001013 => shared.gpus.b.bgvofs[0] = value.into_halfword(),
+            0x04001014..=0x04001015 => shared.gpus.b.bghofs[1] = value.into_halfword(),
+            0x04001016..=0x04001017 => shared.gpus.b.bgvofs[1] = value.into_halfword(),
+            0x04001018..=0x04001019 => shared.gpus.b.bghofs[2] = value.into_halfword(),
+            0x0400101A..=0x0400101B => shared.gpus.b.bgvofs[2] = value.into_halfword(),
+            0x0400101C..=0x0400101D => shared.gpus.b.bghofs[3] = value.into_halfword(),
+            0x0400101E..=0x0400101F => shared.gpus.b.bgvofs[3] = value.into_halfword(),
+
             0x04000100..=0x0400010F => logger::warn(
                 logger::LogSource::Bus9,
                 format!(

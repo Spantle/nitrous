@@ -36,17 +36,33 @@ impl Default for ScreenOptions {
 
 impl NitrousGUI {
     pub fn render_screens(&mut self, ctx: &egui::Context) {
-        let engine_a_data = self.emulator.shared.gpus.a.render(&self.emulator.shared);
-        let engine_b_data = self.emulator.shared.gpus.b.render(&self.emulator.shared);
+        let engine_a_result = self.emulator.shared.gpus.a.render(&self.emulator.shared);
+        let engine_b_result = self.emulator.shared.gpus.b.render(&self.emulator.shared);
         let (top_texture, bot_texture) = if self.emulator.shared.powcnt1.get_display_swap() {
             (
-                ctx.load_texture("top_screen", engine_a_data, egui::TextureOptions::NEAREST),
-                ctx.load_texture("bot_screen", engine_b_data, egui::TextureOptions::NEAREST),
+                ctx.load_texture(
+                    "top_screen",
+                    engine_a_result.image_data,
+                    egui::TextureOptions::NEAREST,
+                ),
+                ctx.load_texture(
+                    "bot_screen",
+                    engine_b_result.image_data,
+                    egui::TextureOptions::NEAREST,
+                ),
             )
         } else {
             (
-                ctx.load_texture("top_screen", engine_b_data, egui::TextureOptions::NEAREST),
-                ctx.load_texture("bot_screen", engine_a_data, egui::TextureOptions::NEAREST),
+                ctx.load_texture(
+                    "top_screen",
+                    engine_b_result.image_data,
+                    egui::TextureOptions::NEAREST,
+                ),
+                ctx.load_texture(
+                    "bot_screen",
+                    engine_a_result.image_data,
+                    egui::TextureOptions::NEAREST,
+                ),
             )
         };
 
@@ -85,6 +101,8 @@ impl NitrousGUI {
                 },
             );
         });
+
+        self.gpu_map_viewer.show(ctx, &engine_b_result.bgs);
     }
 
     fn display_windowed_screen(
