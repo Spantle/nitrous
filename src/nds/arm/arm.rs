@@ -27,7 +27,6 @@ pub struct Arm<Bus: BusTrait> {
     // arm9 exclusives
     pub cp15: CP15,
     // arm7 exlusives
-    pub wram7: Vec<u8>,   // 64kb
     pub haltcnt: HaltCnt, // 0x04000301
 
     // emulator variables
@@ -58,7 +57,6 @@ impl<Bus: BusTrait> Default for Arm<Bus> {
             cpsr: Psr::default(),
 
             cp15: CP15::default(),
-            wram7: vec![0; 1024 * 64],
             haltcnt: HaltCnt::default(),
 
             pc_changed: true,

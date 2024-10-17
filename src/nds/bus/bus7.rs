@@ -2,10 +2,22 @@ use crate::nds::{arm::ArmKind, interrupts::Interrupts, logger, shared::Shared, B
 
 use super::BusTrait;
 
-#[derive(Default)]
 pub struct Bus7 {
     pub bios: Vec<u8>,
     pub interrupts: Interrupts,
+
+    pub wram7: Vec<u8>, // 64kb
+}
+
+impl Default for Bus7 {
+    fn default() -> Bus7 {
+        Bus7 {
+            bios: vec![],
+            interrupts: Interrupts::default(),
+
+            wram7: vec![0; 1024 * 64],
+        }
+    }
 }
 
 impl BusTrait for Bus7 {
@@ -78,6 +90,11 @@ impl BusTrait for Bus7 {
                 bytes.copy_from_slice(&shared.wram[addr..addr + T]);
                 bytes
             }
+            0x03800000..=0x03FFFFFF => {
+                let addr = (addr - 0x03800000) % 0x10000;
+                bytes.copy_from_slice(&self.wram7[addr..addr + T]);
+                bytes
+            }
 
             0x04000004..=0x04000005 => shared.gpus.dispstat.value().to_bytes::<T>(),
 
@@ -109,7 +126,7 @@ impl BusTrait for Bus7 {
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
 
             0x04000500..=0x04000501 => {
-                logger::warn(
+                logger::warn_once(
                     logger::LogSource::Bus7,
                     format!("SOUNDCNT not implemented (R{} {:#010X})", T, addr),
                 );
@@ -145,8 +162,41 @@ impl BusTrait for Bus7 {
                 let addr = (addr - 0x03000000) % 0x8000;
                 shared.wram[addr..addr + T].copy_from_slice(&value);
             }
+            0x03800000..=0x03FFFFFF => {
+                let addr = (addr - 0x03800000) % 0x10000;
+                self.wram7[addr..addr + T].copy_from_slice(&value);
+            }
 
             0x04000004..=0x04000005 => shared.gpus.dispstat = value.into_halfword().into(),
+
+            0x04000050..=0x04000058 => logger::warn_once(
+                logger::LogSource::Bus9,
+                format!(
+                    "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
+                    T,
+                    addr,
+                    value.into_word()
+                ),
+            ),
+            0x04001050..=0x04001058 => logger::warn_once(
+                logger::LogSource::Bus9,
+                format!(
+                    "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
+                    T,
+                    addr,
+                    value.into_word()
+                ),
+            ),
+
+            0x04000100..=0x0400010F => logger::warn_once(
+                logger::LogSource::Bus7,
+                format!(
+                    "Timers not implemented (W{} {:#010X}:{:#010X})",
+                    T,
+                    addr,
+                    value.into_word()
+                ),
+            ),
 
             0x04000134..=0x04000135 => {} // Debug RCNT, doesn't really do anything apparently
             0x04000138 => logger::warn_once(

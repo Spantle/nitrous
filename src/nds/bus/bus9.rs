@@ -178,7 +178,26 @@ impl BusTrait for Bus9 {
             0x0400101C..=0x0400101D => shared.gpus.b.bghofs[3] = value.into_halfword(),
             0x0400101E..=0x0400101F => shared.gpus.b.bgvofs[3] = value.into_halfword(),
 
-            0x04000100..=0x0400010F => logger::warn(
+            0x04000050..=0x04000058 => logger::warn_once(
+                logger::LogSource::Bus9,
+                format!(
+                    "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
+                    T,
+                    addr,
+                    value.into_word()
+                ),
+            ),
+            0x04001050..=0x04001058 => logger::warn_once(
+                logger::LogSource::Bus9,
+                format!(
+                    "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
+                    T,
+                    addr,
+                    value.into_word()
+                ),
+            ),
+
+            0x04000100..=0x0400010F => logger::warn_once(
                 logger::LogSource::Bus9,
                 format!(
                     "Timers not implemented (W{} {:#010X}:{:#010X})",
@@ -221,7 +240,7 @@ impl BusTrait for Bus9 {
                 let addr = (addr - 0x06200000) % 0x20000;
                 shared.gpus.b.bg_vram[addr..addr + T].copy_from_slice(&value);
             }
-            0x06400000..=0x067FFFFF => logger::warn(
+            0x06400000..=0x067FFFFF => logger::warn_once(
                 logger::LogSource::Bus9,
                 format!(
                     "OBJ VRAM not implemented (W{} {:#010X}:{:#010X})",
