@@ -1,8 +1,16 @@
-use crate::nds::{arm::ArmKind, interrupts::Interrupts, logger, shared::Shared, Bits, Bytes};
+use crate::nds::{
+    arm::ArmKind,
+    interrupts::Interrupts,
+    logger::{self, Logger, LoggerTrait},
+    shared::Shared,
+    Bits, Bytes,
+};
 
 use super::BusTrait;
 
 pub struct Bus7 {
+    logger: Logger,
+
     pub bios: Vec<u8>,
     pub interrupts: Interrupts,
 
@@ -12,6 +20,8 @@ pub struct Bus7 {
 impl Default for Bus7 {
     fn default() -> Bus7 {
         Bus7 {
+            logger: Logger(logger::LogSource::Bus7),
+
             bios: vec![],
             interrupts: Interrupts::default(),
 
@@ -28,7 +38,7 @@ impl BusTrait for Bus7 {
     }
 
     fn load_bios(&mut self, bios: Vec<u8>) {
-        logger::info(logger::LogSource::Bus7, "Successfully loaded BIOS");
+        self.logger.log_info("Successfully loaded BIOS");
         self.bios = bios;
     }
 
@@ -36,10 +46,7 @@ impl BusTrait for Bus7 {
         let file = std::fs::read(path);
         match file {
             Ok(bios) => self.load_bios(bios),
-            Err(e) => logger::error(
-                logger::LogSource::Bus7,
-                format!("Failed to load BIOS: {}", e),
-            ),
+            Err(e) => self.logger.log_error(format!("Failed to load BIOS: {}", e)),
         };
     }
 
@@ -101,10 +108,8 @@ impl BusTrait for Bus7 {
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
             0x04000136..=0x04000137 => shared.extkeyin.value().to_bytes::<T>(),
             0x04000138 => {
-                logger::warn_once(
-                    logger::LogSource::Bus7,
-                    format!("RTC not implemented (R{} {:#010X})", T, addr),
-                );
+                self.logger
+                    .log_warn_once(format!("RTC not implemented (R{} {:#010X})", T, addr));
                 bytes
             }
 
@@ -112,10 +117,8 @@ impl BusTrait for Bus7 {
             0x04000184..=0x04000187 => shared.ipcfifo.get_cnt::<false>().to_bytes::<T>(),
 
             0x040001C0..=0x040001C3 => {
-                logger::warn_once(
-                    logger::LogSource::Bus7,
-                    format!("SPI not implemented (R{} {:#010X})", T, addr),
-                );
+                self.logger
+                    .log_warn_once(format!("SPI not implemented (R{} {:#010X})", T, addr));
                 bytes
             }
 
@@ -126,10 +129,8 @@ impl BusTrait for Bus7 {
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
 
             0x04000500..=0x04000501 => {
-                logger::warn_once(
-                    logger::LogSource::Bus7,
-                    format!("SOUNDCNT not implemented (R{} {:#010X})", T, addr),
-                );
+                self.logger
+                    .log_warn_once(format!("SOUNDCNT not implemented (R{} {:#010X})", T, addr));
                 bytes
             }
 
@@ -140,10 +141,10 @@ impl BusTrait for Bus7 {
                     return bytes;
                 }
 
-                logger::error(
-                    logger::LogSource::Bus7,
-                    format!("Invalid read {} byte(s) at address {:#010X}", T, addr),
-                );
+                self.logger.log_error(format!(
+                    "Invalid read {} byte(s) at address {:#010X}",
+                    T, addr
+                ));
                 bytes
             }
         }
@@ -169,45 +170,33 @@ impl BusTrait for Bus7 {
 
             0x04000004..=0x04000005 => shared.gpus.dispstat = value.into_halfword().into(),
 
-            0x04000050..=0x04000058 => logger::warn_once(
-                logger::LogSource::Bus9,
-                format!(
-                    "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
-            0x04001050..=0x04001058 => logger::warn_once(
-                logger::LogSource::Bus9,
-                format!(
-                    "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x04000050..=0x04000058 => self.logger.log_warn_once(format!(
+                "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
+            0x04001050..=0x04001058 => self.logger.log_warn_once(format!(
+                "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
-            0x04000100..=0x0400010F => logger::warn_once(
-                logger::LogSource::Bus7,
-                format!(
-                    "Timers not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x04000100..=0x0400010F => self.logger.log_warn_once(format!(
+                "Timers not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
             0x04000134..=0x04000135 => {} // Debug RCNT, doesn't really do anything apparently
-            0x04000138 => logger::warn_once(
-                logger::LogSource::Bus7,
-                format!(
-                    "RTC not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x04000138 => self.logger.log_warn_once(format!(
+                "RTC not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
             0x04000180..=0x04000183 => shared.ipcsync.set::<false>(value.into_word()),
             0x04000184..=0x04000187 => shared
@@ -215,15 +204,12 @@ impl BusTrait for Bus7 {
                 .set_cnt::<false>(&mut self.interrupts, value.into_word()),
             0x04000188..=0x0400018B => shared.ipcfifo.send::<false>(value.into_word()),
 
-            0x040001C0..=0x040001C3 => logger::warn_once(
-                logger::LogSource::Bus7,
-                format!(
-                    "SPI not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x040001C0..=0x040001C3 => self.logger.log_warn_once(format!(
+                "SPI not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
             0x04000208..=0x0400020B => self.interrupts.me = value.into_word().into(),
             0x04000210..=0x04000213 => self.interrupts.e = value.into_word().into(),
@@ -231,28 +217,22 @@ impl BusTrait for Bus7 {
 
             0x04000304..=0x04000307 => shared.powcnt1 = value.into_word().into(),
 
-            0x04000400..=0x0400051F => logger::warn_once(
-                logger::LogSource::Bus7,
-                format!(
-                    "Sound channels not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x04000400..=0x0400051F => self.logger.log_warn_once(format!(
+                "Sound channels not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
             _ => {
                 let success = shared.dma7.write_slice::<T>(addr, value);
                 if !success {
-                    logger::error(
-                        logger::LogSource::Bus7,
-                        format!(
-                            "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
-                            T,
-                            addr,
-                            value.into_word()
-                        ),
-                    );
+                    self.logger.log_error(format!(
+                        "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
+                        T,
+                        addr,
+                        value.into_word()
+                    ));
                 }
             }
         };

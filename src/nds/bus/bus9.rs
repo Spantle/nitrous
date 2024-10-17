@@ -1,11 +1,29 @@
-use crate::nds::{arm::ArmKind, interrupts::Interrupts, logger, shared::Shared, Bits, Bytes};
+use crate::nds::{
+    arm::ArmKind,
+    interrupts::Interrupts,
+    logger::{self, Logger, LoggerTrait},
+    shared::Shared,
+    Bits, Bytes,
+};
 
 use super::BusTrait;
 
-#[derive(Default)]
 pub struct Bus9 {
+    logger: Logger,
+
     pub bios: Vec<u8>,
     pub interrupts: Interrupts,
+}
+
+impl Default for Bus9 {
+    fn default() -> Self {
+        Self {
+            logger: Logger(logger::LogSource::Bus9),
+
+            bios: Vec::new(),
+            interrupts: Interrupts::default(),
+        }
+    }
 }
 
 impl BusTrait for Bus9 {
@@ -16,7 +34,7 @@ impl BusTrait for Bus9 {
     }
 
     fn load_bios(&mut self, bios: Vec<u8>) {
-        logger::info(logger::LogSource::Bus9, "Successfully loaded BIOS");
+        self.logger.log_info("Successfully loaded BIOS");
         self.bios = bios;
     }
 
@@ -24,10 +42,7 @@ impl BusTrait for Bus9 {
         let file = std::fs::read(path);
         match file {
             Ok(bios) => self.load_bios(bios),
-            Err(e) => logger::error(
-                logger::LogSource::Bus9,
-                format!("Failed to load BIOS: {}", e),
-            ),
+            Err(e) => self.logger.log_error(format!("Failed to load BIOS: {}", e)),
         };
     }
 
@@ -85,10 +100,8 @@ impl BusTrait for Bus9 {
             0x04000184..=0x04000185 => shared.ipcfifo.get_cnt::<true>().to_bytes::<T>(),
 
             0x04000204..=0x04000205 => {
-                logger::warn_once(
-                    logger::LogSource::Bus9,
-                    format!("WAITCNT not implemented (R{} {:#010X})", T, addr),
-                );
+                self.logger
+                    .log_warn_once(format!("WAITCNT not implemented (R{} {:#010X})", T, addr));
                 bytes
             }
 
@@ -131,10 +144,10 @@ impl BusTrait for Bus9 {
                     return bytes;
                 }
 
-                logger::error(
-                    logger::LogSource::Bus9,
-                    format!("Invalid read {} byte(s) at address {:#010X}", T, addr),
-                );
+                self.logger.log_error(format!(
+                    "Invalid read {} byte(s) at address {:#010X}",
+                    T, addr
+                ));
                 bytes
             }
         }
@@ -186,34 +199,25 @@ impl BusTrait for Bus9 {
             0x0400101C..=0x0400101D => shared.gpus.b.bghofs[3] = value.into_halfword(),
             0x0400101E..=0x0400101F => shared.gpus.b.bgvofs[3] = value.into_halfword(),
 
-            0x04000050..=0x04000058 => logger::warn_once(
-                logger::LogSource::Bus9,
-                format!(
-                    "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
-            0x04001050..=0x04001058 => logger::warn_once(
-                logger::LogSource::Bus9,
-                format!(
-                    "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x04000050..=0x04000058 => self.logger.log_warn_once(format!(
+                "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
+            0x04001050..=0x04001058 => self.logger.log_warn_once(format!(
+                "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
-            0x04000100..=0x0400010F => logger::warn_once(
-                logger::LogSource::Bus9,
-                format!(
-                    "Timers not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x04000100..=0x0400010F => self.logger.log_warn_once(format!(
+                "Timers not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
             0x04000180..=0x04000183 => shared.ipcsync.set::<true>(value.into_word()),
             0x04000184..=0x04000187 => shared
@@ -221,15 +225,12 @@ impl BusTrait for Bus9 {
                 .set_cnt::<true>(&mut self.interrupts, value.into_word()),
             0x04000188..=0x0400018B => shared.ipcfifo.send::<true>(value.into_word()),
 
-            0x04000204..=0x04000205 => logger::warn_once(
-                logger::LogSource::Bus9,
-                format!(
-                    "WAITCNT not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x04000204..=0x04000205 => self.logger.log_warn_once(format!(
+                "WAITCNT not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
             0x04000208..=0x0400020B => self.interrupts.me = value.into_word().into(),
             0x04000210..=0x04000213 => self.interrupts.e = value.into_word().into(),
@@ -258,30 +259,24 @@ impl BusTrait for Bus9 {
                 let addr = (addr - 0x06200000) % 0x20000;
                 shared.gpus.b.bg_vram[addr..addr + T].copy_from_slice(&value);
             }
-            0x06400000..=0x067FFFFF => logger::warn_once(
-                logger::LogSource::Bus9,
-                format!(
-                    "OBJ VRAM not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x06400000..=0x067FFFFF => self.logger.log_warn_once(format!(
+                "OBJ VRAM not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
             0x06800000..=0x068A4000 => {
                 let addr = addr - 0x06800000;
                 shared.vram_lcdc_alloc[addr..addr + T].copy_from_slice(&value);
             }
 
-            0x07000000..=0x07FFFFFF => logger::warn_once(
-                logger::LogSource::Bus9,
-                format!(
-                    "OAM not implemented (W{} {:#010X}:{:#010X})",
-                    T,
-                    addr,
-                    value.into_word()
-                ),
-            ),
+            0x07000000..=0x07FFFFFF => self.logger.log_warn_once(format!(
+                "OAM not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
             0xFFFF0000..=0xFFFF7FFF => {
                 let addr = addr - 0xFFFF0000;
@@ -291,15 +286,12 @@ impl BusTrait for Bus9 {
             _ => {
                 let success = shared.dma9.write_slice::<T>(addr, value);
                 if !success {
-                    logger::error(
-                        logger::LogSource::Bus9,
-                        format!(
-                            "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
-                            T,
-                            addr,
-                            value.into_word()
-                        ),
-                    );
+                    self.logger.log_error(format!(
+                        "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
+                        T,
+                        addr,
+                        value.into_word()
+                    ));
                 }
             }
         }
