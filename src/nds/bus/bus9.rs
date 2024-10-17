@@ -177,7 +177,7 @@ impl BusTrait for Bus9 {
                 shared.psram[addr..addr + T].copy_from_slice(&value);
             }
 
-            0x03000000..=0x037FFFFF => {
+            0x03000000..=0x03FFFFFF => {
                 let addr = (addr - 0x03000000) % 0x8000;
                 shared.wram[addr..addr + T].copy_from_slice(&value);
             }
