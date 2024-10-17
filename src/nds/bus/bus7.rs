@@ -128,9 +128,11 @@ impl BusTrait for Bus7 {
 
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
 
-            0x04000500..=0x04000501 => {
-                self.logger
-                    .log_warn_once(format!("SOUNDCNT not implemented (R{} {:#010X})", T, addr));
+            0x04000400..=0x0400051F => {
+                self.logger.log_warn_once(format!(
+                    "Sound channels not implemented (R{} {:#010X})",
+                    T, addr
+                ));
                 bytes
             }
 
