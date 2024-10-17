@@ -60,9 +60,12 @@ impl Timer {
 
     pub fn set(&mut self, value: u32) {
         let old_prescaler = self.control.get_prescaler();
+        let old_enable = self.control.get_timer_operating();
+
         self.reload = value as u16;
         self.control.set(value.get_bits(16, 31) as u16);
-        self.cnt_updated(old_prescaler);
+
+        self.cnt_updated(old_prescaler, old_enable);
     }
 
     pub fn set_l(&mut self, value: u16) {
@@ -71,8 +74,11 @@ impl Timer {
 
     pub fn set_h(&mut self, value: u16) {
         let old_prescaler = self.control.get_prescaler();
+        let old_enable = self.control.get_timer_operating();
+
         self.control.set(value);
-        self.cnt_updated(old_prescaler);
+
+        self.cnt_updated(old_prescaler, old_enable);
     }
 
     pub fn clock(&mut self, interrupts: &mut Interrupts) {
@@ -81,12 +87,6 @@ impl Timer {
         self.next_run -= (is_operating & is_normal_mode) as i16;
         // TODO: i could eliminate this if statement perhaps
         if self.next_run <= 0 {
-            // println!(
-            //     "{} {} {}",
-            //     (is_operating & is_normal_mode) as i16,
-            //     self.next_run_prescaler,
-            //     self.counter,
-            // );
             self.next_run = self.next_run_prescaler;
 
             // TODO: can i remove this if statement?
@@ -103,12 +103,15 @@ impl Timer {
         }
     }
 
-    fn cnt_updated(&mut self, old_prescaler: u16) {
+    fn cnt_updated(&mut self, old_prescaler: u16, old_enable: bool) {
         if self.control.get_count_up_timing() {
+            // TODO: implement count up timing
             logger::error_once(logger::LogSource::Emu, "Count up timing not implemented");
         }
 
-        self.counter = self.reload;
+        if !old_enable && self.control.get_timer_operating() {
+            self.counter = self.reload;
+        }
 
         let new_prescaler = self.control.get_prescaler();
         if new_prescaler != old_prescaler {
