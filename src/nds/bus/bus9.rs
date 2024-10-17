@@ -93,7 +93,7 @@ impl BusTrait for Bus9 {
                 bytes
             }
 
-            0x03000000..=0x037FFFFF => {
+            0x03000000..=0x03FFFFFF => {
                 let addr = (addr - 0x03000000) % 0x8000;
                 bytes.copy_from_slice(&shared.wram[addr..addr + T]);
                 bytes
