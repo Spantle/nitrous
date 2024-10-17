@@ -41,49 +41,49 @@ pub fn mrc(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
         }
         (2, 0, 0) => {
             // PU Cachability Bits for Data/Unified Protection Region
-            ctx.logger.log_warn(
+            ctx.logger.log_warn_once(
                 "MRC: unimplemented \"PU Cachability Bits for Data/Unified Protection Region\"",
             );
             None
         }
         (2, 0, 1) => {
             // PU Cachability Bits for Instruction Protection Region
-            ctx.logger.log_warn(
+            ctx.logger.log_warn_once(
                 "MRC: unimplemented \"PU Cachability Bits for Instruction Protection Region\"",
             );
             None
         }
         (3, 0, 0) => {
             // PU Cache Write-Bufferability Bits for Data Protection Regions
-            ctx.logger.log_warn(
+            ctx.logger.log_warn_once(
                 "MRC: unimplemented \"PU Cache Write-Bufferability Bits for Data Protection Regions\"",
             );
             None
         }
         (5, 0, 0) => {
             // PU Access Permission Data/Unified Protection Region
-            ctx.logger.log_warn(
+            ctx.logger.log_warn_once(
                 "MRC: unimplemented \"PU Access Permission Data/Unified Protection Region\"",
             );
             None
         }
         (5, 0, 1) => {
             // PU Access Permission Instruction Protection Region
-            ctx.logger.log_warn(
+            ctx.logger.log_warn_once(
                 "MRC: unimplemented \"PU Access Permission Instruction Protection Region\"",
             );
             None
         }
         (5, 0, 2) => {
             // PU Extended Access Permission Data/Unified Protection Region
-            ctx.logger.log_warn(
+            ctx.logger.log_warn_once(
                 "MRC: unimplemented \"PU Extended Access Permission Data/Unified Protection Region\"",
             );
             None
         }
         (5, 0, 3) => {
             // PU Extended Access Permission Instruction Protection Region
-            ctx.logger.log_warn(
+            ctx.logger.log_warn_once(
                 "MRC: unimplemented \"PU Extended Access Permission Instruction Protection Region\"",
             );
             None
@@ -91,31 +91,31 @@ pub fn mrc(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
         (6, 0..=7, 0) => {
             // PU Protection Unit Data/Unified Region
             ctx.logger
-                .log_warn("MRC: unimplemented \"Protection Unit Data/Unified Region\"");
+                .log_warn_once("MRC: unimplemented \"Protection Unit Data/Unified Region\"");
             None
         }
         (6, 0..=7, 1) => {
             // PU Protection Unit Instruction Region
             ctx.logger
-                .log_warn("MRC: unimplemented \"Protection Unit Instruction Region\"");
+                .log_warn_once("MRC: unimplemented \"Protection Unit Instruction Region\"");
             None
         }
         (7, _, _) => {
             // Cache Commands and Halt Function
             ctx.logger
-                .log_warn("MRC: unimplemented \"Cache Commands and Halt Function\"");
+                .log_warn_once("MRC: unimplemented \"Cache Commands and Halt Function\"");
             None
         }
         (9, 0, 0) => {
             // Cache Data Lockdown
             ctx.logger
-                .log_warn("MRC: unimplemented \"Cache Data Lockdown\"");
+                .log_warn_once("MRC: unimplemented \"Cache Data Lockdown\"");
             None
         }
         (9, 0, 1) => {
             // Cache Instruction Lockdown
             ctx.logger
-                .log_warn("MRC: unimplemented \"Cache Instruction Lockdown\"");
+                .log_warn_once("MRC: unimplemented \"Cache Instruction Lockdown\"");
             None
         }
         (9, 1, 0) => {
@@ -127,7 +127,7 @@ pub fn mrc(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             Some(arm.cp15().inst_tcm_reg)
         }
         _ => {
-            ctx.logger.log_error(format!(
+            ctx.logger.log_error_once(format!(
                 "MRC: unhandled instruction: CP{},{},{},CR{},CR{},{}",
                 cp_num, opcode_1, rd, crn, crm, opcode_2
             ));
