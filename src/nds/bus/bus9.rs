@@ -84,6 +84,14 @@ impl BusTrait for Bus9 {
             0x04000180..=0x04000183 => shared.ipcsync.value::<true>().to_bytes::<T>(),
             0x04000184..=0x04000185 => shared.ipcfifo.get_cnt::<true>().to_bytes::<T>(),
 
+            0x04000204..=0x04000205 => {
+                logger::warn_once(
+                    logger::LogSource::Bus9,
+                    format!("WAITCNT not implemented (R{} {:#010X})", T, addr),
+                );
+                bytes
+            }
+
             0x04000208..=0x0400020B => self.interrupts.me.value().to_bytes::<T>(),
             0x04000210..=0x04000213 => self.interrupts.e.value().to_bytes::<T>(),
             0x04000214..=0x04000217 => self.interrupts.f.value().to_bytes::<T>(),
@@ -212,6 +220,16 @@ impl BusTrait for Bus9 {
                 .ipcfifo
                 .set_cnt::<true>(&mut self.interrupts, value.into_word()),
             0x04000188..=0x0400018B => shared.ipcfifo.send::<true>(value.into_word()),
+
+            0x04000204..=0x04000205 => logger::warn_once(
+                logger::LogSource::Bus9,
+                format!(
+                    "WAITCNT not implemented (W{} {:#010X}:{:#010X})",
+                    T,
+                    addr,
+                    value.into_word()
+                ),
+            ),
 
             0x04000208..=0x0400020B => self.interrupts.me = value.into_word().into(),
             0x04000210..=0x04000213 => self.interrupts.e = value.into_word().into(),
