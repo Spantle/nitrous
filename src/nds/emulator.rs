@@ -147,6 +147,9 @@ impl Emulator {
             .ipcfifo
             .update_interrupts(&mut self.bus9.interrupts, &mut self.bus7.interrupts);
 
+        self.bus9.timers.clock(&mut self.bus9.interrupts);
+        self.bus7.timers.clock(&mut self.bus7.interrupts);
+
         self.cycle_state = match self.cycle_state {
             CycleState::Arm9_1 => CycleState::Arm9_2,
             CycleState::Arm9_2 => CycleState::Arm7,
@@ -190,6 +193,9 @@ impl Emulator {
 
                 let arm7_cycles = self.arm7.clock(&mut self.bus7, &mut self.shared);
                 cycles_ran_arm7 += arm7_cycles as i32;
+
+                self.bus9.timers.clock(&mut self.bus9.interrupts);
+                self.bus7.timers.clock(&mut self.bus7.interrupts);
 
                 disassembler_windows
                     .1
