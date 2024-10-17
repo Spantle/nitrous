@@ -1,11 +1,6 @@
 use models::{ExtKeyIn, IpcFifo, IpcSync, KeyInput, PowCnt1};
 
-use super::{
-    bus::{bus7::Bus7, bus9::Bus9},
-    cartridge::Cartridge,
-    dma::Dma,
-    gpus::Gpus,
-};
+use super::{cartridge::Cartridge, gpus::Gpus};
 
 pub struct Shared {
     pub cart: Cartridge,
@@ -19,9 +14,6 @@ pub struct Shared {
     pub ipcsync: IpcSync,   // 0x04000180
     pub ipcfifo: IpcFifo,   // 0x04000184, 0x04000188, 0x04100000
     pub powcnt1: PowCnt1,   // 0x04000304
-
-    pub dma9: Dma<Bus9>,
-    pub dma7: Dma<Bus7>,
 
     pub vram_lcdc_alloc: Vec<u8>, // 0x06800000
 }
@@ -40,9 +32,6 @@ impl Default for Shared {
             ipcsync: IpcSync::default(),
             ipcfifo: IpcFifo::default(),
             powcnt1: PowCnt1::default(),
-
-            dma9: Dma::default(),
-            dma7: Dma::default(),
 
             vram_lcdc_alloc: vec![0; 1024 * 656],
         }
@@ -64,9 +53,6 @@ impl Shared {
             ipcfifo: IpcFifo::default(),
             powcnt1: PowCnt1::default(),
 
-            dma9: Dma::default(),
-            dma7: Dma::default(),
-
             vram_lcdc_alloc: vec![0; 0],
         }
     }
@@ -80,9 +66,6 @@ impl Shared {
         self.ipcsync = IpcSync::default();
         self.ipcfifo = IpcFifo::default();
         self.powcnt1 = PowCnt1::default();
-
-        self.dma9 = Dma::default();
-        self.dma7 = Dma::default();
 
         self.vram_lcdc_alloc = vec![0; 1024 * 656];
     }

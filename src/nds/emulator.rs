@@ -119,9 +119,9 @@ impl Emulator {
         let cycles = match self.cycle_state {
             CycleState::Arm9_1 | CycleState::Arm9_2 => {
                 let cycles = self.arm9.clock(&mut self.bus9, &mut self.shared);
-                self.shared.dma9 = self
-                    .shared
-                    .dma9
+                self.bus9.dma = self
+                    .bus9
+                    .dma
                     .clone()
                     .check_immediately(&mut self.bus9, &mut self.shared);
 
@@ -130,9 +130,9 @@ impl Emulator {
             CycleState::Arm7 => {
                 let cycles = self.arm7.clock(&mut self.bus7, &mut self.shared);
                 self.shared.gpus.clock(&mut self.bus9, &mut self.bus7);
-                self.shared.dma7 = self
-                    .shared
-                    .dma7
+                self.bus7.dma = self
+                    .bus7
+                    .dma
                     .clone()
                     .check_immediately(&mut self.bus7, &mut self.shared);
 
@@ -202,14 +202,14 @@ impl Emulator {
             }
 
             // this sucks lmao
-            self.shared.dma9 = self
-                .shared
-                .dma9
+            self.bus9.dma = self
+                .bus9
+                .dma
                 .clone()
                 .check_immediately(&mut self.bus9, &mut self.shared);
-            self.shared.dma7 = self
-                .shared
-                .dma7
+            self.bus7.dma = self
+                .bus7
+                .dma
                 .clone()
                 .check_immediately(&mut self.bus7, &mut self.shared);
 

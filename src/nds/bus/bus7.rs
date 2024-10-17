@@ -1,5 +1,6 @@
 use crate::nds::{
     arm::ArmKind,
+    dma::Dma,
     interrupts::Interrupts,
     logger::{self, Logger, LoggerTrait},
     shared::Shared,
@@ -14,6 +15,7 @@ pub struct Bus7 {
     pub bios: Vec<u8>,
     pub interrupts: Interrupts,
 
+    pub dma: Dma<Bus7>,
     pub wram7: Vec<u8>, // 64kb
 }
 
@@ -25,6 +27,7 @@ impl Default for Bus7 {
             bios: vec![],
             interrupts: Interrupts::default(),
 
+            dma: Dma::default(),
             wram7: vec![0; 1024 * 64],
         }
     }
@@ -35,6 +38,8 @@ impl BusTrait for Bus7 {
 
     fn reset(&mut self) {
         self.interrupts = Interrupts::default();
+        self.dma = Dma::default();
+        self.wram7 = vec![0; 1024 * 64];
     }
 
     fn load_bios(&mut self, bios: Vec<u8>) {
@@ -139,7 +144,7 @@ impl BusTrait for Bus7 {
             0x04100000..=0x04100003 => shared.ipcfifo.receive::<false>().to_bytes::<T>(),
 
             _ => {
-                if let Some(bytes) = shared.dma7.read_slice::<T>(addr) {
+                if let Some(bytes) = self.dma.read_slice::<T>(addr) {
                     return bytes;
                 }
 
@@ -227,7 +232,7 @@ impl BusTrait for Bus7 {
             )),
 
             _ => {
-                let success = shared.dma7.write_slice::<T>(addr, value);
+                let success = self.dma.write_slice::<T>(addr, value);
                 if !success {
                     self.logger.log_error(format!(
                         "Invalid write {} byte(s) at address {:#010X}: {:#010X}",

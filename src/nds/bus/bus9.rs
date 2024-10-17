@@ -1,5 +1,6 @@
 use crate::nds::{
     arm::ArmKind,
+    dma::Dma,
     interrupts::Interrupts,
     logger::{self, Logger, LoggerTrait},
     shared::Shared,
@@ -13,6 +14,8 @@ pub struct Bus9 {
 
     pub bios: Vec<u8>,
     pub interrupts: Interrupts,
+
+    pub dma: Dma<Bus9>,
 }
 
 impl Default for Bus9 {
@@ -22,6 +25,8 @@ impl Default for Bus9 {
 
             bios: Vec::new(),
             interrupts: Interrupts::default(),
+
+            dma: Dma::default(),
         }
     }
 }
@@ -31,6 +36,7 @@ impl BusTrait for Bus9 {
 
     fn reset(&mut self) {
         self.interrupts = Interrupts::default();
+        self.dma = Dma::default();
     }
 
     fn load_bios(&mut self, bios: Vec<u8>) {
@@ -140,7 +146,7 @@ impl BusTrait for Bus9 {
             }
 
             _ => {
-                if let Some(bytes) = shared.dma9.read_slice::<T>(addr) {
+                if let Some(bytes) = self.dma.read_slice::<T>(addr) {
                     return bytes;
                 }
 
@@ -284,7 +290,7 @@ impl BusTrait for Bus9 {
             }
 
             _ => {
-                let success = shared.dma9.write_slice::<T>(addr, value);
+                let success = self.dma.write_slice::<T>(addr, value);
                 if !success {
                     self.logger.log_error(format!(
                         "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
