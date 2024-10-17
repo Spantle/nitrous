@@ -4,6 +4,7 @@ use crate::nds::{
     interrupts::Interrupts,
     logger::{self, Logger, LoggerTrait},
     shared::Shared,
+    timers::Timers,
     Bits, Bytes,
 };
 
@@ -16,6 +17,7 @@ pub struct Bus7 {
     pub interrupts: Interrupts,
 
     pub dma: Dma<Bus7>,
+    pub timers: Timers,
     pub wram7: Vec<u8>, // 64kb
 }
 
@@ -28,6 +30,7 @@ impl Default for Bus7 {
             interrupts: Interrupts::default(),
 
             dma: Dma::default(),
+            timers: Timers::default(),
             wram7: vec![0; 1024 * 64],
         }
     }
@@ -39,6 +42,7 @@ impl BusTrait for Bus7 {
     fn reset(&mut self) {
         self.interrupts = Interrupts::default();
         self.dma = Dma::default();
+        self.timers = Timers::default();
         self.wram7 = vec![0; 1024 * 64];
     }
 
@@ -190,12 +194,14 @@ impl BusTrait for Bus7 {
                 value.into_word()
             )),
 
-            0x04000100..=0x0400010F => self.logger.log_warn_once(format!(
-                "Timers not implemented (W{} {:#010X}:{:#010X})",
-                T,
-                addr,
-                value.into_word()
-            )),
+            0x04000100..=0x04000101 => self.timers.get_mut(0).set_l(value.into_halfword()),
+            0x04000102..=0x04000103 => self.timers.get_mut(0).set_h(value.into_halfword()),
+            0x04000104..=0x04000105 => self.timers.get_mut(1).set_l(value.into_halfword()),
+            0x04000106..=0x04000107 => self.timers.get_mut(1).set_h(value.into_halfword()),
+            0x04000108..=0x04000109 => self.timers.get_mut(2).set_l(value.into_halfword()),
+            0x0400010A..=0x0400010B => self.timers.get_mut(2).set_h(value.into_halfword()),
+            0x0400010C..=0x0400010D => self.timers.get_mut(3).set_l(value.into_halfword()),
+            0x0400010E..=0x0400010F => self.timers.get_mut(3).set_h(value.into_halfword()),
 
             0x04000134..=0x04000135 => {} // Debug RCNT, doesn't really do anything apparently
             0x04000138 => self.logger.log_warn_once(format!(

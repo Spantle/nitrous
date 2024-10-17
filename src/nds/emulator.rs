@@ -136,6 +136,11 @@ impl Emulator {
                     .clone()
                     .check_immediately(&mut self.bus7, &mut self.shared);
 
+                (0..cycles).for_each(|_| {
+                    self.bus9.timers.clock(&mut self.bus9.interrupts);
+                    self.bus7.timers.clock(&mut self.bus7.interrupts);
+                });
+
                 cycles
             }
         };
@@ -190,6 +195,10 @@ impl Emulator {
 
                 let arm7_cycles = self.arm7.clock(&mut self.bus7, &mut self.shared);
                 cycles_ran_arm7 += arm7_cycles as i32;
+                (0..arm7_cycles).for_each(|_| {
+                    self.bus9.timers.clock(&mut self.bus9.interrupts);
+                    self.bus7.timers.clock(&mut self.bus7.interrupts);
+                });
 
                 disassembler_windows
                     .1

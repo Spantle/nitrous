@@ -9,6 +9,7 @@ pub mod gpus;
 mod interrupts;
 pub mod logger;
 pub mod shared;
+mod timers;
 
 pub use bits::*;
 pub use emulator::{CycleState, Emulator};
