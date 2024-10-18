@@ -1,5 +1,6 @@
 use crate::nds::{
     arm::ArmKind,
+    div::DividerUnit,
     dma::Dma,
     interrupts::Interrupts,
     logger::{self, Logger, LoggerTrait},
@@ -18,6 +19,7 @@ pub struct Bus9 {
 
     pub dma: Dma<Bus9>,
     pub timers: Timers,
+    pub div: DividerUnit,
 }
 
 impl Default for Bus9 {
@@ -30,6 +32,7 @@ impl Default for Bus9 {
 
             dma: Dma::default(),
             timers: Timers::default(),
+            div: DividerUnit::default(),
         }
     }
 }
@@ -129,6 +132,16 @@ impl BusTrait for Bus9 {
                 bytes[..len].copy_from_slice(&shared.vramcnt[..len]);
                 bytes
             }
+
+            0x04000280..=0x04000283 => self.div.control.value().to_bytes::<T>(),
+            0x04000290..=0x04000293 => (self.div.numerator as u32).to_bytes::<T>(),
+            0x04000294..=0x04000297 => ((self.div.numerator >> 32) as u32).to_bytes::<T>(),
+            0x04000298..=0x0400029B => (self.div.denominator as u32).to_bytes::<T>(),
+            0x0400029C..=0x0400029F => ((self.div.denominator >> 32) as u32).to_bytes::<T>(),
+            0x040002A0..=0x040002A3 => (self.div.result as u32).to_bytes::<T>(),
+            0x040002A4..=0x040002A7 => ((self.div.result >> 32) as u32).to_bytes::<T>(),
+            0x040002A8..=0x040002AB => (self.div.remainder as u32).to_bytes::<T>(),
+            0x040002AC..=0x040002AF => ((self.div.remainder >> 32) as u32).to_bytes::<T>(),
 
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
 
@@ -252,6 +265,18 @@ impl BusTrait for Bus9 {
             0x04000208..=0x0400020B => self.interrupts.me = value.into_word().into(),
             0x04000210..=0x04000213 => self.interrupts.e = value.into_word().into(),
             0x04000214..=0x04000217 => self.interrupts.f.write_and_ack(value.into_word()),
+
+            0x04000280 => self.div.set_control(value.into_word()),
+            0x04000290..=0x04000293 => {
+                println!("Setting numerator 0:31 to {}", value.into_word());
+                self.div.set_numerator::<true>(value.into_word())
+            }
+            0x04000294..=0x04000297 => {
+                println!("Setting numerator 32:63 to {}", value.into_word());
+                self.div.set_numerator::<false>(value.into_word())
+            }
+            0x04000298..=0x0400029B => self.div.set_denominator::<true>(value.into_word()),
+            0x0400029C..=0x0400029F => self.div.set_denominator::<false>(value.into_word()),
 
             0x04000304..=0x04000307 => shared.powcnt1 = value.into_word().into(),
             0x04000240..=0x04000249 => {
