@@ -20,6 +20,9 @@ pub fn b<const L: bool, const X: bool>(ctx: &mut Context<Instruction, impl Conte
     if L {
         arm.set_r(14, pc.wrapping_add(4));
     }
+    if L && X {
+        arm.cpsr_mut().set_thumb(true);
+    }
 
     let signed_immed_24 = inst.get_word(0, 23).sign_extend(24);
     let signed_immed_24 = if X {
