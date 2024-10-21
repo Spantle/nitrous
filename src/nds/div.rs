@@ -67,17 +67,34 @@ impl DividerUnit {
 
         self.cycles = self.cycles.saturating_sub(1);
 
+        // TODO: this can probably be written a lot better
+        // here's hoping the compiler optimises it for now (it won't)
         if self.cycles == 0 {
             if self.control.get_div_by_zero()
                 || (self.control.get_mode() != 2 && self.denominator_lo == 0)
             {
-                self.remainder_lo = self.numerator_lo;
-                self.remainder_hi = self.numerator_hi;
+                if self.control.get_mode() == 0 {
+                    let merged =
+                        self.numerator_lo as i32 as i64 | (self.numerator_hi as i32 as i64) << 32;
+                    self.remainder_lo = self.numerator_lo;
+                    self.remainder_hi = (merged >> 32) as u32;
 
-                if merge_lo_hi(self.numerator_lo, self.numerator_hi) >= 0 {
-                    (self.result_lo, self.result_hi) = split_lo_hi(-1_i64 as u64);
+                    if self.numerator_lo as i32 >= 0 {
+                        self.result_lo = -1_i32 as u32;
+                        self.result_hi = 0;
+                    } else {
+                        self.result_lo = 1;
+                        self.result_hi = -1_i32 as u32;
+                    }
                 } else {
-                    (self.result_lo, self.result_hi) = split_lo_hi(1);
+                    self.remainder_lo = self.numerator_lo;
+                    self.remainder_hi = self.numerator_hi;
+
+                    if self.numerator_lo as i32 >= 0 {
+                        (self.result_lo, self.result_hi) = split_lo_hi(-1_i64 as u64);
+                    } else {
+                        (self.result_lo, self.result_hi) = split_lo_hi(1);
+                    }
                 }
             } else {
                 let (result, remainder) = match self.control.get_mode() {
@@ -123,32 +140,38 @@ impl DividerUnit {
                     _ => unreachable!(),
                 };
 
-                println!(
-                    "{},{} / {},{} = {},{}",
-                    self.numerator_lo as i32,
-                    self.numerator_hi as i32,
-                    self.denominator_lo as i32,
-                    self.denominator_hi as i32,
-                    result as i64,
-                    remainder as i64
-                );
+                // logger::debug(
+                //     logger::LogSource::Bus9,
+                //     format!(
+                //         "{},{} / {},{} = {},{}",
+                //         self.numerator_lo as i32,
+                //         self.numerator_hi as i32,
+                //         self.denominator_lo as i32,
+                //         self.denominator_hi as i32,
+                //         result as i64,
+                //         remainder as i64
+                //     ),
+                // );
 
                 (self.result_lo, self.result_hi) = split_lo_hi(result);
                 (self.remainder_lo, self.remainder_hi) = split_lo_hi(remainder);
-
-                println!(
-                    "{},{} / {},{} = {},{} ({},{}) {}",
-                    self.numerator_lo as i32,
-                    self.numerator_hi as i32,
-                    self.denominator_lo as i32,
-                    self.denominator_hi as i32,
-                    self.result_lo as i32,
-                    self.result_hi as i32,
-                    self.remainder_lo as i32,
-                    self.remainder_hi as i32,
-                    self.control.get_div_by_zero()
-                );
             }
+
+            // logger::debug(
+            //     logger::LogSource::Bus9,
+            //     format!(
+            //         "{},{} / {},{} = {},{} ({},{}) {}",
+            //         self.numerator_lo as i32,
+            //         self.numerator_hi as i32,
+            //         self.denominator_lo as i32,
+            //         self.denominator_hi as i32,
+            //         self.result_lo as i32,
+            //         self.result_hi as i32,
+            //         self.remainder_lo as i32,
+            //         self.remainder_hi as i32,
+            //         self.control.get_div_by_zero()
+            //     ),
+            // );
 
             self.running = false;
             self.control.set_busy(false);

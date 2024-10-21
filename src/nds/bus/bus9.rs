@@ -267,22 +267,10 @@ impl BusTrait for Bus9 {
             0x04000214..=0x04000217 => self.interrupts.f.write_and_ack(value.into_word()),
 
             0x04000280 => self.div.set_control(value.into_word()),
-            0x04000290..=0x04000293 => {
-                println!("Setting numerator 0:31 to {}", value.into_word() as i32);
-                self.div.set_numerator::<true>(value.into_word())
-            }
-            0x04000294..=0x04000297 => {
-                println!("Setting numerator 32:63 to {}", value.into_word() as i32);
-                self.div.set_numerator::<false>(value.into_word())
-            }
-            0x04000298..=0x0400029B => {
-                println!("Setting denominator 0:31 to {}", value.into_word() as i32);
-                self.div.set_denominator::<true>(value.into_word())
-            }
-            0x0400029C..=0x0400029F => {
-                println!("Setting denominator 32:63 to {}", value.into_word() as i32);
-                self.div.set_denominator::<false>(value.into_word())
-            }
+            0x04000290..=0x04000293 => self.div.set_numerator::<true>(value.into_word()),
+            0x04000294..=0x04000297 => self.div.set_numerator::<false>(value.into_word()),
+            0x04000298..=0x0400029B => self.div.set_denominator::<true>(value.into_word()),
+            0x0400029C..=0x0400029F => self.div.set_denominator::<false>(value.into_word()),
 
             0x04000304..=0x04000307 => shared.powcnt1 = value.into_word().into(),
             0x04000240..=0x04000249 => {
