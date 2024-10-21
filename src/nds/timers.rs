@@ -54,8 +54,17 @@ impl Timer {
         }
     }
 
-    pub fn value(&self) -> u32 {
-        self.counter as u32 | ((self.control.0 as u32) << 16)
+    // TODO: use in buses in future
+    // fn value(&self) -> u32 {
+    //     self.counter as u32 | ((self.control.0 as u32) << 16)
+    // }
+
+    pub fn get_counter(&self) -> u16 {
+        self.counter
+    }
+
+    pub fn get_control(&self) -> u16 {
+        self.control.0
     }
 
     pub fn set(&mut self, value: u32) {
