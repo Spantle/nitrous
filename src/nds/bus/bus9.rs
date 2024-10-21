@@ -113,6 +113,16 @@ impl BusTrait for Bus9 {
             0x04000004..=0x04000005 => shared.gpus.dispstat.value().to_bytes::<T>(),
             0x04000006..=0x04000007 => shared.gpus.vcount.to_bytes::<T>(),
 
+            0x04000008..=0x04000009 => shared.gpus.a.bgxcnt[0].value().to_bytes::<T>(),
+            0x0400000A..=0x0400000B => shared.gpus.a.bgxcnt[1].value().to_bytes::<T>(),
+            0x0400000C..=0x0400000D => shared.gpus.a.bgxcnt[2].value().to_bytes::<T>(),
+            0x0400000E..=0x0400000F => shared.gpus.a.bgxcnt[3].value().to_bytes::<T>(),
+
+            0x04001008..=0x04001009 => shared.gpus.b.bgxcnt[0].value().to_bytes::<T>(),
+            0x0400100A..=0x0400100B => shared.gpus.b.bgxcnt[1].value().to_bytes::<T>(),
+            0x0400100C..=0x0400100D => shared.gpus.b.bgxcnt[2].value().to_bytes::<T>(),
+            0x0400100E..=0x0400100F => shared.gpus.b.bgxcnt[3].value().to_bytes::<T>(),
+
             0x04000100..=0x04000101 => self.timers.get(0).get_counter().to_bytes::<T>(),
             0x04000102..=0x04000103 => self.timers.get(0).get_control().to_bytes::<T>(),
             0x04000104..=0x04000105 => self.timers.get(1).get_counter().to_bytes::<T>(),
