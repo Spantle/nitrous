@@ -124,6 +124,11 @@ impl BusTrait for Bus7 {
             0x0400010E..=0x0400010F => self.timers.get(3).get_control().to_bytes::<T>(),
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
+            0x04000134..=0x04000135 => {
+                self.logger
+                    .log_warn_once(format!("RCNT not implemented (R{} {:#010X})", T, addr));
+                bytes
+            }
             0x04000136..=0x04000137 => shared.extkeyin.value().to_bytes::<T>(),
             0x04000138 => {
                 self.logger
@@ -144,6 +149,11 @@ impl BusTrait for Bus7 {
             0x04000210..=0x04000213 => self.interrupts.e.value().to_bytes::<T>(),
             0x04000214..=0x04000217 => self.interrupts.f.value().to_bytes::<T>(),
 
+            0x04000300 => {
+                self.logger
+                    .log_warn_once(format!("POSTFLG not implemented (R{} {:#010X})", T, addr));
+                bytes
+            }
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
 
             0x04000400..=0x0400051F => {
@@ -233,6 +243,12 @@ impl BusTrait for Bus7 {
                 value.into_word()
             )),
 
+            0x04000206..=0x04000207 => self.logger.log_warn_once(format!(
+                "WIFIWAITCNT not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
             0x04000208..=0x0400020B => self.interrupts.me = value.into_word().into(),
             0x04000210..=0x04000213 => self.interrupts.e = value.into_word().into(),
             0x04000214..=0x04000217 => self.interrupts.f.write_and_ack(value.into_word()),
@@ -241,6 +257,13 @@ impl BusTrait for Bus7 {
 
             0x04000400..=0x0400051F => self.logger.log_warn_once(format!(
                 "Sound channels not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
+
+            0x048080AE..=0x048080AF => self.logger.log_warn_once(format!(
+                "WIFI not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
                 value.into_word()

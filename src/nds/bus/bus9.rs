@@ -147,6 +147,17 @@ impl BusTrait for Bus9 {
             0x040002A8..=0x040002AB => self.div.remainder_lo.to_bytes::<T>(),
             0x040002AC..=0x040002AF => self.div.remainder_hi.to_bytes::<T>(),
 
+            0x040002B0..=0x040002BF => {
+                self.logger
+                    .log_warn_once(format!("SQRT not implemented (R{} {:#010X})", T, addr));
+                bytes
+            }
+
+            0x04000300 => {
+                self.logger
+                    .log_warn_once(format!("POSTFLG not implemented (R{} {:#010X})", T, addr));
+                bytes
+            }
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
 
             0x04001000..=0x04001003 => shared.gpus.b.dispcnt.value().to_bytes::<T>(),
@@ -231,6 +242,18 @@ impl BusTrait for Bus9 {
             0x0400101C..=0x0400101D => shared.gpus.b.bghofs[3] = value.into_halfword(),
             0x0400101E..=0x0400101F => shared.gpus.b.bgvofs[3] = value.into_halfword(),
 
+            0x04000020..=0x0400004F => self.logger.log_warn_once(format!(
+                "GPU feature not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
+            0x04001020..=0x0400104F => self.logger.log_warn_once(format!(
+                "GPU feature not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
             0x04000050..=0x04000058 => self.logger.log_warn_once(format!(
                 "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
                 T,
@@ -239,6 +262,13 @@ impl BusTrait for Bus9 {
             )),
             0x04001050..=0x04001058 => self.logger.log_warn_once(format!(
                 "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
+
+            0x04000060..=0x04000061 => self.logger.log_warn_once(format!(
+                "GPU3D not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
                 value.into_word()
@@ -275,6 +305,13 @@ impl BusTrait for Bus9 {
             0x04000294..=0x04000297 => self.div.set_numerator::<false>(value.into_word()),
             0x04000298..=0x0400029B => self.div.set_denominator::<true>(value.into_word()),
             0x0400029C..=0x0400029F => self.div.set_denominator::<false>(value.into_word()),
+
+            0x040002B0..=0x040002BF => self.logger.log_warn_once(format!(
+                "SQRT not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
             0x04000304..=0x04000307 => shared.powcnt1 = value.into_word().into(),
             0x04000240..=0x04000249 => {
