@@ -3,6 +3,7 @@ mod bits;
 pub mod bus;
 mod cartridge;
 mod cp15;
+mod div;
 mod dma;
 mod emulator;
 pub mod gpus;

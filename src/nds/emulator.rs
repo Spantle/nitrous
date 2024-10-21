@@ -139,6 +139,7 @@ impl Emulator {
                 (0..cycles).for_each(|_| {
                     self.bus9.timers.clock(&mut self.bus9.interrupts);
                     self.bus7.timers.clock(&mut self.bus7.interrupts);
+                    self.bus9.div.clock();
                 });
 
                 cycles
@@ -198,6 +199,7 @@ impl Emulator {
                 (0..arm7_cycles).for_each(|_| {
                     self.bus9.timers.clock(&mut self.bus9.interrupts);
                     self.bus7.timers.clock(&mut self.bus7.interrupts);
+                    self.bus9.div.clock();
                 });
 
                 disassembler_windows
