@@ -64,18 +64,20 @@ pub fn msr(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> 
             arm.cpsr_mut().set_bits(24, 31, operand.get_bits(24, 31)); // 24:31
         }
     } else if arm.cpsr().current_mode_has_spsr() {
+        let mut spsr = arm.get_spsr();
         if field_mask.get_bit(0) {
-            arm.get_spsr().set_bits(0, 7, operand.get_bits(0, 7)); // 0:7
+            spsr.set_bits(0, 7, operand.get_bits(0, 7)); // 0:7
         }
         if field_mask.get_bit(1) {
-            arm.get_spsr().set_bits(8, 15, operand.get_bits(8, 15)); // 8:15
+            spsr.set_bits(8, 15, operand.get_bits(8, 15)); // 8:15
         }
         if field_mask.get_bit(2) {
-            arm.get_spsr().set_bits(16, 23, operand.get_bits(16, 23)); // 16:23
+            spsr.set_bits(16, 23, operand.get_bits(16, 23)); // 16:23
         }
         if field_mask.get_bit(3) {
-            arm.get_spsr().set_bits(24, 31, operand.get_bits(24, 31)); // 24:31
+            spsr.set_bits(24, 31, operand.get_bits(24, 31)); // 24:31
         }
+        arm.set_spsr(spsr);
     }
 
     1 // TODO: this is wrong

@@ -68,6 +68,8 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
         Psr::default()
     }
 
+    fn set_spsr(&mut self, _psr: Psr) {}
+
     fn switch_mode<const RETURN_TO_DEFAULT: bool>(
         &mut self,
         _mode: ProcessorMode,

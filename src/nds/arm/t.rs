@@ -20,6 +20,7 @@ pub trait ArmTrait<Bus: BusTrait> {
     fn cpsr_mut(&mut self) -> &mut Psr;
     fn set_cpsr(&mut self, psr: Psr);
     fn get_spsr(&self) -> Psr;
+    fn set_spsr(&mut self, psr: Psr);
     fn switch_mode<const RETURN_TO_DEFAULT: bool>(
         &mut self,
         mode: ProcessorMode,
@@ -134,6 +135,26 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
                     "UNPREDICTABLE: attempt to get SPSR in non-exception mode.",
                 );
                 Psr::default()
+            }
+        }
+    }
+
+    fn set_spsr(&mut self, psr: Psr) {
+        match self.cpsr.get_mode() {
+            ProcessorMode::FIQ => self.r_fiq[7] = psr.value(),
+            ProcessorMode::IRQ => self.r_irq[2] = psr.value(),
+            ProcessorMode::SVC => self.r_svc[2] = psr.value(),
+            ProcessorMode::ABT => self.r_abt[2] = psr.value(),
+            ProcessorMode::UND => self.r_und[2] = psr.value(),
+            _ => {
+                let log_source = match Bus::KIND {
+                    ArmKind::Arm9 => logger::LogSource::Arm9(0),
+                    ArmKind::Arm7 => logger::LogSource::Arm7(0),
+                };
+                logger::error(
+                    log_source,
+                    "UNPREDICTABLE: attempt to set SPSR in non-exception mode.",
+                );
             }
         }
     }
