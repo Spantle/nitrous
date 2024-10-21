@@ -95,6 +95,20 @@ impl BusTrait for Bus7 {
                 bytes
             }
 
+            0x027FFC80..=0x027FFCEF => {
+                self.logger.log_warn_once(format!(
+                    "User settings not implemented (R{} {:#010X})",
+                    T, addr
+                ));
+                bytes
+            }
+            0x027FFE00..=0x027FFF6C => {
+                self.logger.log_error_once(format!(
+                    "Cartridge header not implemented (R{} {:#010X})",
+                    T, addr
+                ));
+                bytes
+            }
             0x02000000..=0x02FFFFFF => {
                 let addr = (addr - 0x02000000) % 0x400000;
                 bytes.copy_from_slice(&shared.psram[addr..addr + T]);
