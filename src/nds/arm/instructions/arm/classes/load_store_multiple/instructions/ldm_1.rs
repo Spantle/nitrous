@@ -26,8 +26,10 @@ pub fn ldm_1(
 
         if arm_bool == ArmBool::ARM9 {
             arm.set_r(15, value & 0xFFFFFFFE);
+            arm.cpsr_mut().set_thumb(value.get_bit(0));
+        } else {
+            arm.set_r(15, value & 0xFFFFFFFC);
         }
-        arm.cpsr_mut().set_thumb(value.get_bit(0));
 
         // address = address.wrapping_add(4);
     }
