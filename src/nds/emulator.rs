@@ -54,6 +54,8 @@ impl Emulator {
         if !success {
             return;
         }
+        self.bus9
+            .write_bulk(shared, 0x027FFE00, shared.cart.rom[0x0..0x200].into());
 
         self.load_binary();
     }
