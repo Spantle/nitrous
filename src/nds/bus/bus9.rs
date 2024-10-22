@@ -157,11 +157,9 @@ impl BusTrait for Bus9 {
             0x04000180..=0x04000183 => shared.ipcsync.value::<true>().to_bytes::<T>(),
             0x04000184..=0x04000185 => shared.ipcfifo.get_cnt::<true>().to_bytes::<T>(),
 
-            0x04000204..=0x04000205 => {
-                self.logger
-                    .log_warn_once(format!("WAITCNT not implemented (R{} {:#010X})", T, addr));
-                bytes
-            }
+            0x040001A4..=0x040001A7 => shared.cart.romctrl.value().to_bytes::<T>(),
+
+            0x04000204..=0x04000205 => shared.cart.exmemcnt.0.to_bytes::<T>(),
 
             0x04000208..=0x0400020B => self.interrupts.me.value().to_bytes::<T>(),
             0x04000210..=0x04000213 => self.interrupts.e.value().to_bytes::<T>(),
@@ -200,6 +198,7 @@ impl BusTrait for Bus9 {
             0x04004008..=0x0400400B => bytes, // DSi Stuff, return nothing
 
             0x04100000..=0x04100003 => shared.ipcfifo.receive::<true>().to_bytes::<T>(),
+            0x04100010..=0x04100013 => shared.cart.read_bus().to_bytes::<T>(),
 
             0x06800000..=0x068A4000 => {
                 let addr = addr - 0x06800000;
@@ -350,12 +349,17 @@ impl BusTrait for Bus9 {
                 .set_cnt::<true>(&mut self.interrupts, value.into_word()),
             0x04000188..=0x0400018B => shared.ipcfifo.send::<true>(value.into_word()),
 
-            0x04000204..=0x04000205 => self.logger.log_warn_once(format!(
-                "WAITCNT not implemented (W{} {:#010X}:{:#010X})",
-                T,
-                addr,
-                value.into_word()
-            )),
+            0x040001A1 => shared.cart.auxspicnt.set_hi(value.into_halfword()),
+            0x040001A0..=0x040001A1 => shared.cart.auxspicnt.set(value.into_halfword()),
+            0x040001A4..=0x040001A7 => shared.cart.romctrl.set(value.into_word()),
+            0x040001A8..=0x040001AF => {
+                shared
+                    .cart
+                    .command
+                    .update(addr - 0x040001A8, T, value.into_word())
+            }
+
+            0x04000204..=0x04000205 => shared.cart.exmemcnt.0 = value.into_halfword(),
 
             0x04000208..=0x0400020B => self.interrupts.me = value.into_word().into(),
             0x04000210..=0x04000213 => self.interrupts.e = value.into_word().into(),

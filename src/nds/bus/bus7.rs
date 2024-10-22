@@ -146,12 +146,17 @@ impl BusTrait for Bus7 {
             0x04000180..=0x04000183 => shared.ipcsync.value::<false>().to_bytes::<T>(),
             0x04000184..=0x04000187 => shared.ipcfifo.get_cnt::<false>().to_bytes::<T>(),
 
+            0x040001A0..=0x040001A1 => shared.cart.auxspicnt.value().to_bytes::<T>(),
+            0x040001A2..=0x040001A3 => bytes, // TODO: I NEED THIS
+            0x040001A4..=0x040001A7 => shared.cart.romctrl.value().to_bytes::<T>(),
+
             0x040001C0..=0x040001C3 => {
                 self.logger
                     .log_warn_once(format!("SPI not implemented (R{} {:#010X})", T, addr));
                 bytes
             }
 
+            0x04000204..=0x04000205 => shared.cart.exmemstat.0.to_bytes::<T>(),
             0x04000208..=0x0400020B => self.interrupts.me.value().to_bytes::<T>(),
             0x04000210..=0x04000213 => self.interrupts.e.value().to_bytes::<T>(),
             0x04000214..=0x04000217 => self.interrupts.f.value().to_bytes::<T>(),
@@ -172,6 +177,8 @@ impl BusTrait for Bus7 {
             }
 
             0x04100000..=0x04100003 => shared.ipcfifo.receive::<false>().to_bytes::<T>(),
+
+            0x08000000..=0x0AFFFFFF => bytes, // gba slot
 
             _ => {
                 if let Some(bytes) = self.dma.read_slice::<T>(addr) {
@@ -243,6 +250,17 @@ impl BusTrait for Bus7 {
                 .set_cnt::<false>(&mut self.interrupts, value.into_word()),
             0x04000188..=0x0400018B => shared.ipcfifo.send::<false>(value.into_word()),
 
+            0x040001A1 => shared.cart.auxspicnt.set_hi(value.into_halfword()),
+            0x040001A0..=0x040001A1 => shared.cart.auxspicnt.set(value.into_halfword()),
+            0x040001A2..=0x040001A3 => {} // TODO: I NEED THIS
+            0x040001A4..=0x040001A7 => shared.cart.romctrl.set(value.into_word()),
+            0x040001A8..=0x040001AF => {
+                shared
+                    .cart
+                    .command
+                    .update(addr - 0x040001A8, T, value.into_word())
+            }
+
             0x040001C0..=0x040001C3 => self.logger.log_warn_once(format!(
                 "SPI not implemented (W{} {:#010X}:{:#010X})",
                 T,
@@ -250,6 +268,7 @@ impl BusTrait for Bus7 {
                 value.into_word()
             )),
 
+            0x04000204..=0x04000205 => shared.cart.exmemstat.0 = value.into_halfword(),
             0x04000206..=0x04000207 => self.logger.log_warn_once(format!(
                 "WIFIWAITCNT not implemented (W{} {:#010X}:{:#010X})",
                 T,

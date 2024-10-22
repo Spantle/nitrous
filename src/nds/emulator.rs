@@ -90,6 +90,22 @@ impl Emulator {
         let shared = &mut self.shared;
         self.bus9
             .write_bulk(shared, 0x027FFE00, shared.cart.rom[0x0..0x200].into());
+
+        // write chip id into psram
+        self.bus9.write_word(shared, 0x027FF800, 0x00000FC2);
+        self.bus9.write_word(shared, 0x027FF804, 0x00000FC2);
+        self.bus9.write_word(shared, 0x027FFC00, 0x00000FC2);
+        self.bus9.write_word(shared, 0x027FFC04, 0x00000FC2);
+
+        // TODO: thanks @atem.zip, but i should look over what these are lol
+        self.bus9.write_byte(shared, 0x04000300, 1);
+        self.bus9.write_byte(shared, 0x04000300, 1);
+        self.bus9.write_byte(shared, 0x04000247, 0x03);
+        self.bus9.write_halfword(shared, 0x027FF850, 0x5835);
+        self.bus9.write_halfword(shared, 0x027FF880, 0x0007);
+        self.bus9.write_halfword(shared, 0x027FF884, 0x0006);
+        self.bus9.write_halfword(shared, 0x027FFC10, 0x5835);
+        self.bus9.write_halfword(shared, 0x027FFC40, 0x0001);
     }
 
     pub fn reset(&mut self, load_binary: bool) {
@@ -136,6 +152,7 @@ impl Emulator {
                     .dma
                     .clone()
                     .check_immediately(&mut self.bus9, &mut self.shared);
+                self.shared.cart.clock(&mut self.bus9, &mut self.bus7);
 
                 cycles
             }
@@ -242,6 +259,8 @@ impl Emulator {
             self.shared
                 .ipcfifo
                 .update_interrupts(&mut self.bus9.interrupts, &mut self.bus7.interrupts);
+
+            self.shared.cart.clock(&mut self.bus9, &mut self.bus7);
 
             disassembler_windows
                 .0

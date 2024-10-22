@@ -51,6 +51,7 @@ impl InterruptFlags {
     const IPCSYNC_OFFSET: u32 = 16;
     const IPC_SEND_FIFO_EMPTY_OFFSET: u32 = 17;
     const IPC_RECEIVE_FIFO_NOT_EMPTY_OFFSET: u32 = 18;
+    const NDS_GAME_CARD_DATA_TRANSFER_COMPLETION_OFFSET: u32 = 19;
 
     pub fn value(&self) -> u32 {
         self.0
@@ -101,6 +102,15 @@ impl InterruptFlags {
         self.0.set_bit(
             Self::IPC_RECEIVE_FIFO_NOT_EMPTY_OFFSET,
             self.0.get_bit(Self::IPC_RECEIVE_FIFO_NOT_EMPTY_OFFSET) || value,
+        );
+    }
+
+    pub fn falsy_set_nds_game_card_data_transfer_completion(&mut self, value: bool) {
+        self.0.set_bit(
+            Self::NDS_GAME_CARD_DATA_TRANSFER_COMPLETION_OFFSET,
+            self.0
+                .get_bit(Self::NDS_GAME_CARD_DATA_TRANSFER_COMPLETION_OFFSET)
+                || value,
         );
     }
 }
