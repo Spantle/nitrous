@@ -87,7 +87,8 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
         }
         (7, 5, 0) => {
             // Invalidate Entire Instruction Cache
-            arm.cp15_mut().inst_tcm = vec![0; arm.cp15().inst_tcm_size as usize];
+            ctx.logger
+                .log_warn_once("MCR: unimplemented \"Invalidate Entire Instruction Cache\"");
         }
         (7, 5, 1) => {
             // Invalidate Instruction Cache Line
@@ -96,7 +97,18 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
         }
         (7, 6, 0) => {
             // Invalidate Entire Data Cache
-            arm.cp15_mut().data_tcm = vec![0; arm.cp15().data_tcm_size as usize];
+            ctx.logger
+                .log_warn_once("MCR: unimplemented \"Invalidate Entire Data Cache\"");
+        }
+        (7, 6, 1) => {
+            // Invalidate Data Cache Line
+            ctx.logger
+                .log_warn_once("MCR: unimplemented \"Invalidate Data Cache Line\"");
+        }
+        (7, 10, 1) => {
+            // Clean Data Cache Line
+            ctx.logger
+                .log_warn_once("MCR: unimplemented \"Clean Data Cache Line\"");
         }
         (7, 10, 4) => {
             // Drain Write Buffer
