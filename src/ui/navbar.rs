@@ -91,7 +91,7 @@ impl NitrousGUI {
         let started = ui.enabled_button(!running, "Start emulation", || self.emulator.start());
         let paused = ui.enabled_button(running, "Pause emulation", || self.emulator.pause());
         let reset = if ui.button("Reset emulator").clicked() {
-            self.emulator.reset();
+            self.emulator.reset(true);
             true
         } else {
             false

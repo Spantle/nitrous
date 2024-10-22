@@ -47,15 +47,13 @@ impl Default for Emulator {
 
 impl Emulator {
     pub fn load_rom(&mut self, rom: Vec<u8>) {
-        self.reset();
+        self.reset(false);
 
         let shared = &mut self.shared;
         let success = shared.cart.load(rom);
         if !success {
             return;
         }
-        self.bus9
-            .write_bulk(shared, 0x027FFE00, shared.cart.rom[0x0..0x200].into());
 
         self.load_binary();
     }
@@ -84,9 +82,14 @@ impl Emulator {
             arm7_bin,
         );
         self.arm7.r[15] = self.shared.cart.arm7_entry_address;
+
+        // write game cartridge header into psram
+        let shared = &mut self.shared;
+        self.bus9
+            .write_bulk(shared, 0x027FFE00, shared.cart.rom[0x0..0x200].into());
     }
 
-    pub fn reset(&mut self) {
+    pub fn reset(&mut self, load_binary: bool) {
         let was_running = self.is_running();
         self.pause();
 
@@ -97,7 +100,9 @@ impl Emulator {
 
         self.shared.reset();
 
-        self.load_binary();
+        if load_binary {
+            self.load_binary();
+        }
 
         if was_running {
             self.start();
