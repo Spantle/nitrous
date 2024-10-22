@@ -304,6 +304,30 @@ impl BusTrait for Bus9 {
                 addr,
                 value.into_word()
             )),
+            0x04000064..=0x04000067 => self.logger.log_warn_once(format!(
+                "DISPCAPCNT not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
+            0x04000068..=0x0400006B => self.logger.log_warn_once(format!(
+                "DISP_MMEM_FIFO not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
+            0x0400006C..=0x0400006D => self.logger.log_warn_once(format!(
+                "MASTER_BRIGHT not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
+            0x0400106C..=0x0400106D => self.logger.log_warn_once(format!(
+                "MASTER_BRIGHT not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
             0x04000100..=0x04000101 => self.timers.get_mut(0).set_l(value.into_halfword()),
             0x04000102..=0x04000103 => self.timers.get_mut(0).set_h(value.into_halfword()),
