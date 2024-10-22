@@ -1,6 +1,6 @@
 use models::{ExtKeyIn, IpcFifo, IpcSync, KeyInput, PowCnt1};
 
-use super::{cartridge::Cartridge, gpus::Gpus};
+use super::{cart::Cartridge, gpus::Gpus};
 
 pub struct Shared {
     pub cart: Cartridge,

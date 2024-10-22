@@ -60,9 +60,10 @@ impl Emulator {
     }
 
     pub fn load_binary(&mut self) {
-        let arm9_load_address = self.shared.cart.arm9_load_address;
-        let arm9_bin = self.shared.cart.rom[self.shared.cart.arm9_rom_offset as usize
-            ..(self.shared.cart.arm9_rom_offset + self.shared.cart.arm9_size) as usize]
+        let arm9_load_address = self.shared.cart.metadata.arm9_load_address;
+        let arm9_bin = self.shared.cart.rom[self.shared.cart.metadata.arm9_rom_offset as usize
+            ..(self.shared.cart.metadata.arm9_rom_offset + self.shared.cart.metadata.arm9_size)
+                as usize]
             .to_vec();
         self.arm9.write_bulk(
             &mut self.bus9,
@@ -70,11 +71,12 @@ impl Emulator {
             arm9_load_address,
             arm9_bin,
         );
-        self.arm9.r[15] = self.shared.cart.arm9_entry_address;
+        self.arm9.r[15] = self.shared.cart.metadata.arm9_entry_address;
 
-        let arm7_load_address = self.shared.cart.arm7_load_address;
-        let arm7_bin = self.shared.cart.rom[self.shared.cart.arm7_rom_offset as usize
-            ..(self.shared.cart.arm7_rom_offset + self.shared.cart.arm7_size) as usize]
+        let arm7_load_address = self.shared.cart.metadata.arm7_load_address;
+        let arm7_bin = self.shared.cart.rom[self.shared.cart.metadata.arm7_rom_offset as usize
+            ..(self.shared.cart.metadata.arm7_rom_offset + self.shared.cart.metadata.arm7_size)
+                as usize]
             .to_vec();
         self.arm7.write_bulk(
             &mut self.bus7,
@@ -82,7 +84,7 @@ impl Emulator {
             arm7_load_address,
             arm7_bin,
         );
-        self.arm7.r[15] = self.shared.cart.arm7_entry_address;
+        self.arm7.r[15] = self.shared.cart.metadata.arm7_entry_address;
 
         // write game cartridge header into psram
         let shared = &mut self.shared;

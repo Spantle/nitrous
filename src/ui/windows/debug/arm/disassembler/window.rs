@@ -287,14 +287,14 @@ impl ArmDisassemblerWindow {
             ArmBool::ARM9 => (
                 emulator.arm9.r[15] as usize,
                 emulator.bus9.bios.len(),
-                emulator.shared.cart.arm9_load_address as usize,
-                emulator.shared.cart.arm9_size as usize,
+                emulator.shared.cart.metadata.arm9_load_address as usize,
+                emulator.shared.cart.metadata.arm9_size as usize,
             ),
             ArmBool::ARM7 => (
                 emulator.arm7.r[15] as usize,
                 0,
-                emulator.shared.cart.arm7_load_address as usize,
-                emulator.shared.cart.arm7_size as usize,
+                emulator.shared.cart.metadata.arm7_load_address as usize,
+                emulator.shared.cart.metadata.arm7_size as usize,
             ),
         };
 
