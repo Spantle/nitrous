@@ -90,6 +90,8 @@ impl BusTrait for Bus9 {
         let addr = addr as usize / T * T;
         let mut bytes = [0; T];
         match addr {
+            0x00000000..=0x00000001 => bytes, // not real
+
             0x027FFC80..=0x027FFCEF => {
                 self.logger.log_warn_once(format!(
                     "User settings not implemented (R{} {:#010X})",
@@ -231,6 +233,8 @@ impl BusTrait for Bus9 {
     fn write_slice<const T: usize>(&mut self, shared: &mut Shared, addr: u32, value: [u8; T]) {
         let addr = addr as usize / T * T;
         match addr {
+            0x00000000..=0x00000001 => {} // not real
+
             0x02000000..=0x02FFFFFF => {
                 let addr = (addr - 0x02000000) % 0x400000;
                 shared.psram[addr..addr + T].copy_from_slice(&value);
@@ -297,6 +301,8 @@ impl BusTrait for Bus9 {
                 addr,
                 value.into_word()
             )),
+
+            0x0400005C..=0x0400005F => {} // not real
 
             0x04000060..=0x04000061 => self.logger.log_warn_once(format!(
                 "GPU3D not implemented (W{} {:#010X}:{:#010X})",
@@ -373,6 +379,9 @@ impl BusTrait for Bus9 {
                 let len = T.min(shared.vramcnt.len());
                 shared.vramcnt[..len].copy_from_slice(&value[..len]);
             }
+
+            0x04001004..=0x04001007 => {} // not real
+            0x0400105C..=0x0400106B => {} // not real
 
             0x05000000..=0x050003FF => {
                 let addr = addr - 0x05000000;
