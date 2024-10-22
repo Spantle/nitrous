@@ -5,6 +5,7 @@ use crate::ui::windows::debug::arm::disassembler::ArmDisassemblerWindow;
 use super::{
     arm::{Arm, ArmBool, ArmInternalRW},
     bus::{bus7::Bus7, bus9::Bus9, BusTrait},
+    logger::ONCE_LOGS,
     shared::Shared,
 };
 
@@ -92,6 +93,8 @@ impl Emulator {
     pub fn reset(&mut self, load_binary: bool) {
         let was_running = self.is_running();
         self.pause();
+
+        ONCE_LOGS.lock().unwrap().clear();
 
         self.arm9 = Arm::default();
         self.arm7 = Arm::default();

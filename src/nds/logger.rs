@@ -15,7 +15,7 @@ static PAUSE_ON_WARN: AtomicBool = AtomicBool::new(false);
 static PAUSE_ON_ERROR: AtomicBool = AtomicBool::new(true);
 static HAS_ERROR_TO_SHOW: AtomicBool = AtomicBool::new(false);
 
-static ONCE_LOGS: Lazy<Mutex<HashSet<String>>> = Lazy::new(|| Mutex::new(HashSet::new()));
+pub static ONCE_LOGS: Lazy<Mutex<HashSet<String>>> = Lazy::new(|| Mutex::new(HashSet::new()));
 
 pub trait LoggerTrait {
     fn set_source(&mut self, source: LogSource);
