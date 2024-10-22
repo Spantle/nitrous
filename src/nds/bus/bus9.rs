@@ -110,8 +110,25 @@ impl BusTrait for Bus9 {
             }
 
             0x04000000..=0x04000003 => shared.gpus.a.dispcnt.value().to_bytes::<T>(),
+            0x04001000..=0x04001003 => shared.gpus.b.dispcnt.value().to_bytes::<T>(),
+
             0x04000004..=0x04000005 => shared.gpus.dispstat.value().to_bytes::<T>(),
             0x04000006..=0x04000007 => shared.gpus.vcount.to_bytes::<T>(),
+
+            0x04000020..=0x0400004F => {
+                self.logger.log_warn_once(format!(
+                    "GPU feature not implemented (R{} {:#010X})",
+                    T, addr
+                ));
+                bytes
+            }
+            0x04001020..=0x0400104F => {
+                self.logger.log_warn_once(format!(
+                    "GPU feature not implemented (R{} {:#010X})",
+                    T, addr
+                ));
+                bytes
+            }
 
             0x04000008..=0x04000009 => shared.gpus.a.bgxcnt[0].value().to_bytes::<T>(),
             0x0400000A..=0x0400000B => shared.gpus.a.bgxcnt[1].value().to_bytes::<T>(),
@@ -176,9 +193,6 @@ impl BusTrait for Bus9 {
                 bytes
             }
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
-
-            0x04001000..=0x04001003 => shared.gpus.b.dispcnt.value().to_bytes::<T>(),
-            0x04001004..=0x04001005 => shared.gpus.dispstat.value().to_bytes::<T>(),
 
             0x04004000..=0x04004001 => bytes, // DSi Stuff, return nothing
             0x04004008..=0x0400400B => bytes, // DSi Stuff, return nothing
