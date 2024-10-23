@@ -1,6 +1,7 @@
 mod branch;
 mod coprocessor;
 mod data_processing;
+mod dsp;
 mod exceptions;
 mod load_store;
 mod load_store_multiple;

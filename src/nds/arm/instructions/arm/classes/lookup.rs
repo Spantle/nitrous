@@ -8,7 +8,7 @@ use crate::nds::{
 };
 
 use super::{
-    branch, coprocessor, data_processing, exceptions, load_store, load_store_multiple, misc,
+    branch, coprocessor, data_processing, dsp, exceptions, load_store, load_store_multiple, misc,
     semaphore, status_register_access,
 };
 
@@ -192,10 +192,16 @@ fn lookup_miscellaneous_instructions(
             0
         }
         0b1000 | 0b1010 | 0b1100 | 0b1110 => {
+            // multiplies are identified by 0b1xy0
+
             // Enhanced DSP multiplies
-            ctx.logger
-                .log_error("enhanced DSP multiplies instruction not implemented");
-            0
+            if arm_bool {
+                dsp::lookup_multiplies(inst_set, ctx)
+            } else {
+                ctx.logger
+                    .log_error("tried running an enhanced DSP instruction on ARM7");
+                10
+            }
         }
         _ => {
             ctx.logger
