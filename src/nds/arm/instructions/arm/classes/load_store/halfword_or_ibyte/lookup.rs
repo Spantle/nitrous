@@ -1,10 +1,7 @@
-use crate::nds::{
-    arm::{
-        instructions::arm::Instruction,
-        models::{Context, ContextTrait, DisassemblyTrait},
-        ArmTrait,
-    },
-    logger::LoggerTrait,
+use crate::nds::arm::{
+    instructions::arm::Instruction,
+    models::{Context, ContextTrait, DisassemblyTrait},
+    ArmTrait,
 };
 
 use super::{instructions, LoadStoreInstruction};
@@ -66,7 +63,7 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
         }
         (true, false, true) => {
             ctx.dis.set_inst("LDRSB");
-            ctx.logger.log_error("LDRSB not implemented");
+            instructions::ldrsb(&mut ctx, address);
         }
         (false, true, true) => {
             ctx.dis.set_inst("LDRH");
