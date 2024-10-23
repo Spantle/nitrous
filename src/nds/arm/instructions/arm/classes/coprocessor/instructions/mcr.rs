@@ -120,6 +120,11 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             ctx.logger
                 .log_warn_once("MCR: unimplemented \"Clean and Invalidate Data Cache Line\"");
         }
+        (7, 14, 2) => {
+            // Clean and Invalidate Data Cache Line
+            ctx.logger
+                .log_warn_once("MCR: unimplemented \"Clean and Invalidate Data Cache Line\"");
+        }
         (9, 1, 0) => {
             // Data TCM Base and Virtual Size
             let rd = arm.er(rd);
