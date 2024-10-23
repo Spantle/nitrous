@@ -180,21 +180,21 @@ impl<Bus: BusTrait> DmaChannel<Bus> {
 
     fn get_word_count(&self) -> u32 {
         if Bus::KIND == ArmKind::Arm9 {
-            let value = self.dmacnt.get().get_bits(0, 21);
+            let value = self.dmacnt.get().get_bits(0, 20);
             if value == 0 {
                 0x200000
             } else {
                 value
             }
         } else if self.index == 3 {
-            let value = self.dmacnt.get().get_bits(0, 16);
+            let value = self.dmacnt.get().get_bits(0, 15);
             if value == 0 {
                 0x10000
             } else {
                 value
             }
         } else {
-            let value = self.dmacnt.get().get_bits(0, 14);
+            let value = self.dmacnt.get().get_bits(0, 13);
             if value == 0 {
                 0x4000
             } else {
