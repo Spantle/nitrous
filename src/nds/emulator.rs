@@ -97,9 +97,7 @@ impl Emulator {
         self.bus9.write_word(shared, 0x027FFC00, 0x00000FC2);
         self.bus9.write_word(shared, 0x027FFC04, 0x00000FC2);
 
-        // TODO: thanks @atem.zip, but i should look over what these are lol
-        self.bus9.write_byte(shared, 0x04000300, 1);
-        self.bus9.write_byte(shared, 0x04000300, 1);
+        // TODO: thanks @atem.zip
         self.bus9.write_byte(shared, 0x04000247, 0x03);
         self.bus9.write_halfword(shared, 0x027FF850, 0x5835);
         self.bus9.write_halfword(shared, 0x027FF880, 0x0007);

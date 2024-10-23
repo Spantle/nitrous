@@ -187,11 +187,7 @@ impl BusTrait for Bus9 {
                 bytes
             }
 
-            0x04000300 => {
-                self.logger
-                    .log_warn_once(format!("POSTFLG not implemented (R{} {:#010X})", T, addr));
-                bytes
-            }
+            0x04000300 => shared.postflg.0.to_bytes::<T>(),
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
 
             0x04004000..=0x04004001 => bytes, // DSi Stuff, return nothing

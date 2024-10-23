@@ -161,11 +161,7 @@ impl BusTrait for Bus7 {
             0x04000210..=0x04000213 => self.interrupts.e.value().to_bytes::<T>(),
             0x04000214..=0x04000217 => self.interrupts.f.value().to_bytes::<T>(),
 
-            0x04000300 => {
-                self.logger
-                    .log_warn_once(format!("POSTFLG not implemented (R{} {:#010X})", T, addr));
-                bytes
-            }
+            0x04000300 => shared.postflg.0.to_bytes::<T>(),
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
 
             0x04000400..=0x0400051F => {

@@ -1,4 +1,4 @@
-use models::{ExtKeyIn, IpcFifo, IpcSync, KeyInput, PowCnt1};
+use models::{ExtKeyIn, IpcFifo, IpcSync, KeyInput, PostFlg, PowCnt1};
 
 use super::{cart::Cartridge, gpus::Gpus};
 
@@ -13,7 +13,8 @@ pub struct Shared {
     pub vramcnt: [u8; 10],  // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
     pub ipcsync: IpcSync,   // 0x04000180
     pub ipcfifo: IpcFifo,   // 0x04000184, 0x04000188, 0x04100000
-    pub powcnt1: PowCnt1,   // 0x04000304
+    pub postflg: PostFlg, // 0x04000300 TODO: there's a tiny bit of logic behind this, and it's technically not "shared"
+    pub powcnt1: PowCnt1, // 0x04000304
 
     pub vram_lcdc_alloc: Vec<u8>, // 0x06800000
 }
@@ -31,6 +32,7 @@ impl Default for Shared {
             vramcnt: [0; 10],
             ipcsync: IpcSync::default(),
             ipcfifo: IpcFifo::default(),
+            postflg: PostFlg::default(),
             powcnt1: PowCnt1::default(),
 
             vram_lcdc_alloc: vec![0; 1024 * 656],
@@ -51,6 +53,7 @@ impl Shared {
             vramcnt: [0; 10],
             ipcsync: IpcSync::default(),
             ipcfifo: IpcFifo::default(),
+            postflg: PostFlg::default(),
             powcnt1: PowCnt1::default(),
 
             vram_lcdc_alloc: vec![0; 0],
