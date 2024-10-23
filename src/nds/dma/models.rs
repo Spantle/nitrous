@@ -99,14 +99,17 @@ impl<Bus: BusTrait> DmaChannel<Bus> {
         } else {
             self.dmacnt.get_dma7_start_timing()
         };
-        if start_timing != 0 {
-            logger::error(
-                self.log_source(),
-                format!(
-                    "DMA{} has start timing {} which isn't supported",
-                    self.index, start_timing
-                ),
-            );
+        match start_timing {
+            0 | 2 => {}
+            _ => {
+                logger::error(
+                    self.log_source(),
+                    format!(
+                        "DMA{} has start timing {} which isn't supported",
+                        self.index, start_timing
+                    ),
+                );
+            }
         }
 
         self.internal_sad = self.dmasad;

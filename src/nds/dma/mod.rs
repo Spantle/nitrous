@@ -99,14 +99,21 @@ impl<Bus: BusTrait> Dma<Bus> {
 
     pub fn check_immediately(&mut self, bus: &mut Bus, shared: &mut Shared) -> Self {
         for channel in self.channel.iter_mut() {
-            let matches = channel.dmacnt.get_dma_enable()
-                && if Bus::KIND == ArmKind::Arm9 {
-                    channel.dmacnt.get_dma9_start_timing()
-                } else {
-                    channel.dmacnt.get_dma7_start_timing()
-                } == 0;
+            let enabled = channel.dmacnt.get_dma_enable();
+            let start_timing = if Bus::KIND == ArmKind::Arm9 {
+                channel.dmacnt.get_dma9_start_timing()
+            } else {
+                channel.dmacnt.get_dma7_start_timing()
+            };
 
-            if matches {
+            let run_immediately = start_timing == 0;
+
+            // TODO: does "paused during V-Blank" mean we have to pause mid-transfer?
+            let run_hblank = start_timing == 2
+                && shared.gpus.dispstat.get_hblank_flag()
+                && !shared.gpus.dispstat.get_vblank_flag();
+
+            if enabled && (run_immediately || run_hblank) {
                 channel.run(bus, shared);
             }
         }
