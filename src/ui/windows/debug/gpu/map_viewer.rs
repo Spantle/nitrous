@@ -18,6 +18,10 @@ const COLOUR_MULT: f32 = 255.0 / 31.0;
 // TODO: improve or finish this, i threw this together in a few minutes and don't care
 impl MapViewerWindow {
     pub fn show(&mut self, ctx: &egui::Context, bgs: &Option<BackgroundResults>) {
+        if !self.open {
+            return;
+        }
+
         if let Some(bgs) = bgs {
             let bgs = bgs
                 .iter()
