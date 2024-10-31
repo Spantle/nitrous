@@ -13,7 +13,7 @@ pub fn run_instruction<const ARM_BOOL: bool>(
     let cond = ((inst_set >> 8) & 0b1111) as u8;
     let cond_result = calculate_cond(cond, ctx);
     if !ctx.dis.is_real() && !cond_result {
-        // ctx.logger.log_debug(format!(
+        // ctx.logger.log_debug(format_debug!(
         //     "condition failed {:#06X} ({:016b})",
         //     inst_set, inst_set
         // ));
@@ -31,7 +31,7 @@ pub fn run_instruction<const ARM_BOOL: bool, const INST_SET: u16>(
     let cond = ((INST_SET >> 8) & 0b1111) as u8;
     let cond_result = calculate_cond(cond, ctx);
     if !ctx.dis.is_real() && !cond_result {
-        // ctx.logger.log_debug(format!(
+        // ctx.logger.log_debug(format_debug!(
         //     "condition failed {:#06X} ({:016b})",
         //     INST_SET, INST_SET
         // ));

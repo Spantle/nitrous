@@ -50,14 +50,14 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
         rn.wrapping_sub(inst.addressing_mode)
     };
 
-    // ctx.logger.log_debug(format!(
+    // ctx.logger.log_debug(format_debug!(
     //     "load/store address: {:#010X} ({}) ({}) {:#010X}",
     //     address,
     //     inst.first_source_register,
     //     arm.er(inst.first_source_register),
     //     inst.addressing_mode
     // ));
-    // ctx.logger.log_debug(format!(
+    // ctx.logger.log_debug(format_debug!(
     //     "addressing mode: {} {} {} {} {} {}",
     //     IS_REGISTER, post_indexing, is_add, is_unsigned_byte, w, is_load
     // ));

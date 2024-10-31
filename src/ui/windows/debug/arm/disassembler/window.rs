@@ -103,7 +103,7 @@ impl ArmDisassemblerWindow {
                     };
 
                     let stacktrace = stacktrace.generate(r, "Requested by user".to_string());
-                    logger::debug(log_source, stacktrace);
+                    logger::debug_release(log_source, stacktrace);
                 }
             });
 

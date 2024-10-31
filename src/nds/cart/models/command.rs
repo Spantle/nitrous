@@ -1,4 +1,4 @@
-use crate::nds::{logger, Bits};
+use crate::nds::Bits;
 
 #[derive(Default)]
 pub struct Command(pub u64);
@@ -16,10 +16,10 @@ impl Command {
         self.0 &= mask;
         self.0 |= data;
 
-        logger::debug(
-            logger::LogSource::Cart,
-            format!("Appended to command: {} {:#018X}", data, self.0),
-        );
+        // logger::debug(
+        //     logger::LogSource::Cart,
+        //     logger::format_debug!("Appended to command: {} {:#018X}", data, self.0),
+        // );
     }
 
     pub fn get_command(&self) -> u8 {

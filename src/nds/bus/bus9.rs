@@ -3,7 +3,7 @@ use crate::nds::{
     div::DividerUnit,
     dma::Dma,
     interrupts::Interrupts,
-    logger::{self, Logger, LoggerTrait},
+    logger::{self, format_debug, Logger, LoggerTrait},
     shared::Shared,
     timers::Timers,
     Bits, Bytes,
@@ -111,16 +111,18 @@ impl BusTrait for Bus9 {
             0x04000006..=0x04000007 => shared.gpus.vcount.to_bytes::<T>(),
 
             0x04000020..=0x0400004F => {
-                self.logger.log_warn_once(format!(
+                self.logger.log_warn_once(format_debug!(
                     "GPU feature not implemented (R{} {:#010X})",
-                    T, addr
+                    T,
+                    addr
                 ));
                 bytes
             }
             0x04001020..=0x0400104F => {
-                self.logger.log_warn_once(format!(
+                self.logger.log_warn_once(format_debug!(
                     "GPU feature not implemented (R{} {:#010X})",
-                    T, addr
+                    T,
+                    addr
                 ));
                 bytes
             }
@@ -175,8 +177,11 @@ impl BusTrait for Bus9 {
             0x040002AC..=0x040002AF => self.div.remainder_hi.to_bytes::<T>(),
 
             0x040002B0..=0x040002BF => {
-                self.logger
-                    .log_warn_once(format!("SQRT not implemented (R{} {:#010X})", T, addr));
+                self.logger.log_warn_once(format_debug!(
+                    "SQRT not implemented (R{} {:#010X})",
+                    T,
+                    addr
+                ));
                 bytes
             }
 
@@ -265,25 +270,25 @@ impl BusTrait for Bus9 {
             0x0400101C..=0x0400101D => shared.gpus.b.bghofs[3] = value.into_halfword(),
             0x0400101E..=0x0400101F => shared.gpus.b.bgvofs[3] = value.into_halfword(),
 
-            0x04000020..=0x0400004F => self.logger.log_warn_once(format!(
+            0x04000020..=0x0400004F => self.logger.log_warn_once(format_debug!(
                 "GPU feature not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
                 value.into_word()
             )),
-            0x04001020..=0x0400104F => self.logger.log_warn_once(format!(
+            0x04001020..=0x0400104F => self.logger.log_warn_once(format_debug!(
                 "GPU feature not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
                 value.into_word()
             )),
-            0x04000050..=0x04000058 => self.logger.log_warn_once(format!(
+            0x04000050..=0x04000058 => self.logger.log_warn_once(format_debug!(
                 "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
                 value.into_word()
             )),
-            0x04001050..=0x04001058 => self.logger.log_warn_once(format!(
+            0x04001050..=0x04001058 => self.logger.log_warn_once(format_debug!(
                 "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
@@ -292,31 +297,31 @@ impl BusTrait for Bus9 {
 
             0x0400005C..=0x0400005F => {} // not real
 
-            0x04000060..=0x04000061 => self.logger.log_warn_once(format!(
+            0x04000060..=0x04000061 => self.logger.log_warn_once(format_debug!(
                 "GPU3D not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
                 value.into_word()
             )),
-            0x04000064..=0x04000067 => self.logger.log_warn_once(format!(
+            0x04000064..=0x04000067 => self.logger.log_warn_once(format_debug!(
                 "DISPCAPCNT not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
                 value.into_word()
             )),
-            0x04000068..=0x0400006B => self.logger.log_warn_once(format!(
+            0x04000068..=0x0400006B => self.logger.log_warn_once(format_debug!(
                 "DISP_MMEM_FIFO not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
                 value.into_word()
             )),
-            0x0400006C..=0x0400006D => self.logger.log_warn_once(format!(
+            0x0400006C..=0x0400006D => self.logger.log_warn_once(format_debug!(
                 "MASTER_BRIGHT not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
                 value.into_word()
             )),
-            0x0400106C..=0x0400106D => self.logger.log_warn_once(format!(
+            0x0400106C..=0x0400106D => self.logger.log_warn_once(format_debug!(
                 "MASTER_BRIGHT not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
@@ -360,7 +365,7 @@ impl BusTrait for Bus9 {
             0x04000298..=0x0400029B => self.div.set_denominator::<true>(value.into_word()),
             0x0400029C..=0x0400029F => self.div.set_denominator::<false>(value.into_word()),
 
-            0x040002B0..=0x040002BF => self.logger.log_warn_once(format!(
+            0x040002B0..=0x040002BF => self.logger.log_warn_once(format_debug!(
                 "SQRT not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
@@ -393,7 +398,7 @@ impl BusTrait for Bus9 {
                 let addr = (addr - 0x06200000) % 0x20000;
                 shared.gpus.b.bg_vram[addr..addr + T].copy_from_slice(&value);
             }
-            0x06400000..=0x067FFFFF => self.logger.log_warn_once(format!(
+            0x06400000..=0x067FFFFF => self.logger.log_warn_once(format_debug!(
                 "OBJ VRAM not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
@@ -405,7 +410,7 @@ impl BusTrait for Bus9 {
                 shared.vram_lcdc_alloc[addr..addr + T].copy_from_slice(&value);
             }
 
-            0x07000000..=0x07FFFFFF => self.logger.log_warn_once(format!(
+            0x07000000..=0x07FFFFFF => self.logger.log_warn_once(format_debug!(
                 "OAM not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,

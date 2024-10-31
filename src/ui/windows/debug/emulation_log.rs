@@ -5,7 +5,7 @@ use crate::{
     ui::{NitrousUI, NitrousWindow},
 };
 
-#[derive(serde::Deserialize, serde::Serialize)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct EmulationLogWindow {
     pub open: bool,
@@ -13,17 +13,6 @@ pub struct EmulationLogWindow {
     pub pause_on_warn: bool,
     pub pause_on_error: bool,
     pub show_on_error: bool,
-}
-
-impl Default for EmulationLogWindow {
-    fn default() -> Self {
-        Self {
-            open: false,
-            pause_on_warn: false,
-            pause_on_error: true,
-            show_on_error: true,
-        }
-    }
 }
 
 impl EmulationLogWindow {

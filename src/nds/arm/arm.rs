@@ -86,12 +86,12 @@ impl<Bus: BusTrait> Arm<Bus> {
         // if Bus::kind() == ArmKind::ARM7 {
         //     logger::debug(
         //         logger::LogSource::Arm7(self.r[15]),
-        //         format!("executing instruction: {:#010X} ({:032b})", inst, inst),
+        //         format_debug!("executing instruction: {:#010X} ({:032b})", inst, inst),
         //     );
         // } else {
         //     logger::debug(
         //         logger::LogSource::Arm9(self.r[15]),
-        //         format!("executing instruction: {:#010X} ({:032b})", inst, inst),
+        //         format_debug!("executing instruction: {:#010X} ({:032b})", inst, inst),
         //     );
         // }
 

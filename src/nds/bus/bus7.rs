@@ -2,7 +2,7 @@ use crate::nds::{
     arm::ArmKind,
     dma::Dma,
     interrupts::Interrupts,
-    logger::{self, Logger, LoggerTrait},
+    logger::{self, format_debug, Logger, LoggerTrait},
     shared::Shared,
     timers::Timers,
     Bits, Bytes,
@@ -125,14 +125,20 @@ impl BusTrait for Bus7 {
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
             0x04000134..=0x04000135 => {
-                self.logger
-                    .log_warn_once(format!("RCNT not implemented (R{} {:#010X})", T, addr));
+                self.logger.log_warn_once(format_debug!(
+                    "RCNT not implemented (R{} {:#010X})",
+                    T,
+                    addr
+                ));
                 bytes
             }
             0x04000136..=0x04000137 => shared.extkeyin.value().to_bytes::<T>(),
             0x04000138 => {
-                self.logger
-                    .log_warn_once(format!("RTC not implemented (R{} {:#010X})", T, addr));
+                self.logger.log_warn_once(format_debug!(
+                    "RTC not implemented (R{} {:#010X})",
+                    T,
+                    addr
+                ));
                 bytes
             }
 
@@ -144,8 +150,11 @@ impl BusTrait for Bus7 {
             0x040001A4..=0x040001A7 => shared.cart.romctrl.value().to_bytes::<T>(),
 
             0x040001C0..=0x040001C3 => {
-                self.logger
-                    .log_warn_once(format!("SPI not implemented (R{} {:#010X})", T, addr));
+                self.logger.log_warn_once(format_debug!(
+                    "SPI not implemented (R{} {:#010X})",
+                    T,
+                    addr
+                ));
                 bytes
             }
 
@@ -158,9 +167,10 @@ impl BusTrait for Bus7 {
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
 
             0x04000400..=0x0400051F => {
-                self.logger.log_warn_once(format!(
+                self.logger.log_warn_once(format_debug!(
                     "Sound channels not implemented (R{} {:#010X})",
-                    T, addr
+                    T,
+                    addr
                 ));
                 bytes
             }
@@ -203,13 +213,13 @@ impl BusTrait for Bus7 {
 
             0x04000004..=0x04000005 => shared.gpus.dispstat = value.into_halfword().into(),
 
-            0x04000050..=0x04000058 => self.logger.log_warn_once(format!(
+            0x04000050..=0x04000058 => self.logger.log_warn_once(format_debug!(
                 "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
                 value.into_word()
             )),
-            0x04001050..=0x04001058 => self.logger.log_warn_once(format!(
+            0x04001050..=0x04001058 => self.logger.log_warn_once(format_debug!(
                 "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
@@ -226,7 +236,7 @@ impl BusTrait for Bus7 {
             0x0400010E..=0x0400010F => self.timers.get_mut(3).set_h(value.into_halfword()),
 
             0x04000134..=0x04000135 => {} // Debug RCNT, doesn't really do anything apparently
-            0x04000138 => self.logger.log_warn_once(format!(
+            0x04000138 => self.logger.log_warn_once(format_debug!(
                 "RTC not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
@@ -250,7 +260,7 @@ impl BusTrait for Bus7 {
                     .update(addr - 0x040001A8, T, value.into_word())
             }
 
-            0x040001C0..=0x040001C3 => self.logger.log_warn_once(format!(
+            0x040001C0..=0x040001C3 => self.logger.log_warn_once(format_debug!(
                 "SPI not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
@@ -258,7 +268,7 @@ impl BusTrait for Bus7 {
             )),
 
             0x04000204..=0x04000205 => shared.cart.exmemstat.0 = value.into_halfword(),
-            0x04000206..=0x04000207 => self.logger.log_warn_once(format!(
+            0x04000206..=0x04000207 => self.logger.log_warn_once(format_debug!(
                 "WIFIWAITCNT not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
@@ -270,14 +280,14 @@ impl BusTrait for Bus7 {
 
             0x04000304..=0x04000307 => shared.powcnt1 = value.into_word().into(),
 
-            0x04000400..=0x0400051F => self.logger.log_warn_once(format!(
+            0x04000400..=0x0400051F => self.logger.log_warn_once(format_debug!(
                 "Sound channels not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
                 value.into_word()
             )),
 
-            0x048080AE..=0x048080AF => self.logger.log_warn_once(format!(
+            0x048080AE..=0x048080AF => self.logger.log_warn_once(format_debug!(
                 "WIFI not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,

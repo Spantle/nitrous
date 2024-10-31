@@ -12,7 +12,7 @@ use crate::nds::emulator::set_emulator_running;
 
 pub static LOGS: Lazy<Mutex<Vec<Log>>> = Lazy::new(|| Mutex::new(Vec::new()));
 static PAUSE_ON_WARN: AtomicBool = AtomicBool::new(false);
-static PAUSE_ON_ERROR: AtomicBool = AtomicBool::new(true);
+static PAUSE_ON_ERROR: AtomicBool = AtomicBool::new(false);
 static HAS_ERROR_TO_SHOW: AtomicBool = AtomicBool::new(false);
 
 pub static ONCE_LOGS: Lazy<Mutex<HashSet<String>>> = Lazy::new(|| Mutex::new(HashSet::new()));
@@ -157,8 +157,27 @@ fn now() -> String {
     chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
 }
 
+#[cfg(debug_assertions)]
 pub fn debug<T: Into<String> + Display>(source: LogSource, content: T) {
     debug!("[{}] {}", source, &content);
+    let mut logs = LOGS.lock().unwrap();
+    logs.push(Log {
+        kind: LogKind::Debug,
+        source,
+        content: content.to_string(),
+        timestamp: now(),
+    });
+}
+
+#[cfg(not(debug_assertions))]
+pub fn debug<T>(_: LogSource, _: T) {}
+
+pub fn debug_release<T: Into<String> + Display>(source: LogSource, content: T) {
+    if cfg!(debug_assertions) {
+        debug!("[{}] {}", source, &content);
+    } else {
+        info!("[{}] {}", source, &content);
+    }
     let mut logs = LOGS.lock().unwrap();
     logs.push(Log {
         kind: LogKind::Debug,
@@ -192,6 +211,7 @@ pub fn warn<T: Into<String> + Display>(source: LogSource, content: T) {
     });
 }
 
+#[cfg(debug_assertions)]
 pub fn warn_once<T: Into<String> + Display>(source: LogSource, content: T) {
     if !ONCE_LOGS.lock().unwrap().insert(content.to_string()) {
         return;
@@ -199,6 +219,9 @@ pub fn warn_once<T: Into<String> + Display>(source: LogSource, content: T) {
 
     warn(source, content);
 }
+
+#[cfg(not(debug_assertions))]
+pub fn warn_once<T>(_: LogSource, _: T) {}
 
 pub fn error<T: Into<String> + Display>(source: LogSource, content: T) {
     if do_pause_on_error() {
@@ -245,3 +268,14 @@ pub fn has_error_to_show() -> bool {
 pub fn set_has_error_to_show(show: bool) {
     HAS_ERROR_TO_SHOW.store(show, std::sync::atomic::Ordering::Relaxed);
 }
+
+macro_rules! format_debug {
+    ($($arg:tt)*) => {
+        if cfg!(debug_assertions) {
+            format!($($arg)*)
+        } else {
+            String::new()
+        }
+    };
+}
+pub(crate) use format_debug;

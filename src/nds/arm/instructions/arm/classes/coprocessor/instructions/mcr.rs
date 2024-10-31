@@ -4,7 +4,7 @@ use crate::nds::{
         models::{Context, ContextTrait, DisassemblyTrait},
         ArmTrait,
     },
-    logger::LoggerTrait,
+    logger::{format_debug, LoggerTrait},
     Bits,
 };
 
@@ -39,7 +39,7 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             // Control Register
             arm.cp15_mut().control_register = arm.er(rd).into();
 
-            ctx.logger.log_debug(format!(
+            ctx.logger.log_debug(format_debug!(
                 "CP15 Control Register updated: 0x{:08X}",
                 arm.cp15_mut().control_register.value(),
             ));
@@ -134,7 +134,7 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             arm.cp15_mut().data_tcm_base = region_base;
             arm.cp15_mut().data_tcm_size = virtual_size;
 
-            ctx.logger.log_debug(format!(
+            ctx.logger.log_debug(format_debug!(
                 "Data TCM moved: 0x{:08X}-0x{:08X}, size: 0x{:08X}",
                 region_base,
                 region_base + virtual_size,
@@ -151,7 +151,7 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             arm.cp15_mut().inst_tcm_base = region_base;
             arm.cp15_mut().inst_tcm_size = virtual_size;
 
-            ctx.logger.log_debug(format!(
+            ctx.logger.log_debug(format_debug!(
                 "Instruction TCM moved: 0x{:08X}-0x{:08X}, size: 0x{:08X}",
                 region_base,
                 region_base + virtual_size,
@@ -159,9 +159,14 @@ pub fn mcr(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
             ));
         }
         _ => {
-            ctx.logger.log_error_once(format!(
+            ctx.logger.log_error_once(format_debug!(
                 "MCR: unhandled instruction: CP{},{},{},CR{},CR{},{}",
-                cp_num, opcode_1, rd, crn, crm, opcode_2
+                cp_num,
+                opcode_1,
+                rd,
+                crn,
+                crm,
+                opcode_2
             ));
         }
     }

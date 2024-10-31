@@ -142,7 +142,7 @@ impl DividerUnit {
 
                 // logger::debug(
                 //     logger::LogSource::Bus9,
-                //     format!(
+                //     format_debug!(
                 //         "{},{} / {},{} = {},{}",
                 //         self.numerator_lo as i32,
                 //         self.numerator_hi as i32,
@@ -159,7 +159,7 @@ impl DividerUnit {
 
             // logger::debug(
             //     logger::LogSource::Bus9,
-            //     format!(
+            //     format_debug!(
             //         "{},{} / {},{} = {},{} ({},{}) {}",
             //         self.numerator_lo as i32,
             //         self.numerator_hi as i32,

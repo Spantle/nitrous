@@ -126,7 +126,7 @@ impl<Bus: BusTrait> DmaChannel<Bus> {
     pub fn run(&mut self, bus: &mut Bus, shared: &mut Shared) -> u32 {
         logger::debug(
             self.log_source(),
-            format!(
+            logger::format_debug!(
                 "DMA{} running {:08X},{:08X},{:08X},{:08X}",
                 self.index,
                 self.internal_sad,
