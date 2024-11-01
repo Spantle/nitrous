@@ -14,7 +14,6 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
     if inst_set >> 2 & 1 == 0 {
         instructions::swp(ctx)
     } else {
-        ctx.logger.log_error("SWPB instruction not implemented");
-        1 // TODO: this is wrong
+        instructions::swpb(ctx)
     }
 }
