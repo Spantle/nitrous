@@ -137,6 +137,15 @@ impl BusTrait for Bus9 {
             0x0400100C..=0x0400100D => shared.gpus.b.bgxcnt[2].value().to_bytes::<T>(),
             0x0400100E..=0x0400100F => shared.gpus.b.bgxcnt[3].value().to_bytes::<T>(),
 
+            0x04000060..=0x04000061 => {
+                self.logger.log_warn_once(format_debug!(
+                    "GPU3D not implemented (R{} {:#010X})",
+                    T,
+                    addr
+                ));
+                bytes
+            }
+
             0x04000100..=0x04000101 => self.timers.get(0).get_counter().to_bytes::<T>(),
             0x04000102..=0x04000103 => self.timers.get(0).get_control().to_bytes::<T>(),
             0x04000104..=0x04000105 => self.timers.get(1).get_counter().to_bytes::<T>(),
@@ -152,6 +161,7 @@ impl BusTrait for Bus9 {
             0x04000180..=0x04000183 => shared.ipcsync.value::<true>().to_bytes::<T>(),
             0x04000184..=0x04000185 => shared.ipcfifo.get_cnt::<true>().to_bytes::<T>(),
 
+            0x040001A0..=0x040001A1 => shared.cart.auxspicnt.value().to_bytes::<T>(),
             0x040001A4..=0x040001A7 => shared.cart.romctrl.value().to_bytes::<T>(),
 
             0x04000204..=0x04000205 => shared.cart.exmemcnt.0.to_bytes::<T>(),
@@ -187,6 +197,15 @@ impl BusTrait for Bus9 {
 
             0x04000300 => shared.postflg.0.to_bytes::<T>(),
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
+
+            0x04000320..=0x040006A4 => {
+                self.logger.log_warn_once(format_debug!(
+                    "GPU3D not implemented (R{} {:#010X})",
+                    T,
+                    addr
+                ));
+                bytes
+            }
 
             0x04004000..=0x04004001 => bytes, // DSi Stuff, return nothing
             0x04004008..=0x0400400B => bytes, // DSi Stuff, return nothing
@@ -377,6 +396,13 @@ impl BusTrait for Bus9 {
                 let len = T.min(shared.vramcnt.len());
                 shared.vramcnt[..len].copy_from_slice(&value[..len]);
             }
+
+            0x04000320..=0x040006A4 => self.logger.log_warn_once(format_debug!(
+                "GPU3D not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
             0x04001004..=0x04001007 => {} // not real
             0x0400105C..=0x0400106B => {} // not real

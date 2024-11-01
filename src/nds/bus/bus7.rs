@@ -113,6 +113,7 @@ impl BusTrait for Bus7 {
             }
 
             0x04000004..=0x04000005 => shared.gpus.dispstat.value().to_bytes::<T>(),
+            0x04000006..=0x04000007 => shared.gpus.vcount.to_bytes::<T>(),
 
             0x04000100..=0x04000101 => self.timers.get(0).get_counter().to_bytes::<T>(),
             0x04000102..=0x04000103 => self.timers.get(0).get_control().to_bytes::<T>(),
@@ -174,6 +175,9 @@ impl BusTrait for Bus7 {
                 ));
                 bytes
             }
+
+            0x04004008..=0x0400400B => bytes, // DSi Stuff, return nothing
+            0x04004700..=0x04004701 => bytes, // DSi Stuff, return nothing
 
             0x04100000..=0x04100003 => shared.ipcfifo.receive::<false>().to_bytes::<T>(),
 
