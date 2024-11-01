@@ -1,9 +1,6 @@
-use crate::nds::{
-    arm::{
-        instructions::thumb::Instruction,
-        models::{Context, ContextTrait},
-    },
-    logger::LoggerTrait,
+use crate::nds::arm::{
+    instructions::thumb::Instruction,
+    models::{Context, ContextTrait},
 };
 
 use super::instructions;
@@ -18,17 +15,12 @@ pub fn lookup_register_offset(
         0b000 => instructions::str_2(ctx),
         0b001 => instructions::strh_2(ctx),
         0b010 => instructions::strb_2(ctx),
+        0b011 => instructions::ldrsb(ctx),
         0b100 => instructions::ldr_2(ctx),
         0b101 => instructions::ldrh_2(ctx),
         0b110 => instructions::ldrb_2(ctx),
         0b111 => instructions::ldrsh(ctx),
-        _ => {
-            ctx.logger.log_error(format!(
-                "unknown load/store register offset opcode {:03b}",
-                opcode
-            ));
-            10000
-        }
+        _ => unreachable!(),
     }
 }
 
