@@ -1,9 +1,6 @@
-use crate::nds::{
-    arm::{
-        instructions::arm::Instruction,
-        models::{Context, ContextTrait},
-    },
-    logger::LoggerTrait,
+use crate::nds::arm::{
+    instructions::arm::Instruction,
+    models::{Context, ContextTrait},
 };
 
 use super::instructions;
