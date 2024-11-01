@@ -239,6 +239,7 @@ pub fn error<T: Into<String> + Display>(source: LogSource, content: T) {
     })
 }
 
+#[cfg(debug_assertions)]
 pub fn error_once<T: Into<String> + Display>(source: LogSource, content: T) {
     if !ONCE_LOGS.lock().unwrap().insert(content.to_string()) {
         return;
@@ -246,6 +247,9 @@ pub fn error_once<T: Into<String> + Display>(source: LogSource, content: T) {
 
     error(source, content);
 }
+
+#[cfg(not(debug_assertions))]
+pub fn error_once<T>(_: LogSource, _: T) {}
 
 pub fn do_pause_on_warn() -> bool {
     PAUSE_ON_WARN.load(std::sync::atomic::Ordering::Relaxed)
