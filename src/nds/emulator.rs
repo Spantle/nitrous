@@ -5,6 +5,7 @@ use crate::ui::windows::debug::arm::disassembler::ArmDisassemblerWindow;
 use super::{
     arm::{Arm, ArmBool, ArmInternalRW},
     bus::{bus7::Bus7, bus9::Bus9, BusTrait},
+    dma::Dma,
     logger::ONCE_LOGS,
     shared::Shared,
 };
@@ -25,6 +26,9 @@ pub struct Emulator {
     pub bus9: Bus9,
     pub bus7: Bus7,
 
+    pub dma9: Dma,
+    pub dma7: Dma,
+
     pub shared: Shared,
 
     pub cycle_state: CycleState,
@@ -38,6 +42,9 @@ impl Default for Emulator {
 
             bus9: Bus9::default(),
             bus7: Bus7::default(),
+
+            dma9: Dma::default(),
+            dma7: Dma::default(),
 
             shared: Shared::default(),
 
@@ -68,6 +75,7 @@ impl Emulator {
         self.arm9.write_bulk(
             &mut self.bus9,
             &mut self.shared,
+            &mut self.dma9,
             arm9_load_address,
             arm9_bin,
         );
@@ -81,6 +89,7 @@ impl Emulator {
         self.arm7.write_bulk(
             &mut self.bus7,
             &mut self.shared,
+            &mut self.dma7,
             arm7_load_address,
             arm7_bin,
         );
@@ -88,22 +97,35 @@ impl Emulator {
 
         // write game cartridge header into psram
         let shared = &mut self.shared;
-        self.bus9
-            .write_bulk(shared, 0x027FFE00, shared.cart.rom[0x0..0x200].into());
+        self.bus9.write_bulk(
+            shared,
+            &mut None,
+            0x027FFE00,
+            shared.cart.rom[0x0..0x200].into(),
+        );
 
         // write chip id into psram
-        self.bus9.write_word(shared, 0x027FF800, 0x00000FC2);
-        self.bus9.write_word(shared, 0x027FF804, 0x00000FC2);
-        self.bus9.write_word(shared, 0x027FFC00, 0x00000FC2);
-        self.bus9.write_word(shared, 0x027FFC04, 0x00000FC2);
+        self.bus9
+            .write_word(shared, &mut None, 0x027FF800, 0x00000FC2);
+        self.bus9
+            .write_word(shared, &mut None, 0x027FF804, 0x00000FC2);
+        self.bus9
+            .write_word(shared, &mut None, 0x027FFC00, 0x00000FC2);
+        self.bus9
+            .write_word(shared, &mut None, 0x027FFC04, 0x00000FC2);
 
         // TODO: thanks @atem.zip
-        self.bus9.write_byte(shared, 0x04000247, 0x03);
-        self.bus9.write_halfword(shared, 0x027FF850, 0x5835);
-        self.bus9.write_halfword(shared, 0x027FF880, 0x0007);
-        self.bus9.write_halfword(shared, 0x027FF884, 0x0006);
-        self.bus9.write_halfword(shared, 0x027FFC10, 0x5835);
-        self.bus9.write_halfword(shared, 0x027FFC40, 0x0001);
+        self.bus9.write_byte(shared, &mut None, 0x04000247, 0x03);
+        self.bus9
+            .write_halfword(shared, &mut None, 0x027FF850, 0x5835);
+        self.bus9
+            .write_halfword(shared, &mut None, 0x027FF880, 0x0007);
+        self.bus9
+            .write_halfword(shared, &mut None, 0x027FF884, 0x0006);
+        self.bus9
+            .write_halfword(shared, &mut None, 0x027FFC10, 0x5835);
+        self.bus9
+            .write_halfword(shared, &mut None, 0x027FFC40, 0x0001);
     }
 
     pub fn reset(&mut self, load_binary: bool) {
@@ -144,23 +166,21 @@ impl Emulator {
     pub fn step(&mut self) -> u32 {
         let cycles = match self.cycle_state {
             CycleState::Arm9_1 | CycleState::Arm9_2 => {
-                let cycles = self.arm9.clock(&mut self.bus9, &mut self.shared);
-                self.bus9.dma = self
-                    .bus9
-                    .dma
-                    .clone()
+                let cycles = self
+                    .arm9
+                    .clock(&mut self.bus9, &mut self.shared, &mut self.dma9);
+                self.dma9
                     .check_immediately(&mut self.bus9, &mut self.shared);
                 self.shared.cart.clock(&mut self.bus9, &mut self.bus7);
 
                 cycles
             }
             CycleState::Arm7 => {
-                let cycles = self.arm7.clock(&mut self.bus7, &mut self.shared);
+                let cycles = self
+                    .arm7
+                    .clock(&mut self.bus7, &mut self.shared, &mut self.dma7);
                 self.shared.gpus.clock(&mut self.bus9, &mut self.bus7);
-                self.bus7.dma = self
-                    .bus7
-                    .dma
-                    .clone()
+                self.dma7
                     .check_immediately(&mut self.bus7, &mut self.shared);
 
                 (0..cycles).for_each(|_| {
@@ -208,7 +228,9 @@ impl Emulator {
                 break;
             }
 
-            let arm9_cycles = self.arm9.clock(&mut self.bus9, &mut self.shared);
+            let arm9_cycles = self
+                .arm9
+                .clock(&mut self.bus9, &mut self.shared, &mut self.dma9);
 
             cycles_ran_arm9 += arm9_cycles as u64;
 
@@ -221,7 +243,9 @@ impl Emulator {
                     break;
                 }
 
-                let arm7_cycles = self.arm7.clock(&mut self.bus7, &mut self.shared);
+                let arm7_cycles = self
+                    .arm7
+                    .clock(&mut self.bus7, &mut self.shared, &mut self.dma7);
                 cycles_ran_arm7 += arm7_cycles as i32;
                 (0..arm7_cycles).for_each(|_| {
                     self.bus9.timers.clock(&mut self.bus9.interrupts);
@@ -239,16 +263,9 @@ impl Emulator {
                 cycles_ran_gpu += 1;
             }
 
-            // this sucks lmao
-            self.bus9.dma = self
-                .bus9
-                .dma
-                .clone()
+            self.dma9
                 .check_immediately(&mut self.bus9, &mut self.shared);
-            self.bus7.dma = self
-                .bus7
-                .dma
-                .clone()
+            self.dma7
                 .check_immediately(&mut self.bus7, &mut self.shared);
 
             self.shared

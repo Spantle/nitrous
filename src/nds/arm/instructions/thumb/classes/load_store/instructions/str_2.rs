@@ -19,7 +19,7 @@ pub fn str_2(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     // technically if address bits 0-1 aren't 0 then it's UNPREDICTABLE
     let address = ctx.arm.r()[rn].wrapping_add(ctx.arm.r()[rm]);
     let rd = ctx.arm.r()[rd];
-    ctx.arm.write_word(ctx.bus, ctx.shared, address, rd);
+    ctx.arm.write_word(ctx.bus, ctx.shared, ctx.dma,address, rd);
 
     1 // TODO: this is wrong
 }

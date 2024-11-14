@@ -10,6 +10,7 @@ pub fn strb(ctx: &mut Context<LoadStoreInstruction, impl ContextTrait>, address:
     ctx.arm.write_byte(
         ctx.bus,
         ctx.shared,
+        ctx.dma,
         address,
         ctx.arm.eru(ctx.inst.destination_register) as u8,
     );

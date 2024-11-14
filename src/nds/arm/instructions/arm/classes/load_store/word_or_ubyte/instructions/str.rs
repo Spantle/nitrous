@@ -10,6 +10,7 @@ pub fn str(ctx: &mut Context<LoadStoreInstruction, impl ContextTrait>, address: 
     ctx.arm.write_word(
         ctx.bus,
         ctx.shared,
+        ctx.dma,
         address,
         ctx.arm.r()[ctx.inst.destination_register],
     );

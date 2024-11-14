@@ -1,6 +1,6 @@
 use core::mem::swap;
 
-use crate::nds::{bus::BusTrait, cp15::CP15, logger, shared::Shared};
+use crate::nds::{bus::BusTrait, cp15::CP15, dma::Dma, logger, shared::Shared};
 
 use super::{
     models::{ProcessorMode, Psr, Registers, StackTrace},
@@ -34,13 +34,34 @@ pub trait ArmTrait<Bus: BusTrait> {
     fn cp15(&self) -> &CP15;
     fn cp15_mut(&mut self) -> &mut CP15;
 
-    fn read_byte(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u8;
-    fn read_halfword(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u16;
-    fn read_word(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u32;
+    fn read_byte(&self, bus: &mut Bus, shared: &mut Shared, dma: &mut Dma, addr: u32) -> u8;
+    fn read_halfword(&self, bus: &mut Bus, shared: &mut Shared, dma: &mut Dma, addr: u32) -> u16;
+    fn read_word(&self, bus: &mut Bus, shared: &mut Shared, dma: &mut Dma, addr: u32) -> u32;
 
-    fn write_byte(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: u8);
-    fn write_halfword(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: u16);
-    fn write_word(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: u32);
+    fn write_byte(
+        &mut self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        dma: &mut Dma,
+        addr: u32,
+        value: u8,
+    );
+    fn write_halfword(
+        &mut self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        dma: &mut Dma,
+        addr: u32,
+        value: u16,
+    );
+    fn write_word(
+        &mut self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        dma: &mut Dma,
+        addr: u32,
+        value: u32,
+    );
 }
 
 impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
@@ -241,25 +262,46 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
         &mut self.cp15
     }
 
-    fn read_byte(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u8 {
-        self.read_slice::<1>(bus, shared, addr)[0]
+    fn read_byte(&self, bus: &mut Bus, shared: &mut Shared, dma: &mut Dma, addr: u32) -> u8 {
+        self.read_slice::<1>(bus, shared, dma, addr)[0]
     }
-    fn read_halfword(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u16 {
-        let bytes = self.read_slice::<2>(bus, shared, addr);
+    fn read_halfword(&self, bus: &mut Bus, shared: &mut Shared, dma: &mut Dma, addr: u32) -> u16 {
+        let bytes = self.read_slice::<2>(bus, shared, dma, addr);
         u16::from_le_bytes(bytes)
     }
-    fn read_word(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> u32 {
-        let bytes = self.read_slice::<4>(bus, shared, addr);
+    fn read_word(&self, bus: &mut Bus, shared: &mut Shared, dma: &mut Dma, addr: u32) -> u32 {
+        let bytes = self.read_slice::<4>(bus, shared, dma, addr);
         u32::from_le_bytes(bytes)
     }
 
-    fn write_byte(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: u8) {
-        self.write_slice::<1>(bus, shared, addr, [value]);
+    fn write_byte(
+        &mut self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        dma: &mut Dma,
+        addr: u32,
+        value: u8,
+    ) {
+        self.write_slice::<1>(bus, shared, dma, addr, [value]);
     }
-    fn write_halfword(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: u16) {
-        self.write_slice::<2>(bus, shared, addr, value.to_le_bytes());
+    fn write_halfword(
+        &mut self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        dma: &mut Dma,
+        addr: u32,
+        value: u16,
+    ) {
+        self.write_slice::<2>(bus, shared, dma, addr, value.to_le_bytes());
     }
-    fn write_word(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, value: u32) {
-        self.write_slice::<4>(bus, shared, addr, value.to_le_bytes());
+    fn write_word(
+        &mut self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        dma: &mut Dma,
+        addr: u32,
+        value: u32,
+    ) {
+        self.write_slice::<4>(bus, shared, dma, addr, value.to_le_bytes());
     }
 }

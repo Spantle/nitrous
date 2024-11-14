@@ -1,4 +1,4 @@
-use crate::nds::{bus::BusTrait, cp15::CP15, logger, shared::Shared};
+use crate::nds::{bus::BusTrait, cp15::CP15, dma::Dma, logger, shared::Shared};
 
 use super::{
     instructions::lookup_instruction_set,
@@ -66,7 +66,7 @@ impl<Bus: BusTrait> Default for Arm<Bus> {
 }
 
 impl<Bus: BusTrait> Arm<Bus> {
-    pub fn clock(&mut self, bus: &mut Bus, shared: &mut Shared) -> u32 {
+    pub fn clock(&mut self, bus: &mut Bus, shared: &mut Shared, dma: &mut Dma) -> u32 {
         if self.halted {
             if !self.cpsr().get_irq_interrupt() && bus.is_requesting_interrupt() {
                 self.handle_irq();
@@ -78,9 +78,9 @@ impl<Bus: BusTrait> Arm<Bus> {
         let pc = self.r[15];
         let is_thumb = self.cpsr.get_thumb();
         let inst = if is_thumb {
-            self.read_halfword(bus, shared, pc) as u32
+            self.read_halfword(bus, shared, dma, pc) as u32
         } else {
-            self.read_word(bus, shared, pc)
+            self.read_word(bus, shared, dma, pc)
         };
         // print as binary
         // if Bus::kind() == ArmKind::ARM7 {
@@ -102,6 +102,7 @@ impl<Bus: BusTrait> Arm<Bus> {
                     self,
                     bus,
                     shared,
+                    dma,
                     &mut FakeDisassembly,
                     &mut logger::Logger(logger::LogSource::Arm9(inst)),
                 )) + 2
@@ -111,6 +112,7 @@ impl<Bus: BusTrait> Arm<Bus> {
                 self,
                 bus,
                 shared,
+                dma,
                 &mut FakeDisassembly,
                 &mut logger::Logger(logger::LogSource::Arm7(inst)),
             )),
@@ -128,7 +130,7 @@ impl<Bus: BusTrait> Arm<Bus> {
             self.stacktrace.branch(pc);
 
             // in thumb, "0" is a common valid instruction, so we check 2 instructions to avoid false positives
-            let next_inst = self.read_word(bus, shared, self.r[15]);
+            let next_inst = self.read_word(bus, shared, dma, self.r[15]);
             if next_inst == 0 {
                 let log_source = if Bus::KIND == ArmKind::Arm9 {
                     logger::LogSource::Arm9(0)

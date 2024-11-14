@@ -27,7 +27,7 @@ pub fn ldr_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.arm.set_r(
         rd,
         ctx.arm
-            .read_word(ctx.bus, ctx.shared, address)
+            .read_word(ctx.bus, ctx.shared, ctx.dma, address)
             .rotate_right(bits * 8),
     );
 
