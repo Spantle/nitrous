@@ -24,10 +24,12 @@ pub fn ldr_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let address = rn + (immed_5 * 4);
     // NOTE: it's UNPREDICTABLE if bits 1-0 of address is not 0
     let bits = address.get_bits(0, 1);
+    let a = ctx.dma;
+    let b = ctx.bus;
     ctx.arm.set_r(
         rd,
         ctx.arm
-            .read_word(ctx.bus, ctx.shared, address)
+            .read_word(ctx.bus, ctx.shared, ctx.dma, address)
             .rotate_right(bits * 8),
     );
 

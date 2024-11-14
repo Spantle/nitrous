@@ -20,7 +20,7 @@ pub fn ldr(ctx: Context<LoadStoreInstruction, impl ContextTrait>, address: u32) 
     // };
     let value = ctx
         .arm
-        .read_word(ctx.bus, ctx.shared, address)
+        .read_word(ctx.bus, ctx.shared, ctx.dma, address)
         .rotate_right(bits * 8);
 
     if ctx.inst.destination_register == 15 {

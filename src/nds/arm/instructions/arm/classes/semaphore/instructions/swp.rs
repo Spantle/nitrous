@@ -33,7 +33,7 @@ pub fn swp(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let bits = rn.get_bits(0, 1); // i have no idea what to call this
     let temp = ctx
         .arm
-        .read_word(ctx.bus, ctx.shared, rn)
+        .read_word(ctx.bus, ctx.shared, ctx.dma, rn)
         .rotate_right(bits * 8);
 
     ctx.arm.write_word(ctx.bus, ctx.shared, rn, ctx.arm.er(rm));

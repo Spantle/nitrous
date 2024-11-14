@@ -25,6 +25,7 @@ pub fn lookup_instruction_set<const ARM_BOOL: bool>(
             ctx.arm,
             ctx.bus,
             ctx.shared,
+            ctx.dma,
             ctx.dis,
             ctx.logger,
         ))
@@ -34,6 +35,7 @@ pub fn lookup_instruction_set<const ARM_BOOL: bool>(
             ctx.arm,
             ctx.bus,
             ctx.shared,
+            ctx.dma,
             ctx.dis,
             ctx.logger,
         ))

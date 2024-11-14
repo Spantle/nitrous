@@ -28,6 +28,7 @@ impl MemoryViewerWindow {
                         let row_mem = emulator.arm9.read_bulk(
                             &mut emulator.bus9,
                             &mut emulator.shared,
+                            &mut Some(&mut emulator.dma9),
                             row_start as u32,
                             16,
                         );
@@ -181,6 +182,7 @@ impl MemoryViewerWindow {
                                                         emulator.arm9.write_bulk(
                                                             &mut emulator.bus9,
                                                             &mut emulator.shared,
+                                                            &mut Some(&mut emulator.dma9),
                                                             i as u32,
                                                             [b].to_vec(),
                                                         );
@@ -213,6 +215,7 @@ impl MemoryViewerWindow {
                                         emulator.arm9.write_bulk(
                                             &mut emulator.bus9,
                                             &mut emulator.shared,
+                                            &mut Some(&mut emulator.dma9),
                                             selected as u32,
                                             [b].to_vec(),
                                         );

@@ -5,6 +5,7 @@ use crate::nds::{
         ArmTrait,
     },
     bus::BusTrait,
+    dma::DmaTrait,
 };
 
 // AKA the addressing mode
@@ -210,13 +211,13 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
 }
 
 // "unpredictable" behaviour
-trait Funny<Bus: BusTrait> {
+trait Funny<Bus: BusTrait<Dma>, Dma: DmaTrait<Bus>> {
     fn eru(&mut self, r: u8) -> u32;
 }
 
-impl<T, Bus: BusTrait> Funny<Bus> for T
+impl<T, Bus: BusTrait<Dma>, Dma: DmaTrait<Bus>> Funny<Bus, Dma> for T
 where
-    T: ArmTrait<Bus>,
+    T: ArmTrait<Bus, Dma>,
 {
     fn eru(&mut self, r: u8) -> u32 {
         match r {

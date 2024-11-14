@@ -16,14 +16,14 @@ pub fn ldm_3(
 
     for i in 0..=14 {
         if inst.register_list.get_bit(i as u16) {
-            arm.set_r(i, arm.read_word(ctx.bus, ctx.shared, address));
+            arm.set_r(i, arm.read_word(ctx.bus, ctx.shared, ctx.dma, address));
             address = address.wrapping_add(4);
         }
     }
 
     arm.set_cpsr(arm.get_spsr());
 
-    let value = arm.read_word(ctx.bus, ctx.shared, address);
+    let value = arm.read_word(ctx.bus, ctx.shared, ctx.dma, address);
     if arm_bool == ArmBool::ARM9 && arm.cpsr().get_thumb() {
         arm.set_r(15, value & 0xFFFFFFFE);
     } else {

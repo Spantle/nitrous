@@ -1,7 +1,7 @@
 use crate::nds::{
     arm::ArmKind,
     div::DividerUnit,
-    dma::Dma,
+    dma::DmaTrait,
     interrupts::Interrupts,
     logger::{self, format_debug, Logger, LoggerTrait},
     shared::Shared,
@@ -17,7 +17,6 @@ pub struct Bus9 {
     pub bios: Vec<u8>,
     pub interrupts: Interrupts,
 
-    pub dma: Dma<Bus9>,
     pub timers: Timers,
     pub div: DividerUnit,
 }
@@ -30,19 +29,17 @@ impl Default for Bus9 {
             bios: Vec::new(),
             interrupts: Interrupts::default(),
 
-            dma: Dma::default(),
             timers: Timers::default(),
             div: DividerUnit::default(),
         }
     }
 }
 
-impl BusTrait for Bus9 {
+impl<Dma: DmaTrait<Self>> BusTrait<Dma> for Bus9 {
     const KIND: ArmKind = ArmKind::Arm9;
 
     fn reset(&mut self) {
         self.interrupts = Interrupts::default();
-        self.dma = Dma::default();
         self.timers = Timers::default();
     }
 
@@ -63,30 +60,53 @@ impl BusTrait for Bus9 {
         self.interrupts.is_requesting_interrupt()
     }
 
-    fn read_byte(&self, shared: &mut Shared, addr: u32) -> u8 {
-        self.read_slice::<1>(shared, addr)[0]
+    fn read_byte(&self, shared: &mut Shared, dma: &mut Option<&mut Dma>, addr: u32) -> u8 {
+        self.read_slice::<1>(shared, dma, addr)[0]
     }
-    fn read_halfword(&self, shared: &mut Shared, addr: u32) -> u16 {
-        let bytes = self.read_slice::<2>(shared, addr);
+    fn read_halfword(&self, shared: &mut Shared, dma: &mut Option<&mut Dma>, addr: u32) -> u16 {
+        let bytes = self.read_slice::<2>(shared, dma, addr);
         u16::from_le_bytes(bytes)
     }
-    fn read_word(&self, shared: &mut Shared, addr: u32) -> u32 {
-        let bytes = self.read_slice::<4>(shared, addr);
+    fn read_word(&self, shared: &mut Shared, dma: &mut Option<&mut Dma>, addr: u32) -> u32 {
+        let bytes = self.read_slice::<4>(shared, dma, addr);
         u32::from_le_bytes(bytes)
     }
 
-    fn write_byte(&mut self, shared: &mut Shared, addr: u32, value: u8) {
-        self.write_slice::<1>(shared, addr, [value]);
+    fn write_byte(
+        &mut self,
+        shared: &mut Shared,
+        dma: &mut Option<&mut Dma>,
+        addr: u32,
+        value: u8,
+    ) {
+        self.write_slice::<1>(shared, dma, addr, [value]);
     }
-    fn write_halfword(&mut self, shared: &mut Shared, addr: u32, value: u16) {
-        self.write_slice::<2>(shared, addr, value.to_le_bytes());
+    fn write_halfword(
+        &mut self,
+        shared: &mut Shared,
+        dma: &mut Option<&mut Dma>,
+        addr: u32,
+        value: u16,
+    ) {
+        self.write_slice::<2>(shared, dma, addr, value.to_le_bytes());
     }
-    fn write_word(&mut self, shared: &mut Shared, addr: u32, value: u32) {
-        self.write_slice::<4>(shared, addr, value.to_le_bytes());
+    fn write_word(
+        &mut self,
+        shared: &mut Shared,
+        dma: &mut Option<&mut Dma>,
+        addr: u32,
+        value: u32,
+    ) {
+        self.write_slice::<4>(shared, dma, addr, value.to_le_bytes());
     }
 
     #[inline(always)]
-    fn read_slice<const T: usize>(&self, shared: &mut Shared, addr: u32) -> [u8; T] {
+    fn read_slice<const T: usize>(
+        &self,
+        shared: &mut Shared,
+        dma: &mut Option<&mut Dma>,
+        addr: u32,
+    ) -> [u8; T] {
         let addr = addr as usize / T * T;
         let mut bytes = [0; T];
         match addr {
@@ -228,8 +248,10 @@ impl BusTrait for Bus9 {
             }
 
             _ => {
-                if let Some(bytes) = self.dma.read_slice::<T>(addr) {
-                    return bytes;
+                if let Some(dma) = dma {
+                    if let Some(bytes) = dma.read_slice::<T>(addr) {
+                        return bytes;
+                    }
                 }
 
                 self.logger.log_error(format!(
@@ -242,7 +264,13 @@ impl BusTrait for Bus9 {
     }
 
     #[inline(always)]
-    fn write_slice<const T: usize>(&mut self, shared: &mut Shared, addr: u32, value: [u8; T]) {
+    fn write_slice<const T: usize>(
+        &mut self,
+        shared: &mut Shared,
+        dma: &mut Option<&mut Dma>,
+        addr: u32,
+        value: [u8; T],
+    ) {
         let addr = addr as usize / T * T;
         match addr {
             0x00000000..=0x00000001 => {} // not real
@@ -449,7 +477,10 @@ impl BusTrait for Bus9 {
             }
 
             _ => {
-                let success = self.dma.write_slice::<T>(addr, value);
+                let mut success = false;
+                if let Some(dma) = dma {
+                    success = dma.write_slice::<T>(addr, value)
+                };
                 if !success {
                     self.logger.log_error(format!(
                         "Invalid write {} byte(s) at address {:#010X}: {:#010X}",

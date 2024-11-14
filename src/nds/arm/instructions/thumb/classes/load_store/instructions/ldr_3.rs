@@ -22,7 +22,7 @@ pub fn ldr_3(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let pc = ctx.arm.ert(15);
     let address = (pc.get_bits(2, 31) << 2) + (immed_8 * 4);
     ctx.arm
-        .set_r(rd, ctx.arm.read_word(ctx.bus, ctx.shared, address));
+        .set_r(rd, ctx.arm.read_word(ctx.bus, ctx.shared, ctx.dma, address));
 
     1 // TODO: this is wrong
 }

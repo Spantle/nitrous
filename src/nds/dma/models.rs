@@ -1,13 +1,15 @@
 use crate::nds::{arm::ArmKind, bus::BusTrait, logger, shared::Shared, Bits};
 
+use super::DmaTrait;
+
 // TODO: cycle timing
 // TODO: GamePak DRQ
 // TODO: special start timing
 // TODO: IRQ upon end of word count
 // TODO: maybe some edge cases? idk read gbatek lmao
 
-pub struct DmaChannel<Bus: BusTrait> {
-    _phantom: std::marker::PhantomData<Bus>,
+pub struct DmaChannel<Bus: BusTrait<Dma>, Dma: DmaTrait<Bus>> {
+    _phantom: std::marker::PhantomData<(Bus, Dma)>,
 
     index: u8,
 
@@ -32,26 +34,7 @@ pub struct DmaChannel<Bus: BusTrait> {
     internal_cnt_l: u32,
 }
 
-impl<Bus: BusTrait> Clone for DmaChannel<Bus> {
-    fn clone(&self) -> Self {
-        Self {
-            _phantom: std::marker::PhantomData,
-
-            index: self.index,
-
-            dmasad: self.dmasad,
-            dmadad: self.dmadad,
-            dmacnt: self.dmacnt,
-            dmafill: self.dmafill,
-
-            internal_sad: self.internal_sad,
-            internal_dad: self.internal_dad,
-            internal_cnt_l: self.internal_cnt_l,
-        }
-    }
-}
-
-impl<Bus: BusTrait> DmaChannel<Bus> {
+impl<Bus: BusTrait<Dma>, Dma: DmaTrait<Bus>> DmaChannel<Bus, Dma> {
     pub fn new(index: u8) -> Self {
         Self {
             _phantom: std::marker::PhantomData,
@@ -145,11 +128,11 @@ impl<Bus: BusTrait> DmaChannel<Bus> {
             self.internal_cnt_l -= 1;
 
             if is_32bit_transfer {
-                let value = bus.read_word(shared, self.internal_sad);
-                bus.write_word(shared, self.internal_dad, value);
+                let value = bus.read_word(shared, &mut None, self.internal_sad);
+                bus.write_word(shared, &mut None, self.internal_dad, value);
             } else {
-                let value = bus.read_halfword(shared, self.internal_sad);
-                bus.write_halfword(shared, self.internal_dad, value);
+                let value = bus.read_halfword(shared, &mut None, self.internal_sad);
+                bus.write_halfword(shared, &mut None, self.internal_dad, value);
             }
 
             match self.dmacnt.get_dest_addr_control() {

@@ -4,24 +4,17 @@ use models::DmaChannel;
 
 use super::{arm::ArmKind, bus::BusTrait, shared::Shared, Bits, Bytes};
 
-pub struct Dma<Bus: BusTrait> {
-    channel: [DmaChannel<Bus>; 4],
+pub trait DmaTrait<Bus: BusTrait<Self>>: Sized {
+    fn read_slice<const T: usize>(&self, addr: usize) -> Option<[u8; T]>;
+    fn write_slice<const T: usize>(&mut self, addr: usize, value: [u8; T]) -> bool;
+    fn check_immediately(&mut self, bus: &mut Bus, shared: &mut Shared);
 }
 
-impl<Bus: BusTrait> Clone for Dma<Bus> {
-    fn clone(&self) -> Self {
-        Self {
-            channel: [
-                self.channel[0].clone(),
-                self.channel[1].clone(),
-                self.channel[2].clone(),
-                self.channel[3].clone(),
-            ],
-        }
-    }
+pub struct Dma<Bus: BusTrait<Self>> {
+    channel: [DmaChannel<Bus, Self>; 4],
 }
 
-impl<Bus: BusTrait> Default for Dma<Bus> {
+impl<Bus: BusTrait<Self>> Default for Dma<Bus> {
     fn default() -> Self {
         Self {
             channel: [
@@ -34,8 +27,8 @@ impl<Bus: BusTrait> Default for Dma<Bus> {
     }
 }
 
-impl<Bus: BusTrait> Dma<Bus> {
-    pub fn read_slice<const T: usize>(&self, addr: usize) -> Option<[u8; T]> {
+impl<Bus: BusTrait<Self>> DmaTrait<Bus> for Dma<Bus> {
+    fn read_slice<const T: usize>(&self, addr: usize) -> Option<[u8; T]> {
         match addr {
             0x040000B0 => Some(self.channel[0].dmasad.to_bytes::<T>()),
             0x040000B4 => Some(self.channel[0].dmadad.to_bytes::<T>()),
@@ -64,7 +57,7 @@ impl<Bus: BusTrait> Dma<Bus> {
         }
     }
 
-    pub fn write_slice<const T: usize>(&mut self, addr: usize, value: [u8; T]) -> bool {
+    fn write_slice<const T: usize>(&mut self, addr: usize, value: [u8; T]) -> bool {
         let mut success = true;
         match addr {
             0x040000B0 => self.channel[0].dmasad = value.into_word(),
@@ -97,7 +90,7 @@ impl<Bus: BusTrait> Dma<Bus> {
         success
     }
 
-    pub fn check_immediately(&mut self, bus: &mut Bus, shared: &mut Shared) -> Self {
+    fn check_immediately(&mut self, bus: &mut Bus, shared: &mut Shared) {
         for channel in self.channel.iter_mut() {
             let enabled = channel.dmacnt.get_dma_enable();
             let start_timing = if Bus::KIND == ArmKind::Arm9 {
@@ -117,7 +110,19 @@ impl<Bus: BusTrait> Dma<Bus> {
                 channel.run(bus, shared);
             }
         }
-
-        self.clone()
     }
+}
+
+#[derive(Default)]
+pub struct FakeDma;
+impl<Bus: BusTrait<Self>> DmaTrait<Bus> for FakeDma {
+    fn read_slice<const T: usize>(&self, _addr: usize) -> Option<[u8; T]> {
+        None
+    }
+
+    fn write_slice<const T: usize>(&mut self, _addr: usize, _value: [u8; T]) -> bool {
+        false
+    }
+
+    fn check_immediately(&mut self, _bus: &mut Bus, _shared: &mut Shared) {}
 }
