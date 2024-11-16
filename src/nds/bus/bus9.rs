@@ -255,9 +255,10 @@ impl BusTrait for Bus9 {
                     }
                 }
 
-                self.logger.log_error(format!(
+                self.logger.log_error_once(format_debug!(
                     "Invalid read {} byte(s) at address {:#010X}",
-                    T, addr
+                    T,
+                    addr
                 ));
                 bytes
             }
