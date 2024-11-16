@@ -22,8 +22,13 @@ pub fn strb_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let rd = ctx.arm.r()[rd];
     let rn = ctx.arm.r()[rn];
     let address = rn + immed_5;
-    ctx.arm
-        .write_byte(ctx.bus, ctx.shared, address, rd.get_bits(0, 7) as u8);
+    ctx.arm.write_byte(
+        ctx.bus,
+        ctx.shared,
+        ctx.dma,
+        address,
+        rd.get_bits(0, 7) as u8,
+    );
 
     1 // TODO: this is wrong
 }

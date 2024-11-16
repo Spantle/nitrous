@@ -16,6 +16,7 @@ pub fn lookup<Ctx: ContextTrait>(
         ctx.arm,
         ctx.bus,
         ctx.shared,
+        ctx.dma,
         ctx.dis,
         ctx.logger,
     );

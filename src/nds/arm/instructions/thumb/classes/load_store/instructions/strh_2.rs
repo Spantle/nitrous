@@ -22,8 +22,13 @@ pub fn strh_2(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     // NOTE: technically it's UNPREDICTABLE if bit 0 of address is not 0
     let address = ctx.arm.r()[rn] + ctx.arm.r()[rm];
     let rd = ctx.arm.r()[rd];
-    ctx.arm
-        .write_halfword(ctx.bus, ctx.shared, address, rd.get_bits(0, 15) as u16);
+    ctx.arm.write_halfword(
+        ctx.bus,
+        ctx.shared,
+        ctx.dma,
+        address,
+        rd.get_bits(0, 15) as u16,
+    );
 
     1 // TODO: this is wrong
 }

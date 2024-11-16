@@ -10,7 +10,8 @@ pub fn strh(ctx: &mut Context<LoadStoreInstruction, impl ContextTrait>, address:
     // if bit 0 of the address is 1, the data is UNPREDICTABLE
 
     let data = ctx.arm.er(ctx.inst.destination_register) as u16;
-    ctx.arm.write_halfword(ctx.bus, ctx.shared, address, data);
+    ctx.arm
+        .write_halfword(ctx.bus, ctx.shared, ctx.dma, address, data);
 
     1
 }

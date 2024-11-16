@@ -15,7 +15,7 @@ pub fn stm_1(
 
     for i in 0..=15 {
         if inst.register_list.get_bit(i as u16) {
-            arm.write_word(ctx.bus, ctx.shared, address, arm.r()[i]);
+            arm.write_word(ctx.bus, ctx.shared, ctx.dma,address, arm.r()[i]);
             address = address.wrapping_add(4);
         }
     }

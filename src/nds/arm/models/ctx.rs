@@ -1,6 +1,6 @@
 // thank you for the help with this Leo (@Arduano)
 
-use crate::nds::{arm::ArmTrait, bus::BusTrait, logger::LoggerTrait, shared::Shared};
+use crate::nds::{arm::ArmTrait, bus::BusTrait, dma::Dma, logger::LoggerTrait, shared::Shared};
 
 use super::disassembly::DisassemblyTrait;
 
@@ -9,6 +9,7 @@ pub struct Context<'a, Inst, Ctx: ContextTrait> {
     pub arm: &'a mut Ctx::Arm,
     pub bus: &'a mut Ctx::Bus,
     pub shared: &'a mut Shared,
+    pub dma: &'a mut Dma,
 
     pub dis: &'a mut Ctx::Dis,
     pub logger: &'a mut Ctx::Logger,
@@ -30,6 +31,7 @@ impl<'a, Inst, Arm: ArmTrait<Bus>, Bus: BusTrait, Dis: DisassemblyTrait, Logger:
         arm: &'a mut Arm,
         bus: &'a mut Bus,
         shared: &'a mut Shared,
+        dma: &'a mut Dma,
         dis: &'a mut Dis,
         logger: &'a mut Logger,
     ) -> Self {
@@ -38,6 +40,7 @@ impl<'a, Inst, Arm: ArmTrait<Bus>, Bus: BusTrait, Dis: DisassemblyTrait, Logger:
             arm,
             bus,
             shared,
+            dma,
 
             dis,
             logger,

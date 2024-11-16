@@ -4,7 +4,7 @@ pub mod bus;
 mod cart;
 mod cp15;
 mod div;
-mod dma;
+pub mod dma;
 mod emulator;
 pub mod gpus;
 mod interrupts;

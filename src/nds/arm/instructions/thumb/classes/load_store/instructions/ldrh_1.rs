@@ -21,7 +21,7 @@ pub fn ldrh_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     // NOTE: technically it's UNPREDICTABLE if bit 0 of address is not 0
     ctx.arm.set_r(
         rd,
-        ctx.arm.read_halfword(ctx.bus, ctx.shared, address) as u32,
+        ctx.arm.read_halfword(ctx.bus, ctx.shared, ctx.dma,address) as u32,
     );
 
     1 // TODO: this is wrong

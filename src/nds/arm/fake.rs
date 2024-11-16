@@ -1,4 +1,4 @@
-use crate::nds::{bus::BusTrait, cp15::CP15, shared::Shared};
+use crate::nds::{bus::BusTrait, cp15::CP15, dma::Dma, shared::Shared};
 
 use super::{
     models::{ProcessorMode, Psr, Registers, StackTrace},
@@ -91,16 +91,46 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
         &mut self.cp15
     }
 
-    fn read_byte(&self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32) -> u8 {
+    fn read_byte(&self, _bus: &mut Bus, _shared: &mut Shared, _dma: &mut Dma, _addr: u32) -> u8 {
         0
     }
-    fn read_halfword(&self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32) -> u16 {
+    fn read_halfword(
+        &self,
+        _bus: &mut Bus,
+        _shared: &mut Shared,
+        _dma: &mut Dma,
+        _addr: u32,
+    ) -> u16 {
         0
     }
-    fn read_word(&self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32) -> u32 {
+    fn read_word(&self, _bus: &mut Bus, _shared: &mut Shared, _dma: &mut Dma, _addr: u32) -> u32 {
         0
     }
-    fn write_byte(&mut self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32, _value: u8) {}
-    fn write_halfword(&mut self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32, _value: u16) {}
-    fn write_word(&mut self, _bus: &mut Bus, _shared: &mut Shared, _addr: u32, _value: u32) {}
+    fn write_byte(
+        &mut self,
+        _bus: &mut Bus,
+        _shared: &mut Shared,
+        _dma: &mut Dma,
+        _addr: u32,
+        _value: u8,
+    ) {
+    }
+    fn write_halfword(
+        &mut self,
+        _bus: &mut Bus,
+        _shared: &mut Shared,
+        _dma: &mut Dma,
+        _addr: u32,
+        _value: u16,
+    ) {
+    }
+    fn write_word(
+        &mut self,
+        _bus: &mut Bus,
+        _shared: &mut Shared,
+        _dma: &mut Dma,
+        _addr: u32,
+        _value: u32,
+    ) {
+    }
 }

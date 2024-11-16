@@ -1,32 +1,67 @@
-use crate::nds::{bus::BusTrait, logger, shared::Shared};
+use crate::nds::{bus::BusTrait, dma::Dma, logger, shared::Shared};
 
 use super::{models::PowerDownMode, Arm, ArmKind, ArmTrait};
 
 pub trait ArmInternalRW<Bus: BusTrait> {
-    fn read_bulk(&self, bus: &mut Bus, shared: &mut Shared, addr: u32, len: u32) -> Vec<u8>;
-    fn write_bulk(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, data: Vec<u8>);
-    fn read_slice<const T: usize>(&self, bus: &mut Bus, shared: &mut Shared, addr: u32) -> [u8; T];
+    fn read_bulk(
+        &self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        dma: &mut Dma,
+        addr: u32,
+        len: u32,
+    ) -> Vec<u8>;
+    fn write_bulk(
+        &mut self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        dma: &mut Dma,
+        addr: u32,
+        data: Vec<u8>,
+    );
+    fn read_slice<const T: usize>(
+        &self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        dma: &mut Dma,
+        addr: u32,
+    ) -> [u8; T];
     fn write_slice<const T: usize>(
         &mut self,
         bus: &mut Bus,
         shared: &mut Shared,
+        dma: &mut Dma,
         addr: u32,
         value: [u8; T],
     );
 }
 
 impl<Bus: BusTrait> ArmInternalRW<Bus> for Arm<Bus> {
-    fn read_bulk(&self, bus: &mut Bus, shared: &mut Shared, addr: u32, len: u32) -> Vec<u8> {
+    fn read_bulk(
+        &self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        dma: &mut Dma,
+        addr: u32,
+        len: u32,
+    ) -> Vec<u8> {
         let mut bytes = vec![];
         for i in 0..len {
-            bytes.push(self.read_byte(bus, shared, addr + i));
+            bytes.push(self.read_byte(bus, shared, dma, addr + i));
         }
         bytes
     }
 
-    fn write_bulk(&mut self, bus: &mut Bus, shared: &mut Shared, addr: u32, data: Vec<u8>) {
+    fn write_bulk(
+        &mut self,
+        bus: &mut Bus,
+        shared: &mut Shared,
+        dma: &mut Dma,
+        addr: u32,
+        data: Vec<u8>,
+    ) {
         (0..data.len()).for_each(|i| {
-            self.write_byte(bus, shared, addr + i as u32, data[i]);
+            self.write_byte(bus, shared, dma, addr + i as u32, data[i]);
         });
     }
 
@@ -35,6 +70,7 @@ impl<Bus: BusTrait> ArmInternalRW<Bus> for Arm<Bus> {
         &self,
         bus: &mut Bus,
         shared: &mut Shared,
+        dma: &mut Dma,
         orig_addr: u32,
     ) -> [u8; T] {
         let addr = orig_addr as usize / T * T;
@@ -67,9 +103,9 @@ impl<Bus: BusTrait> ArmInternalRW<Bus> for Arm<Bus> {
                     return bytes;
                 }
 
-                bus.read_slice::<T>(shared, orig_addr)
+                bus.read_slice::<T>(shared, &mut Some(dma), orig_addr)
             }
-            ArmKind::Arm7 => bus.read_slice::<T>(shared, orig_addr),
+            ArmKind::Arm7 => bus.read_slice::<T>(shared, &mut Some(dma), orig_addr),
         }
     }
 
@@ -78,6 +114,7 @@ impl<Bus: BusTrait> ArmInternalRW<Bus> for Arm<Bus> {
         &mut self,
         bus: &mut Bus,
         shared: &mut Shared,
+        dma: &mut Dma,
         orig_addr: u32,
         value: [u8; T],
     ) {
@@ -105,7 +142,7 @@ impl<Bus: BusTrait> ArmInternalRW<Bus> for Arm<Bus> {
                     return;
                 }
 
-                bus.write_slice::<T>(shared, orig_addr, value)
+                bus.write_slice::<T>(shared, &mut Some(dma), orig_addr, value)
             }
             ArmKind::Arm7 => match addr {
                 0x04000301 => {
@@ -131,7 +168,7 @@ impl<Bus: BusTrait> ArmInternalRW<Bus> for Arm<Bus> {
                         _ => {}
                     }
                 }
-                _ => bus.write_slice::<T>(shared, orig_addr, value),
+                _ => bus.write_slice::<T>(shared, &mut Some(dma), orig_addr, value),
             },
         };
     }

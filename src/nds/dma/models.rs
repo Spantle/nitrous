@@ -6,9 +6,7 @@ use crate::nds::{arm::ArmKind, bus::BusTrait, logger, shared::Shared, Bits};
 // TODO: IRQ upon end of word count
 // TODO: maybe some edge cases? idk read gbatek lmao
 
-pub struct DmaChannel<Bus: BusTrait> {
-    _phantom: std::marker::PhantomData<Bus>,
-
+pub struct DmaChannel {
     index: u8,
 
     // arm9: source address, max 0FFFFFFE
@@ -32,30 +30,9 @@ pub struct DmaChannel<Bus: BusTrait> {
     internal_cnt_l: u32,
 }
 
-impl<Bus: BusTrait> Clone for DmaChannel<Bus> {
-    fn clone(&self) -> Self {
-        Self {
-            _phantom: std::marker::PhantomData,
-
-            index: self.index,
-
-            dmasad: self.dmasad,
-            dmadad: self.dmadad,
-            dmacnt: self.dmacnt,
-            dmafill: self.dmafill,
-
-            internal_sad: self.internal_sad,
-            internal_dad: self.internal_dad,
-            internal_cnt_l: self.internal_cnt_l,
-        }
-    }
-}
-
-impl<Bus: BusTrait> DmaChannel<Bus> {
+impl DmaChannel {
     pub fn new(index: u8) -> Self {
         Self {
-            _phantom: std::marker::PhantomData,
-
             index,
 
             dmasad: 0,
@@ -69,7 +46,7 @@ impl<Bus: BusTrait> DmaChannel<Bus> {
         }
     }
 
-    fn log_source(&self) -> logger::LogSource {
+    fn log_source<Bus: BusTrait>(&self) -> logger::LogSource {
         if Bus::KIND == ArmKind::Arm9 {
             logger::LogSource::DMA9
         } else {
@@ -77,19 +54,19 @@ impl<Bus: BusTrait> DmaChannel<Bus> {
         }
     }
 
-    pub fn update_cnt(&mut self, new_value: u32) {
+    pub fn update_cnt<Bus: BusTrait>(&mut self, new_value: u32) {
         let old_enable = self.dmacnt.get_dma_enable();
         self.dmacnt.set(new_value);
-        self.cnt_updated(old_enable);
+        self.cnt_updated::<Bus>(old_enable);
     }
 
-    pub fn update_cnt_h(&mut self, new_value: u32) {
+    pub fn update_cnt_h<Bus: BusTrait>(&mut self, new_value: u32) {
         let old_enable = self.dmacnt.get_dma_enable();
         self.dmacnt.set_h(new_value);
-        self.cnt_updated(old_enable);
+        self.cnt_updated::<Bus>(old_enable);
     }
 
-    fn cnt_updated(&mut self, old_enable: bool) {
+    fn cnt_updated<Bus: BusTrait>(&mut self, old_enable: bool) {
         if old_enable || !self.dmacnt.get_dma_enable() {
             return;
         }
@@ -103,7 +80,7 @@ impl<Bus: BusTrait> DmaChannel<Bus> {
             0 | 2 => {}
             _ => {
                 logger::error(
-                    self.log_source(),
+                    self.log_source::<Bus>(),
                     format!(
                         "DMA{} has start timing {} which isn't supported",
                         self.index, start_timing
@@ -114,18 +91,18 @@ impl<Bus: BusTrait> DmaChannel<Bus> {
 
         self.internal_sad = self.dmasad;
         self.internal_dad = self.dmadad;
-        self.internal_cnt_l = self.get_word_count();
+        self.internal_cnt_l = self.get_word_count::<Bus>();
         if self.internal_cnt_l == 0 {
             logger::error(
-                self.log_source(),
+                self.log_source::<Bus>(),
                 format!("DMA{} has 0 word count. Not implemented.", self.index),
             );
         }
     }
 
-    pub fn run(&mut self, bus: &mut Bus, shared: &mut Shared) -> u32 {
+    pub fn run<Bus: BusTrait>(&mut self, bus: &mut Bus, shared: &mut Shared) -> u32 {
         logger::debug(
-            self.log_source(),
+            self.log_source::<Bus>(),
             logger::format_debug!(
                 "DMA{} running {:08X},{:08X},{:08X},{:08X}",
                 self.index,
@@ -145,11 +122,11 @@ impl<Bus: BusTrait> DmaChannel<Bus> {
             self.internal_cnt_l -= 1;
 
             if is_32bit_transfer {
-                let value = bus.read_word(shared, self.internal_sad);
-                bus.write_word(shared, self.internal_dad, value);
+                let value = bus.read_word(shared, &mut None, self.internal_sad);
+                bus.write_word(shared, &mut None, self.internal_dad, value);
             } else {
-                let value = bus.read_halfword(shared, self.internal_sad);
-                bus.write_halfword(shared, self.internal_dad, value);
+                let value = bus.read_halfword(shared, &mut None, self.internal_sad);
+                bus.write_halfword(shared, &mut None, self.internal_dad, value);
             }
 
             match self.dmacnt.get_dest_addr_control() {
@@ -169,7 +146,7 @@ impl<Bus: BusTrait> DmaChannel<Bus> {
         if !self.dmacnt.get_dma_repeat() {
             self.dmacnt.set_dma_enable(false);
         } else {
-            self.internal_cnt_l = self.get_word_count();
+            self.internal_cnt_l = self.get_word_count::<Bus>();
             if self.dmacnt.get_dest_addr_control() == 3 {
                 self.internal_dad = self.dmadad;
             }
@@ -178,7 +155,7 @@ impl<Bus: BusTrait> DmaChannel<Bus> {
         1 // TODO: this is wrong
     }
 
-    fn get_word_count(&self) -> u32 {
+    fn get_word_count<Bus: BusTrait>(&self) -> u32 {
         if Bus::KIND == ArmKind::Arm9 {
             let value = self.dmacnt.get().get_bits(0, 20);
             if value == 0 {

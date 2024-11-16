@@ -3,7 +3,7 @@
 use crate::{
     nds::{
         arm::{self, instructions, models::Disassembly, ArmBool, ArmInternalRW, ArmTrait},
-        bus, logger, shared, CycleState, Emulator,
+        bus, dma, logger, shared, CycleState, Emulator,
     },
     ui::{NitrousUI, NitrousWindow},
 };
@@ -280,6 +280,7 @@ impl ArmDisassemblerWindow {
     ) {
         let mut fake_bus = bus::FakeBus;
         let mut fake_shared = shared::Shared::new_fake();
+        let mut fake_dma = dma::Dma::default(); // TODO: probably a good idea to make a fake one in the future with no-op functions
 
         ui.make_monospace();
 
@@ -372,12 +373,14 @@ impl ArmDisassemblerWindow {
                         ArmBool::ARM9 => emulator.arm9.read_bulk(
                             &mut emulator.bus9,
                             &mut emulator.shared,
+                            &mut emulator.dma9,
                             address as u32,
                             instruction_width as u32,
                         ),
                         ArmBool::ARM7 => emulator.arm7.read_bulk(
                             &mut emulator.bus7,
                             &mut emulator.shared,
+                            &mut emulator.dma7,
                             address as u32,
                             instruction_width as u32,
                         ),
@@ -399,6 +402,7 @@ impl ArmDisassemblerWindow {
                                 &mut arm::FakeArm::new(address as u32),
                                 &mut fake_bus,
                                 &mut fake_shared,
+                                &mut fake_dma,
                                 &mut disassembly,
                                 &mut logger::FakeLogger,
                             ),
@@ -410,6 +414,7 @@ impl ArmDisassemblerWindow {
                                 &mut arm::FakeArm::new(address as u32),
                                 &mut fake_bus,
                                 &mut fake_shared,
+                                &mut fake_dma,
                                 &mut disassembly,
                                 &mut logger::FakeLogger,
                             ),

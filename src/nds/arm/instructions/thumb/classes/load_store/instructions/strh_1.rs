@@ -24,7 +24,7 @@ pub fn strh_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     let address = ctx.arm.r()[rn] + (immed_5 * 2);
     let rd = ctx.arm.r()[rd];
     ctx.arm
-        .write_halfword(ctx.bus, ctx.shared, address, rd.get_bits(0, 15) as u16);
+        .write_halfword(ctx.bus, ctx.shared, ctx.dma,address, rd.get_bits(0, 15) as u16);
 
     1 // TODO: this is wrong
 }

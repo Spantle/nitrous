@@ -18,6 +18,7 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
         ctx.arm,
         ctx.bus,
         ctx.shared,
+        ctx.dma,
         ctx.dis,
         ctx.logger,
     );

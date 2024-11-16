@@ -9,7 +9,7 @@ use crate::nds::arm::{
 pub fn ldrh(ctx: &mut Context<LoadStoreInstruction, impl ContextTrait>, address: u32) -> u32 {
     // if bit 0 of the address is 1, the data is UNPREDICTABLE
 
-    let data = ctx.arm.read_halfword(ctx.bus, ctx.shared, address);
+    let data = ctx.arm.read_halfword(ctx.bus, ctx.shared, ctx.dma, address);
     ctx.arm.set_r(ctx.inst.destination_register, data as u32);
 
     1
