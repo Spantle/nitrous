@@ -51,8 +51,9 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                     let map_tile = u16::from_le_bytes(map_tile_bytes); // the tile in the map itself
 
                     let tile_number = (map_tile as u32).get_bits(0, 9); // the ID of the tile pixel data
-                    let horizonal_flip = map_tile.get_bit(10);
-                    let vertical_flip = map_tile.get_bit(11);
+                    let horizontal_flip = (map_tile.get_bit(10) as usize).wrapping_sub(1);
+                    let vertical_flip = (map_tile.get_bit(11) as usize).wrapping_sub(1);
+
                     let palette_number = map_tile.get_bits(12, 15) as u32; // not used in 256/1
 
                     match color_palette {
@@ -63,6 +64,7 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                             // tile data pixel in vram
                             let tile_address = (character_base + tile_number * 32) as usize;
                             let tile_bytes = &self.bg_vram[tile_address..tile_address + 32];
+
                             // iterate through each byte in the pixel data
                             (0..tile_bytes.len()).for_each(|tile_byte_i| {
                                 let tile_byte = tile_bytes[tile_byte_i]; // two pixels
@@ -91,10 +93,20 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                                 l_color.set_bit(15, tile_byte != 0 && l_tile_palette_i != 0);
                                 r_color.set_bit(15, tile_byte != 0 && r_tile_palette_i != 0);
 
-                                // TODO: these will probably all need to be adjusted for different map sizes
                                 let l_tile_pixel_x = tile_byte_i * 2 % 8;
+                                let l_tile_pixel_x_flipped = 7 - l_tile_pixel_x;
                                 let r_tile_pixel_x = (tile_byte_i * 2 + 1) % 8;
+                                let r_tile_pixel_x_flipped = 7 - r_tile_pixel_x;
                                 let tile_pixel_y = tile_byte_i * 2 / 8;
+                                let tile_pixel_y_flipped = 7 - tile_pixel_y;
+
+                                // TODO: these will probably all need to be adjusted for different map sizes
+                                let l_tile_pixel_x = (horizontal_flip & l_tile_pixel_x)
+                                    | (!horizontal_flip & l_tile_pixel_x_flipped);
+                                let r_tile_pixel_x = (horizontal_flip & r_tile_pixel_x)
+                                    | (!horizontal_flip & r_tile_pixel_x_flipped);
+                                let tile_pixel_y = (vertical_flip & tile_pixel_y)
+                                    | (!vertical_flip & tile_pixel_y_flipped);
                                 let l_pixel_x = map_pixel_x + l_tile_pixel_x;
                                 let r_pixel_x = map_pixel_x + r_tile_pixel_x;
                                 let pixel_y = map_pixel_y + tile_pixel_y;
@@ -116,9 +128,16 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                                 let mut color = u16::from_le_bytes(tile_bytes);
                                 color.set_bit(15, tile_byte != 0); // MASSIVE NOTE: THIS IS NOT REAL!!!! I SET THE TRANSPARENCY BIT IN THIS MODE BECAUSE I AM CHEATING!!!!
 
-                                // TODO: these will probably all need to be adjusted for different map sizes
                                 let tile_pixel_x = tile_byte_i % 8;
+                                let tile_pixel_x_flipped = 7 - tile_pixel_x;
                                 let tile_pixel_y = tile_byte_i / 8;
+                                let tile_pixel_y_flipped = 7 - tile_pixel_y;
+
+                                // TODO: these will probably all need to be adjusted for different map sizes
+                                let tile_pixel_x = (horizontal_flip & tile_pixel_x)
+                                    | (!horizontal_flip & tile_pixel_x_flipped);
+                                let tile_pixel_y = (vertical_flip & tile_pixel_y)
+                                    | (!vertical_flip & tile_pixel_y_flipped);
                                 let pixel_x = map_pixel_x + tile_pixel_x;
                                 let pixel_y = map_pixel_y + tile_pixel_y;
 
