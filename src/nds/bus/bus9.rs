@@ -41,6 +41,7 @@ impl BusTrait for Bus9 {
     fn reset(&mut self) {
         self.interrupts = Interrupts::default();
         self.timers = Timers::default();
+        self.div = DividerUnit::default();
     }
 
     fn load_bios(&mut self, bios: Vec<u8>) {

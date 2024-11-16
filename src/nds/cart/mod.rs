@@ -31,6 +31,14 @@ impl Cartridge {
         true
     }
 
+    pub fn reset(&mut self) {
+        self.romctrl = RomCtrl::default();
+        self.auxspicnt = AuxSpiCnt::default();
+        self.command = Command::default();
+        self.exmemcnt = ExMem::default();
+        self.exmemstat = ExMem::default();
+    }
+
     pub fn clock(&mut self, bus9: &mut Bus9, bus7: &mut Bus7) {
         let interrupts = if self.exmemcnt.get_nds_slot_access_rights() {
             &mut bus9.interrupts

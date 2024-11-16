@@ -61,6 +61,7 @@ impl Shared {
     }
 
     pub fn reset(&mut self) {
+        self.cart.reset();
         self.gpus = Gpus::default();
         self.psram = vec![0; 1024 * 1024 * 4];
         self.wram = vec![0; 1024 * 32];

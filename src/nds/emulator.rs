@@ -114,7 +114,7 @@ impl Emulator {
         self.bus9
             .write_word(shared, &mut None, 0x027FFC04, 0x00000FC2);
 
-        // TODO: thanks @atem.zip
+        // thanks @atem.zip
         self.bus9.write_byte(shared, &mut None, 0x04000247, 0x03);
         self.bus9
             .write_halfword(shared, &mut None, 0x027FF850, 0x5835);
@@ -138,7 +138,8 @@ impl Emulator {
         self.arm7 = Arm::default();
         self.bus9.reset();
         self.bus7.reset();
-
+        self.dma9 = Dma::default();
+        self.dma7 = Dma::default();
         self.shared.reset();
 
         if load_binary {
