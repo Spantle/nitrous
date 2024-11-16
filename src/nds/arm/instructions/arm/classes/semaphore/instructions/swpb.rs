@@ -22,10 +22,15 @@ pub fn swpb(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.dis.push_str_end_arg("", Some("]"));
 
     let rn = ctx.arm.er(rn);
-    let temp = ctx.arm.read_byte(ctx.bus, ctx.shared, ctx.dma,rn);
+    let temp = ctx.arm.read_byte(ctx.bus, ctx.shared, ctx.dma, rn);
 
-    ctx.arm
-        .write_byte(ctx.bus, ctx.shared, ctx.dma,rn, ctx.arm.er(rm).get_bits(0, 7) as u8);
+    ctx.arm.write_byte(
+        ctx.bus,
+        ctx.shared,
+        ctx.dma,
+        rn,
+        ctx.arm.er(rm).get_bits(0, 7) as u8,
+    );
     ctx.arm.set_r(rd, temp as u32);
 
     1 // TODO: this is wrong

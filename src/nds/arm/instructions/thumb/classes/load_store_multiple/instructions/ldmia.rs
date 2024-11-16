@@ -22,7 +22,7 @@ pub fn ldmia(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     for i in 0..=7 {
         if register_list.get_bit(i as u16) {
             ctx.arm
-                .set_r(i, ctx.arm.read_word(ctx.bus, ctx.shared, ctx.dma,address));
+                .set_r(i, ctx.arm.read_word(ctx.bus, ctx.shared, ctx.dma, address));
             address = address.wrapping_add(4);
         }
     }

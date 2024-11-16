@@ -11,7 +11,7 @@ pub fn ldrb(ctx: &mut Context<LoadStoreInstruction, impl ContextTrait>, address:
 
     arm.set_r(
         inst.destination_register,
-        arm.read_byte(ctx.bus, ctx.shared, ctx.dma,address) as u32,
+        arm.read_byte(ctx.bus, ctx.shared, ctx.dma, address) as u32,
     );
 
     1

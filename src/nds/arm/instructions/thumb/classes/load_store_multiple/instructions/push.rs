@@ -22,13 +22,13 @@ pub fn push(ctx: &mut Context<Instruction, impl ContextTrait>) {
     for i in 0..=7 {
         if register_list.get_bit(i as u16) {
             ctx.arm
-                .write_word(ctx.bus, ctx.shared, ctx.dma,address, ctx.arm.r()[i]);
+                .write_word(ctx.bus, ctx.shared, ctx.dma, address, ctx.arm.r()[i]);
             address = address.wrapping_add(4);
         }
     }
     if r {
         ctx.arm
-            .write_word(ctx.bus, ctx.shared, ctx.dma,address, ctx.arm.r()[14]);
+            .write_word(ctx.bus, ctx.shared, ctx.dma, address, ctx.arm.r()[14]);
         // address = address.wrapping_add(4);
     }
 

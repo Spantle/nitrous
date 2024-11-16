@@ -17,8 +17,10 @@ pub fn ldrb_2(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.dis.push_str_end_arg("", Some("]"));
 
     let address = ctx.arm.r()[rn] + ctx.arm.r()[rm];
-    ctx.arm
-        .set_r(rd, ctx.arm.read_byte(ctx.bus, ctx.shared, ctx.dma,address) as u32);
+    ctx.arm.set_r(
+        rd,
+        ctx.arm.read_byte(ctx.bus, ctx.shared, ctx.dma, address) as u32,
+    );
 
     1 // TODO: this is wrong
 }
