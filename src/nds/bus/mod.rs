@@ -2,7 +2,7 @@
 
 use crate::nds::shared::Shared;
 
-use super::{arm::ArmKind, dma::Dma};
+use super::{arm::ArmKind, dma::Dma, interrupts::Interrupts};
 
 pub trait BusTrait {
     const KIND: ArmKind;
@@ -13,6 +13,7 @@ pub trait BusTrait {
     fn load_bios_from_path(&mut self, path: &str);
 
     fn is_requesting_interrupt(&self) -> bool;
+    fn get_interrupts(&mut self) -> &mut Interrupts;
 
     fn read_byte(&self, shared: &mut Shared, dma: &mut Option<&mut Dma>, addr: u32) -> u8;
     fn read_halfword(&self, shared: &mut Shared, dma: &mut Option<&mut Dma>, addr: u32) -> u16;
@@ -73,7 +74,9 @@ pub trait BusTrait {
 }
 
 #[derive(Default)]
-pub struct FakeBus;
+pub struct FakeBus {
+    interrupts: Interrupts,
+}
 impl BusTrait for FakeBus {
     const KIND: ArmKind = ArmKind::Arm9;
 
@@ -84,6 +87,9 @@ impl BusTrait for FakeBus {
 
     fn is_requesting_interrupt(&self) -> bool {
         false
+    }
+    fn get_interrupts(&mut self) -> &mut Interrupts {
+        &mut self.interrupts
     }
 
     fn read_byte(&self, _shared: &mut Shared, _dma: &mut Option<&mut Dma>, _addr: u32) -> u8 {

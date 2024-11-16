@@ -278,7 +278,7 @@ impl ArmDisassemblerWindow {
         emulator: &mut Emulator,
         ui: &mut egui::Ui,
     ) {
-        let mut fake_bus = bus::FakeBus;
+        let mut fake_bus = bus::FakeBus::default();
         let mut fake_shared = shared::Shared::new_fake();
         let mut fake_dma = dma::Dma::default(); // TODO: probably a good idea to make a fake one in the future with no-op functions
 

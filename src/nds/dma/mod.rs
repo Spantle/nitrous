@@ -52,6 +52,7 @@ impl Dma {
         }
     }
 
+    // TODO: remove T == 4 with bus refactor
     pub fn write_slice<const T: usize, Bus: BusTrait>(
         &mut self,
         addr: usize,
@@ -61,26 +62,50 @@ impl Dma {
         match addr {
             0x040000B0 => self.channel[0].dmasad = value.into_word(),
             0x040000B4 => self.channel[0].dmadad = value.into_word(),
-            0x040000B8 => self.channel[0].update_cnt::<Bus>(value.into_word()),
-            0x040000BA => self.channel[0].update_cnt_h::<Bus>(value.into_word() >> 16),
+            0x040000B8 => {
+                if T == 4 {
+                    self.channel[0].update_cnt::<Bus>(value.into_word());
+                } else {
+                    self.channel[0].update_cnt_l::<Bus>(value.into_word());
+                }
+            }
+            0x040000BA => self.channel[0].update_cnt_h::<Bus>(value.into_word()),
             0x040000E0 => self.channel[0].dmafill = value.into_word(),
 
             0x040000BC => self.channel[1].dmasad = value.into_word(),
             0x040000C0 => self.channel[1].dmadad = value.into_word(),
-            0x040000C4 => self.channel[1].update_cnt::<Bus>(value.into_word()),
-            0x040000C6 => self.channel[1].update_cnt_h::<Bus>(value.into_word() >> 16),
+            0x040000C4 => {
+                if T == 4 {
+                    self.channel[1].update_cnt::<Bus>(value.into_word());
+                } else {
+                    self.channel[1].update_cnt_l::<Bus>(value.into_word());
+                }
+            }
+            0x040000C6 => self.channel[1].update_cnt_h::<Bus>(value.into_word()),
             0x040000E4 => self.channel[1].dmafill = value.into_word(),
 
             0x040000C8 => self.channel[2].dmasad = value.into_word(),
             0x040000CC => self.channel[2].dmadad = value.into_word(),
-            0x040000D0 => self.channel[2].update_cnt::<Bus>(value.into_word()),
-            0x040000D2 => self.channel[2].update_cnt_h::<Bus>(value.into_word() >> 16),
+            0x040000D0 => {
+                if T == 4 {
+                    self.channel[2].update_cnt::<Bus>(value.into_word());
+                } else {
+                    self.channel[2].update_cnt_l::<Bus>(value.into_word());
+                }
+            }
+            0x040000D2 => self.channel[2].update_cnt_h::<Bus>(value.into_word()),
             0x040000E8 => self.channel[2].dmafill = value.into_word(),
 
             0x040000D4 => self.channel[3].dmasad = value.into_word(),
             0x040000D8 => self.channel[3].dmadad = value.into_word(),
-            0x040000DC => self.channel[3].update_cnt::<Bus>(value.into_word()),
-            0x040000DE => self.channel[3].update_cnt_h::<Bus>(value.into_word() >> 16),
+            0x040000DC => {
+                if T == 4 {
+                    self.channel[3].update_cnt::<Bus>(value.into_word());
+                } else {
+                    self.channel[3].update_cnt_l::<Bus>(value.into_word());
+                }
+            }
+            0x040000DE => self.channel[3].update_cnt_h::<Bus>(value.into_word()),
             0x040000EC => self.channel[3].dmafill = value.into_word(),
 
             _ => success = false,

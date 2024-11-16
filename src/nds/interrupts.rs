@@ -48,6 +48,11 @@ impl InterruptFlags {
     const LCD_VCOUNTER_MATCH_OFFSET: u32 = 2;
     const TIMER_OVERFLOW_START: u32 = 3;
 
+    const DMA0_OFFSET: u32 = 8;
+    const DMA1_OFFSET: u32 = 9;
+    const DMA2_OFFSET: u32 = 10;
+    const DMA3_OFFSET: u32 = 11;
+
     const IPCSYNC_OFFSET: u32 = 16;
     const IPC_SEND_FIFO_EMPTY_OFFSET: u32 = 17;
     const IPC_RECEIVE_FIFO_NOT_EMPTY_OFFSET: u32 = 18;
@@ -76,6 +81,17 @@ impl InterruptFlags {
     pub fn falsy_set_timer_overflow(&mut self, timer: u8, value: bool) {
         let bit = Self::TIMER_OVERFLOW_START + (timer as u32);
         self.0.set_bit(bit, self.0.get_bit(bit) || value);
+    }
+
+    pub fn set_dma(&mut self, dma: u8, value: bool) {
+        let bit = match dma {
+            0 => Self::DMA0_OFFSET,
+            1 => Self::DMA1_OFFSET,
+            2 => Self::DMA2_OFFSET,
+            3 => Self::DMA3_OFFSET,
+            _ => unreachable!(),
+        };
+        self.0.set_bit(bit, value);
     }
 
     pub fn set_ipcsync(&mut self, value: bool) {

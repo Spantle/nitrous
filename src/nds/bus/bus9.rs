@@ -60,6 +60,9 @@ impl BusTrait for Bus9 {
     fn is_requesting_interrupt(&self) -> bool {
         self.interrupts.is_requesting_interrupt()
     }
+    fn get_interrupts(&mut self) -> &mut Interrupts {
+        &mut self.interrupts
+    }
 
     fn read_byte(&self, shared: &mut Shared, dma: &mut Option<&mut Dma>, addr: u32) -> u8 {
         self.read_slice::<1>(shared, dma, addr)[0]

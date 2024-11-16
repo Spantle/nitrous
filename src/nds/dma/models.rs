@@ -60,6 +60,10 @@ impl DmaChannel {
         self.cnt_updated::<Bus>(old_enable);
     }
 
+    pub fn update_cnt_l<Bus: BusTrait>(&mut self, new_value: u32) {
+        self.dmacnt.set_l(new_value);
+    }
+
     pub fn update_cnt_h<Bus: BusTrait>(&mut self, new_value: u32) {
         let old_enable = self.dmacnt.get_dma_enable();
         self.dmacnt.set_h(new_value);
@@ -116,7 +120,7 @@ impl DmaChannel {
         let offset_amount = if is_32bit_transfer { 4 } else { 2 };
         loop {
             if self.internal_cnt_l == 0 {
-                // TODO: interrupt or something
+                bus.get_interrupts().f.set_dma(self.index, true);
                 break;
             }
             self.internal_cnt_l -= 1;
@@ -205,6 +209,10 @@ impl DmaCnt {
 
     pub fn set(&mut self, value: u32) {
         self.0 = value;
+    }
+
+    pub fn set_l(&mut self, value: u32) {
+        self.0.set_bits(0, 15, value);
     }
 
     pub fn get_h(&self) -> u16 {
