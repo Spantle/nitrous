@@ -15,6 +15,7 @@ pub struct Gpus {
     pub b: Gpu2d<false>,
 
     x: u32, // TODO: this isn't real. ideally the clock function should just do an entire row at a time but I cannot be bothered touching cycle stuff rn. performance will suffer.
+    pub vblank_flag: bool,
 }
 
 impl Gpus {
@@ -28,6 +29,8 @@ impl Gpus {
         let vblank_start = self.vcount == 192;
         self.dispstat.set_hblank_flag(hblanking);
         self.dispstat.set_vblank_flag(vblanking);
+
+        self.vblank_flag |= vblank_start;
 
         if hblank_start && self.dispstat.get_hblank_irq_enable() {
             bus9.interrupts.f.set_lcd_hblank(true);

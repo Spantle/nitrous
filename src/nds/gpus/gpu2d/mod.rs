@@ -39,9 +39,22 @@ impl<const ENGINE_A: bool> Default for Gpu2d<ENGINE_A> {
 pub type BackgroundResult = (Vec<Vec<u16>>, bool);
 pub type BackgroundResults = Vec<BackgroundResult>;
 
+#[derive(Clone)]
 pub struct GpuRenderResult {
     pub image_data: egui::ImageData,
     pub bgs: Option<BackgroundResults>,
+}
+
+impl Default for GpuRenderResult {
+    fn default() -> Self {
+        Self {
+            image_data: egui::ImageData::from(egui::ColorImage {
+                pixels: vec![egui::Color32::BLACK; 256 * 192],
+                size: [256, 192],
+            }),
+            bgs: None,
+        }
+    }
 }
 
 impl GpuRenderResult {

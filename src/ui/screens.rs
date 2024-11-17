@@ -1,3 +1,5 @@
+use crate::nds::gpus::gpu2d::GpuRenderResult;
+
 use super::{NitrousGUI, NitrousWindow};
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -14,6 +16,11 @@ pub struct ScreenOptions {
     pub bot_screen_count: u32,
     pub duo_screens: Vec<u32>,
     pub duo_screen_count: u32,
+
+    #[serde(skip)]
+    pub engine_a_result: GpuRenderResult,
+    #[serde(skip)]
+    pub engine_b_result: GpuRenderResult,
 }
 
 impl Default for ScreenOptions {
@@ -30,14 +37,26 @@ impl Default for ScreenOptions {
             bot_screen_count: 0,
             duo_screens: Vec::new(),
             duo_screen_count: 0,
+
+            engine_a_result: GpuRenderResult::default(),
+            engine_b_result: GpuRenderResult::default(),
         }
     }
 }
 
 impl NitrousGUI {
     pub fn render_screens(&mut self, ctx: &egui::Context) {
-        let engine_a_result = self.emulator.shared.gpus.a.render(&self.emulator.shared);
-        let engine_b_result = self.emulator.shared.gpus.b.render(&self.emulator.shared);
+        if self.emulator.shared.gpus.vblank_flag {
+            self.emulator.shared.gpus.vblank_flag = false;
+            self.screen_options.engine_a_result =
+                self.emulator.shared.gpus.a.render(&self.emulator.shared);
+            self.screen_options.engine_b_result =
+                self.emulator.shared.gpus.b.render(&self.emulator.shared);
+        }
+
+        let engine_a_result = self.screen_options.engine_a_result.clone();
+        let engine_b_result = self.screen_options.engine_b_result.clone();
+
         let (top_texture, bot_texture) = if self.emulator.shared.powcnt1.get_display_swap() {
             (
                 ctx.load_texture(
