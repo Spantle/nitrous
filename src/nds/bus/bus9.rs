@@ -254,6 +254,18 @@ impl BusTrait for Bus9 {
             0x04100000..=0x04100003 => shared.ipcfifo.receive::<true>().to_bytes::<T>(),
             0x04100010..=0x04100013 => shared.cart.read_bus().to_bytes::<T>(),
 
+            0x05000000..=0x05FFFFFF => {
+                let addr = (addr - 0x05000000) % 0x800;
+                if addr < 0x400 {
+                    bytes.copy_from_slice(&shared.gpus.a.palette[addr..addr + T]);
+                    bytes
+                } else {
+                    let addr = addr - 0x400;
+                    bytes.copy_from_slice(&shared.gpus.b.palette[addr..addr + T]);
+                    bytes
+                }
+            }
+
             0x06800000..=0x068A4000 => {
                 let addr = addr - 0x06800000;
                 bytes.copy_from_slice(&shared.vram_lcdc_alloc[addr..addr + T]);
@@ -457,13 +469,14 @@ impl BusTrait for Bus9 {
             0x04001004..=0x04001007 => {} // not real
             0x0400105C..=0x0400106B => {} // not real
 
-            0x05000000..=0x050003FF => {
-                let addr = addr - 0x05000000;
-                shared.gpus.a.palette[addr..addr + T].copy_from_slice(&value);
-            }
-            0x05000400..=0x050007FF => {
-                let addr = addr - 0x05000400;
-                shared.gpus.b.palette[addr..addr + T].copy_from_slice(&value);
+            0x05000000..=0x05FFFFFF => {
+                let addr = (addr - 0x05000000) % 0x800;
+                if addr < 0x400 {
+                    shared.gpus.a.palette[addr..addr + T].copy_from_slice(&value);
+                } else {
+                    let addr = addr - 0x400;
+                    shared.gpus.b.palette[addr..addr + T].copy_from_slice(&value);
+                }
             }
 
             0x06000000..=0x061FFFFF => {
