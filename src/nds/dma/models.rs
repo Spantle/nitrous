@@ -125,11 +125,26 @@ impl DmaChannel {
             }
             self.internal_cnt_l -= 1;
 
+            // TODO: maybe in the future, the match statements can be done better?
+            // for now this is probably fine, but if the DMA can truly access all of its own registers
+            // then i need to look into a better solution
             if is_32bit_transfer {
-                let value = bus.read_word(shared, &mut None, self.internal_sad);
+                let value = match (self.index, self.internal_sad) {
+                    (0, 0x040000E0) => self.dmafill,
+                    (1, 0x040000E4) => self.dmafill,
+                    (2, 0x040000E8) => self.dmafill,
+                    (3, 0x040000EC) => self.dmafill,
+                    _ => bus.read_word(shared, &mut None, self.internal_sad),
+                };
                 bus.write_word(shared, &mut None, self.internal_dad, value);
             } else {
-                let value = bus.read_halfword(shared, &mut None, self.internal_sad);
+                let value = match (self.index, self.internal_sad) {
+                    (0, 0x040000E0) => self.dmafill as u16,
+                    (1, 0x040000E4) => self.dmafill as u16,
+                    (2, 0x040000E8) => self.dmafill as u16,
+                    (3, 0x040000EC) => self.dmafill as u16,
+                    _ => bus.read_halfword(shared, &mut None, self.internal_sad),
+                };
                 bus.write_halfword(shared, &mut None, self.internal_dad, value);
             }
 
