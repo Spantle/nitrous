@@ -303,6 +303,19 @@ impl ArmDisassemblerWindow {
             (arm_load_address, arm_size)
         } else if pc >= 0xFFFF0000 && pc < 0xFFFF0000 + bios_size {
             (0xFFFF0000, bios_size)
+        } else if ARM_BOOL {
+            let cp15 = &emulator.arm9.cp15;
+            let data_tcm_base = cp15.data_tcm_base as usize;
+            let data_tcm_size = cp15.data_tcm_size as usize;
+            let inst_tcm_base = cp15.inst_tcm_base as usize;
+            let inst_tcm_size = cp15.inst_tcm_size as usize;
+            if pc >= data_tcm_base && pc < data_tcm_base + data_tcm_size {
+                (data_tcm_base, data_tcm_size)
+            } else if pc >= inst_tcm_base && pc < inst_tcm_base + inst_tcm_size {
+                (inst_tcm_base, inst_tcm_size)
+            } else {
+                (0, 0)
+            }
         } else if !ARM_BOOL {
             if (0x03000000..=0x037FFFFF).contains(&pc) {
                 (0x03000000, 0x800000)
