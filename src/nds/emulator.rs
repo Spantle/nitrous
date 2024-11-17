@@ -126,6 +126,13 @@ impl Emulator {
             .write_halfword(shared, &mut None, 0x027FFC10, 0x5835);
         self.bus9
             .write_halfword(shared, &mut None, 0x027FFC40, 0x0001);
+
+        self.bus9.write_bulk(
+            shared,
+            &mut None,
+            0x027FFC80,
+            self.bus9.firmware[0x3FE00..0x3FEFF].into(),
+        );
     }
 
     pub fn reset(&mut self, load_binary: bool) {

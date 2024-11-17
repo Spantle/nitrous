@@ -56,6 +56,17 @@ impl BusTrait for Bus7 {
         };
     }
 
+    fn load_firmware(&mut self, _firmware: Vec<u8>) {
+        self.logger.log_error("Tried to load firmware on ARM7");
+    }
+
+    fn load_firmware_from_path(&mut self, path: &str) {
+        self.logger.log_error(format!(
+            "Tried to load firmware on ARM7 from path: {}",
+            path
+        ));
+    }
+
     fn is_requesting_interrupt(&self) -> bool {
         self.interrupts.is_requesting_interrupt()
     }

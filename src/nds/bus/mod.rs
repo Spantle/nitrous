@@ -11,6 +11,8 @@ pub trait BusTrait {
 
     fn load_bios(&mut self, bios: Vec<u8>);
     fn load_bios_from_path(&mut self, path: &str);
+    fn load_firmware(&mut self, firmware: Vec<u8>);
+    fn load_firmware_from_path(&mut self, path: &str);
 
     fn is_requesting_interrupt(&self) -> bool;
     fn get_interrupts(&mut self) -> &mut Interrupts;
@@ -84,6 +86,8 @@ impl BusTrait for FakeBus {
 
     fn load_bios(&mut self, _bios: Vec<u8>) {}
     fn load_bios_from_path(&mut self, _path: &str) {}
+    fn load_firmware(&mut self, _firmware: Vec<u8>) {}
+    fn load_firmware_from_path(&mut self, _path: &str) {}
 
     fn is_requesting_interrupt(&self) -> bool {
         false

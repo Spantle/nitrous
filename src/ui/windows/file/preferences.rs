@@ -13,6 +13,7 @@ pub struct PreferencesWindow {
     selected: PreferencesPanel,
     arm9_bios_path: String,
     arm7_bios_path: String,
+    firmware_path: String,
 
     #[serde(skip)]
     #[cfg(not(target_arch = "wasm32"))]
@@ -26,6 +27,12 @@ pub struct PreferencesWindow {
     #[serde(skip)]
     #[cfg(target_arch = "wasm32")]
     load_arm7_bios_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
+    #[serde(skip)]
+    #[cfg(not(target_arch = "wasm32"))]
+    load_firmware_channel: (Sender<String>, Receiver<String>),
+    #[serde(skip)]
+    #[cfg(target_arch = "wasm32")]
+    load_firmware_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
 }
 
 impl Default for PreferencesWindow {
@@ -35,9 +42,11 @@ impl Default for PreferencesWindow {
             selected: PreferencesPanel::Emulation,
             arm9_bios_path: String::new(),
             arm7_bios_path: String::new(),
+            firmware_path: String::new(),
 
             load_arm9_bios_channel: channel(),
             load_arm7_bios_channel: channel(),
+            load_firmware_channel: channel(),
         }
     }
 }
@@ -130,6 +139,37 @@ impl PreferencesWindow {
                 });
             }
         });
+
+        ui.horizontal(|ui| {
+            ui.label("Firmware file:");
+            ui.text_edit_singleline(&mut self.firmware_path);
+
+            if ui.button("Browse").clicked() {
+                let sender = self.load_firmware_channel.0.clone();
+
+                let task = rfd::AsyncFileDialog::new()
+                    .add_filter("NDS Firmware", &["bin"])
+                    .pick_file();
+
+                let ctx = ui.ctx().clone();
+                execute(async move {
+                    let file = task.await;
+                    if let Some(file) = file {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _result = sender.send(file.path().to_string_lossy().to_string());
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            let _result = sender.send(file.read().await);
+                        }
+
+                        ctx.request_repaint();
+                    }
+                });
+            }
+        });
     }
 
     pub fn try_load_bios<Bus: BusTrait>(&mut self, bus: &mut Bus) {
@@ -139,6 +179,12 @@ impl PreferencesWindow {
         };
         if !bios_path.is_empty() {
             bus.load_bios_from_path(bios_path);
+        }
+    }
+
+    pub fn try_load_firmware<Bus: BusTrait>(&mut self, bus: &mut Bus) {
+        if !self.firmware_path.is_empty() {
+            bus.load_firmware_from_path(&self.firmware_path);
         }
     }
 
@@ -159,6 +205,21 @@ impl PreferencesWindow {
             #[cfg(target_arch = "wasm32")]
             {
                 bus.load_bios(content);
+            }
+        }
+    }
+
+    pub fn load_firmware_from_channel<Bus: BusTrait>(&mut self, bus: &mut Bus) {
+        if let Ok(content) = self.load_firmware_channel.1.try_recv() {
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                self.firmware_path = content;
+                bus.load_firmware_from_path(&self.firmware_path);
+            }
+
+            #[cfg(target_arch = "wasm32")]
+            {
+                bus.load_firmware(content);
             }
         }
     }
