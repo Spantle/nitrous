@@ -79,3 +79,19 @@ impl<const T: usize> Bytes for [u8; T] {
         u16::from_le_bytes(bytes)
     }
 }
+
+pub trait IfElse<T> {
+    fn if_else(&self, true_val: T, false_val: T) -> T;
+}
+
+impl<T> IfElse<T> for bool
+where
+    T: PrimInt,
+{
+    // leo taught me this fast conditional strat like a year ago
+    #[inline(always)]
+    fn if_else(&self, true_val: T, false_val: T) -> T {
+        let cond_mask = T::from(*self as usize).unwrap().sub(T::one());
+        (!cond_mask & true_val) | (cond_mask & false_val)
+    }
+}

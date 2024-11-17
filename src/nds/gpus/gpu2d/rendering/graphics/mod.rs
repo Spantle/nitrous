@@ -2,7 +2,7 @@ mod background;
 
 use crate::nds::{
     gpus::gpu2d::{BackgroundResults, Gpu2d, GpuRenderResult},
-    Bits,
+    Bits, IfElse,
 };
 
 const COLOUR_MULT: f32 = 255.0 / 31.0;
@@ -57,14 +57,10 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                             let x = (x + bg_x_offset) % bg_width;
                             let y = (y + bg_y_offset) % bg_height;
 
-                            // leo taught me this fast conditional strat like a year ago
                             let new_pixel = bg[x][y];
                             let existing_pixel = pixels[i];
-
                             let is_transparent = !new_pixel.get_bit(15); // transparent: 0, normal: 1
-                            let is_transparent_mask = (is_transparent as u16).wrapping_sub(1);
-                            pixels[i] = (!is_transparent_mask & existing_pixel)
-                                | (is_transparent_mask & new_pixel);
+                            pixels[i] = is_transparent.if_else(existing_pixel, new_pixel)
                         });
                     });
                 }
