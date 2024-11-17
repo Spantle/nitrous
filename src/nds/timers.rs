@@ -21,11 +21,11 @@ impl Timers {
         &mut self.timers[index]
     }
 
-    pub fn clock(&mut self, interrupts: &mut Interrupts) {
-        self.timers[0].clock(interrupts);
-        self.timers[1].clock(interrupts);
-        self.timers[2].clock(interrupts);
-        self.timers[3].clock(interrupts);
+    pub fn clock(&mut self, cycles: u32, interrupts: &mut Interrupts) {
+        self.timers[0].clock(cycles, interrupts);
+        self.timers[1].clock(cycles, interrupts);
+        self.timers[2].clock(cycles, interrupts);
+        self.timers[3].clock(cycles, interrupts);
     }
 }
 
@@ -90,26 +90,29 @@ impl Timer {
         self.cnt_updated(old_prescaler, old_enable);
     }
 
-    pub fn clock(&mut self, interrupts: &mut Interrupts) {
-        let is_operating = self.control.get_timer_operating();
-        let is_normal_mode = !self.control.get_count_up_timing();
-        self.next_run -= (is_operating & is_normal_mode) as i16;
-        // TODO: i could eliminate this if statement perhaps
-        if self.next_run <= 0 {
-            self.next_run = self.next_run_prescaler;
+    pub fn clock(&mut self, cycles: u32, interrupts: &mut Interrupts) {
+        // TODO: this for loop can be done in a more efficient way (without a for loop)
+        for _ in 0..cycles {
+            let is_operating = self.control.get_timer_operating();
+            let is_normal_mode = !self.control.get_count_up_timing();
+            self.next_run -= (is_operating & is_normal_mode) as i16;
+            // TODO: i could eliminate this if statement perhaps
+            if self.next_run <= 0 {
+                self.next_run = self.next_run_prescaler;
 
-            // TODO: can i remove this if statement?
-            // TODO: "6" is a temporary hack to make timers run at the correct speed. THIS NEEDS TO BE SET BACK TO "1" IN THE FUTURE
-            let (new_counter, overflow) = self.counter.overflowing_add(6);
-            self.counter = new_counter;
-            if overflow {
-                self.counter = self.reload;
+                // TODO: can i remove this if statement?
+                // TODO: "6" is a temporary hack to make timers run at the correct speed. THIS NEEDS TO BE SET BACK TO "1" IN THE FUTURE
+                let (new_counter, overflow) = self.counter.overflowing_add(6);
+                self.counter = new_counter;
+                if overflow {
+                    self.counter = self.reload;
+                }
+
+                interrupts.f.falsy_set_timer_overflow(
+                    self.index,
+                    self.control.get_overflow_irq_enable() & overflow,
+                );
             }
-
-            interrupts.f.falsy_set_timer_overflow(
-                self.index,
-                self.control.get_overflow_irq_enable() & overflow,
-            );
         }
     }
 

@@ -15,7 +15,7 @@ pub struct DividerUnit {
     pub remainder_hi: u32,
 
     running: bool,
-    cycles: u8,
+    cycles: u32,
 }
 
 impl DividerUnit {
@@ -60,12 +60,12 @@ impl DividerUnit {
         self.control.set_busy(true);
     }
 
-    pub fn clock(&mut self) {
+    pub fn clock(&mut self, cycles: u32) {
         if !self.running {
             return;
         }
 
-        self.cycles = self.cycles.saturating_sub(1);
+        self.cycles = self.cycles.saturating_sub(cycles);
 
         // TODO: this can probably be written a lot better
         // here's hoping the compiler optimises it for now (it won't)

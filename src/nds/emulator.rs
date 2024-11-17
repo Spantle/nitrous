@@ -184,11 +184,9 @@ impl Emulator {
                 self.dma7
                     .check_immediately(&mut self.bus7, &mut self.shared);
 
-                (0..cycles).for_each(|_| {
-                    self.bus9.timers.clock(&mut self.bus9.interrupts);
-                    self.bus7.timers.clock(&mut self.bus7.interrupts);
-                    self.bus9.div.clock();
-                });
+                self.bus9.timers.clock(cycles, &mut self.bus9.interrupts);
+                self.bus7.timers.clock(cycles, &mut self.bus7.interrupts);
+                self.bus9.div.clock(cycles);
 
                 cycles
             }
@@ -248,11 +246,14 @@ impl Emulator {
                     .arm7
                     .clock(&mut self.bus7, &mut self.shared, &mut self.dma7);
                 cycles_ran_arm7 += arm7_cycles as i32;
-                (0..arm7_cycles).for_each(|_| {
-                    self.bus9.timers.clock(&mut self.bus9.interrupts);
-                    self.bus7.timers.clock(&mut self.bus7.interrupts);
-                    self.bus9.div.clock();
-                });
+
+                self.bus9
+                    .timers
+                    .clock(arm7_cycles, &mut self.bus9.interrupts);
+                self.bus7
+                    .timers
+                    .clock(arm7_cycles, &mut self.bus7.interrupts);
+                self.bus9.div.clock(arm7_cycles);
 
                 disassembler_windows
                     .1
