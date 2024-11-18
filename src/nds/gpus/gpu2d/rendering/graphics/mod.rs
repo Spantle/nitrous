@@ -22,7 +22,8 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                 });
 
                 let mut bg_pixels: BackgroundResults = vec![(vec![vec![]], false); 4];
-                if self.dispcnt.get_screen_display_bg0() {
+                if self.dispcnt.get_screen_display_bg0() && !self.dispcnt.get_bg0_2d_3d_selection()
+                {
                     bg_pixels[0] = self.render_background::<0>();
                 }
                 if self.dispcnt.get_screen_display_bg1() {

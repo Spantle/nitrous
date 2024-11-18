@@ -14,6 +14,7 @@ impl From<u32> for DispCnt {
 impl DispCnt {
     const BG_MODE_START: u32 = 0;
     const BG_MODE_END: u32 = 2;
+    const BG0_2D_3D_SELECTION: u32 = 3;
 
     const SCREEN_DISPLAY_BG0: u32 = 8;
     const SCREEN_DISPLAY_BG1: u32 = 9;
@@ -36,6 +37,10 @@ impl DispCnt {
 
     pub fn get_bg_mode(&self) -> u8 {
         self.0.get_bits(Self::BG_MODE_START, Self::BG_MODE_END) as u8
+    }
+
+    pub fn get_bg0_2d_3d_selection(&self) -> bool {
+        self.0.get_bit(Self::BG0_2D_3D_SELECTION)
     }
 
     pub fn get_screen_display_bg0(&self) -> bool {
