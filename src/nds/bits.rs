@@ -1,7 +1,7 @@
 // NOTE: do NOT use these for generics
 // i don't know why but it ruins the generic magic
 
-use num_traits::PrimInt;
+use num_traits::{PrimInt, WrappingSub};
 
 pub trait Bits<T> {
     fn get_bit(&self, offset: Self) -> bool;
@@ -100,12 +100,12 @@ pub trait IfElse<T> {
 
 impl<T> IfElse<T> for bool
 where
-    T: PrimInt,
+    T: PrimInt + WrappingSub,
 {
     // leo taught me this fast conditional strat like a year ago
     #[inline(always)]
     fn if_else(&self, true_val: T, false_val: T) -> T {
-        let cond_mask = T::from(*self as usize).unwrap().sub(T::one());
+        let cond_mask = T::from(*self as usize).unwrap().wrapping_sub(&T::one());
         (!cond_mask & true_val) | (cond_mask & false_val)
     }
 }
