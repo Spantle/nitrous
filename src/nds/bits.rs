@@ -12,7 +12,7 @@ pub trait Bits<T> {
     fn to_bytes<const B: usize>(&self) -> [u8; B];
 
     fn sign_extend(&self, from: u32) -> i32;
-    fn set_part<const B: usize>(&self, offset: Self, value: Self) -> Self;
+    fn set_part<const B: usize>(&mut self, offset: Self, value: Self);
 }
 
 impl<T> Bits<T> for T
@@ -58,7 +58,7 @@ where
     }
 
     #[inline(always)]
-    fn set_part<const B: usize>(&self, offset: T, value: T) -> Self {
+    fn set_part<const B: usize>(&mut self, offset: T, value: T) {
         let offset = offset.to_usize().unwrap() << 3;
         // need to use a match statement because T is an i32 for some reason or something
         let mask = match B {
@@ -67,7 +67,7 @@ where
             4 => T::from(0xFFFFFFFF_u32).unwrap(),
             _ => unreachable!("invalid byte size {}", B),
         } << offset;
-        (*self & !mask) | ((value << offset) & mask)
+        *self = (*self & !mask) | ((value << offset) & mask)
     }
 }
 

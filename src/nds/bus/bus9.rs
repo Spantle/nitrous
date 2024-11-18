@@ -334,37 +334,29 @@ impl BusTrait for Bus9 {
             0x0400100E..=0x0400100F => shared.gpus.b.bgxcnt[3] = value.into_halfword().into(),
 
             0x04000010..=0x04000013 => {
-                shared.gpus.a.bgofs[0] = shared.gpus.a.bgofs[0]
-                    .set_part::<T>(addr as u32 - 0x04000010, value.into_word());
+                shared.gpus.a.bgofs[0].set_part::<T>(addr as u32 - 0x04000010, value.into_word())
             }
             0x04000014..=0x04000017 => {
-                shared.gpus.a.bgofs[1] = shared.gpus.a.bgofs[1]
-                    .set_part::<T>(addr as u32 - 0x04000014, value.into_word());
+                shared.gpus.a.bgofs[1].set_part::<T>(addr as u32 - 0x04000014, value.into_word());
             }
             0x04000018..=0x0400001B => {
-                shared.gpus.a.bgofs[2] = shared.gpus.a.bgofs[2]
-                    .set_part::<T>(addr as u32 - 0x04000018, value.into_word());
+                shared.gpus.a.bgofs[2].set_part::<T>(addr as u32 - 0x04000018, value.into_word());
             }
             0x0400001C..=0x0400001F => {
-                shared.gpus.a.bgofs[3] = shared.gpus.a.bgofs[3]
-                    .set_part::<T>(addr as u32 - 0x0400001C, value.into_word());
+                shared.gpus.a.bgofs[3].set_part::<T>(addr as u32 - 0x0400001C, value.into_word());
             }
 
             0x04001010..=0x04001013 => {
-                shared.gpus.b.bgofs[0] = shared.gpus.b.bgofs[0]
-                    .set_part::<T>(addr as u32 - 0x04001010, value.into_word());
+                shared.gpus.b.bgofs[0].set_part::<T>(addr as u32 - 0x04001010, value.into_word());
             }
             0x04001014..=0x04001017 => {
-                shared.gpus.b.bgofs[1] = shared.gpus.b.bgofs[1]
-                    .set_part::<T>(addr as u32 - 0x04001014, value.into_word());
+                shared.gpus.b.bgofs[1].set_part::<T>(addr as u32 - 0x04001014, value.into_word());
             }
             0x04001018..=0x0400101B => {
-                shared.gpus.b.bgofs[2] = shared.gpus.b.bgofs[2]
-                    .set_part::<T>(addr as u32 - 0x04001018, value.into_word());
+                shared.gpus.b.bgofs[2].set_part::<T>(addr as u32 - 0x04001018, value.into_word());
             }
             0x0400101C..=0x0400101F => {
-                shared.gpus.b.bgofs[3] = shared.gpus.b.bgofs[3]
-                    .set_part::<T>(addr as u32 - 0x0400101C, value.into_word());
+                shared.gpus.b.bgofs[3].set_part::<T>(addr as u32 - 0x0400101C, value.into_word());
             }
 
             0x04000020..=0x0400004F => self.logger.log_warn_once(format_debug!(
