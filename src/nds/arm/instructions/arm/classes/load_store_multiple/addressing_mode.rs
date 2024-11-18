@@ -1,7 +1,10 @@
-use crate::nds::arm::{
-    instructions::arm::Instruction,
-    models::{Context, ContextTrait, DisassemblyTrait},
-    ArmTrait,
+use crate::nds::{
+    arm::{
+        instructions::arm::Instruction,
+        models::{Context, ContextTrait, DisassemblyTrait},
+        ArmTrait,
+    },
+    IfElse,
 };
 
 pub fn parse(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> (u32, u32, u32) {
@@ -27,11 +30,7 @@ pub fn parse(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -
             ctx.dis.set_inst_suffix("IA");
             let start_address = rn;
             let end_address = rn.wrapping_add(number_of_set_bits * 4).wrapping_sub(4);
-            let writeback = if is_writeback {
-                rn.wrapping_add(number_of_set_bits * 4)
-            } else {
-                0
-            };
+            let writeback = is_writeback.if_else(rn.wrapping_add(number_of_set_bits * 4), 0);
             (start_address, end_address, writeback)
         }
         (true, true) => {
@@ -39,11 +38,7 @@ pub fn parse(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -
             ctx.dis.set_inst_suffix("IB");
             let start_address = rn.wrapping_add(4);
             let end_address = rn.wrapping_add(number_of_set_bits * 4);
-            let writeback = if is_writeback {
-                rn.wrapping_add(number_of_set_bits * 4)
-            } else {
-                0
-            };
+            let writeback = is_writeback.if_else(rn.wrapping_add(number_of_set_bits * 4), 0);
             (start_address, end_address, writeback)
         }
         (false, false) => {
@@ -51,11 +46,7 @@ pub fn parse(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -
             ctx.dis.set_inst_suffix("DA");
             let start_address = rn.wrapping_sub(number_of_set_bits * 4).wrapping_add(4);
             let end_address = rn;
-            let writeback = if is_writeback {
-                rn.wrapping_sub(number_of_set_bits * 4)
-            } else {
-                0
-            };
+            let writeback = is_writeback.if_else(rn.wrapping_sub(number_of_set_bits * 4), 0);
             (start_address, end_address, writeback)
         }
         (true, false) => {
@@ -63,11 +54,7 @@ pub fn parse(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -
             ctx.dis.set_inst_suffix("DB");
             let start_address = rn.wrapping_sub(number_of_set_bits * 4);
             let end_address = rn.wrapping_sub(4);
-            let writeback = if is_writeback {
-                rn.wrapping_sub(number_of_set_bits * 4)
-            } else {
-                0
-            };
+            let writeback = is_writeback.if_else(rn.wrapping_sub(number_of_set_bits * 4), 0);
             (start_address, end_address, writeback)
         }
     }

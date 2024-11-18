@@ -1,7 +1,10 @@
-use crate::nds::arm::{
-    instructions::arm::Instruction,
-    models::{Context, ContextTrait, DisassemblyTrait},
-    ArmTrait,
+use crate::nds::{
+    arm::{
+        instructions::arm::Instruction,
+        models::{Context, ContextTrait, DisassemblyTrait},
+        ArmTrait,
+    },
+    IfElse,
 };
 
 use super::{instructions, LoadStoreInstruction};
@@ -45,10 +48,11 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
         };
 
         rn
-    } else if is_add {
-        rn.wrapping_add(inst.addressing_mode)
     } else {
-        rn.wrapping_sub(inst.addressing_mode)
+        is_add.if_else(
+            rn.wrapping_add(inst.addressing_mode),
+            rn.wrapping_sub(inst.addressing_mode),
+        )
     };
 
     // ctx.logger.log_debug(format_debug!(

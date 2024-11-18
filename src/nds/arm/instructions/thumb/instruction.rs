@@ -1,6 +1,6 @@
 use std::fmt;
 
-use crate::nds::Bits;
+use crate::nds::{Bits, IfElse};
 
 pub struct Instruction(u16);
 
@@ -39,10 +39,6 @@ impl Instruction {
 
     #[inline(always)]
     pub fn get_rh(&self, h: bool, r: u8) -> u8 {
-        if h {
-            r + 8
-        } else {
-            r
-        }
+        h.if_else(r + 8, r)
     }
 }

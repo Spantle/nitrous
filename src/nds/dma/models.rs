@@ -1,4 +1,4 @@
-use crate::nds::{arm::ArmKind, bus::BusTrait, logger, shared::Shared, Bits};
+use crate::nds::{arm::ArmKind, bus::BusTrait, logger, shared::Shared, Bits, IfElse};
 
 // TODO: cycle timing
 // TODO: GamePak DRQ
@@ -117,7 +117,7 @@ impl DmaChannel {
             ),
         );
         let is_32bit_transfer = self.dmacnt.get_dma_transfer_type();
-        let offset_amount = if is_32bit_transfer { 4 } else { 2 };
+        let offset_amount = is_32bit_transfer.if_else(4, 2);
         loop {
             if self.internal_cnt_l == 0 {
                 bus.get_interrupts().f.set_dma(self.index, true);
@@ -177,25 +177,13 @@ impl DmaChannel {
     fn get_word_count<Bus: BusTrait>(&self) -> u32 {
         if Bus::KIND == ArmKind::Arm9 {
             let value = self.dmacnt.get().get_bits(0, 20);
-            if value == 0 {
-                0x200000
-            } else {
-                value
-            }
+            (value == 0).if_else(0x200000, value)
         } else if self.index == 3 {
             let value = self.dmacnt.get().get_bits(0, 15);
-            if value == 0 {
-                0x10000
-            } else {
-                value
-            }
+            (value == 0).if_else(0x10000, value)
         } else {
             let value = self.dmacnt.get().get_bits(0, 13);
-            if value == 0 {
-                0x4000
-            } else {
-                value
-            }
+            (value == 0).if_else(0x4000, value)
         }
     }
 }

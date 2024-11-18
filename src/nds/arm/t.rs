@@ -1,6 +1,6 @@
 use core::mem::swap;
 
-use crate::nds::{bus::BusTrait, cp15::CP15, dma::Dma, logger, shared::Shared};
+use crate::nds::{bus::BusTrait, cp15::CP15, dma::Dma, logger, shared::Shared, IfElse};
 
 use super::{
     models::{ProcessorMode, Psr, Registers, StackTrace},
@@ -77,19 +77,13 @@ impl<Bus: BusTrait> ArmTrait<Bus> for Arm<Bus> {
     // this stands for "get execute register"
     // when executing instructions, the PC is 8 bytes ahead of the current instruction
     fn er(&self, r: u8) -> u32 {
-        match r {
-            15 => self.r[15] + 8,
-            _ => self.r[r],
-        }
+        (r == 15).if_else(self.r[15] + 8, self.r[r])
     }
 
     // this stands for "get execute register thumb"
     // when executing instructions, the PC is 4 bytes ahead of the current instruction
     fn ert(&self, r: u8) -> u32 {
-        match r {
-            15 => self.r[15] + 4,
-            _ => self.r[r],
-        }
+        (r == 15).if_else(self.r[15] + 4, self.r[r])
     }
 
     // this stands for "get execute register unpredictable"

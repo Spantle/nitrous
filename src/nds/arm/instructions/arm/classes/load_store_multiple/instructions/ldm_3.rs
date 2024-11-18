@@ -1,7 +1,12 @@
-use crate::nds::arm::{
-    instructions::arm::classes::load_store_multiple::{do_writeback, LoadStoreMultipleInstruction},
-    models::{Bits, Context, ContextTrait},
-    ArmBool, ArmTrait,
+use crate::nds::{
+    arm::{
+        instructions::arm::classes::load_store_multiple::{
+            do_writeback, LoadStoreMultipleInstruction,
+        },
+        models::{Bits, Context, ContextTrait},
+        ArmBool, ArmTrait,
+    },
+    IfElse,
 };
 
 // LDM (3)
@@ -24,11 +29,9 @@ pub fn ldm_3(
     arm.set_cpsr(arm.get_spsr());
 
     let value = arm.read_word(ctx.bus, ctx.shared, ctx.dma, address);
-    if arm_bool == ArmBool::ARM9 && arm.cpsr().get_thumb() {
-        arm.set_r(15, value & 0xFFFFFFFE);
-    } else {
-        arm.set_r(15, value & 0xFFFFFFFC);
-    }
+    let cond = arm_bool == ArmBool::ARM9 && arm.cpsr().get_thumb();
+    let mask = cond.if_else(0xFFFFFFFE, 0xFFFFFFFC);
+    arm.set_r(15, value & mask);
 
     // address = address.wrapping_add(4);
     // assert end_address = address - 4

@@ -4,7 +4,7 @@ use crate::nds::{
         models::{Context, ContextTrait, DisassemblyTrait},
         ArmTrait,
     },
-    Bits,
+    Bits, IfElse,
 };
 
 // ASR (1)
@@ -25,11 +25,7 @@ pub fn asr_1(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
         let bit31 = rm.get_bit(31);
         ctx.arm.cpsr_mut().set_carry(bit31);
 
-        if !bit31 {
-            0
-        } else {
-            0xFFFFFFFF
-        }
+        !bit31.if_else(0, 0xFFFFFFFF)
     } else {
         let rm = ctx.arm.r()[rm];
         ctx.arm.cpsr_mut().set_carry(rm.get_bit(immed_5 - 1));

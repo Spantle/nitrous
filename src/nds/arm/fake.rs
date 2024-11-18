@@ -1,4 +1,4 @@
-use crate::nds::{bus::BusTrait, cp15::CP15, dma::Dma, shared::Shared};
+use crate::nds::{bus::BusTrait, cp15::CP15, dma::Dma, shared::Shared, IfElse};
 
 use super::{
     models::{ProcessorMode, Psr, Registers, StackTrace},
@@ -33,17 +33,11 @@ impl<Bus: BusTrait> ArmTrait<Bus> for FakeArm {
     }
 
     fn er(&self, r: u8) -> u32 {
-        match r {
-            15 => self.r[15] + 8,
-            _ => self.r[r],
-        }
+        (r == 15).if_else(self.r[15] + 8, self.r[15])
     }
 
     fn ert(&self, r: u8) -> u32 {
-        match r {
-            15 => self.r[15] + 4,
-            _ => self.r[r],
-        }
+        (r == 15).if_else(self.r[15] + 4, self.r[15])
     }
 
     fn eru(&self, r: u8) -> u32 {

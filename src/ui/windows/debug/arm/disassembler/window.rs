@@ -3,7 +3,7 @@
 use crate::{
     nds::{
         arm::{self, instructions, models::Disassembly, ArmBool, ArmInternalRW, ArmTrait},
-        bus, dma, logger, shared, CycleState, Emulator,
+        bus, dma, logger, shared, CycleState, Emulator, IfElse,
     },
     ui::{NitrousUI, NitrousWindow},
 };
@@ -157,7 +157,7 @@ impl ArmDisassemblerWindow {
                         ArmBool::ARM9 => emulator.arm9.cpsr.get_thumb(),
                         ArmBool::ARM7 => emulator.arm7.cpsr.get_thumb(),
                     };
-                    let next_inst = if is_thumb { pc + 2 } else { pc + 4 };
+                    let next_inst = is_thumb.if_else(pc + 2, pc + 4);
                     self.step_until = Some(next_inst);
 
                     emulator.start();
@@ -176,7 +176,7 @@ impl ArmDisassemblerWindow {
                         ArmBool::ARM9 => emulator.arm9.r[14],
                         ArmBool::ARM7 => emulator.arm7.r[14],
                     };
-                    let lr = if is_thumb { lr & 0xFFFFFFFE } else { lr };
+                    let lr = is_thumb.if_else(lr & 0xFFFFFFFE, lr);
                     self.step_until = Some(lr);
 
                     emulator.start();

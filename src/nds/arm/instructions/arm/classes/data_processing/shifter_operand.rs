@@ -5,6 +5,7 @@ use crate::nds::{
         ArmTrait,
     },
     bus::BusTrait,
+    IfElse,
 };
 
 // AKA the addressing mode
@@ -219,9 +220,6 @@ where
     T: ArmTrait<Bus>,
 {
     fn eru(&mut self, r: u8) -> u32 {
-        match r {
-            15 => self.r()[15] + 12,
-            _ => self.r()[r],
-        }
+        (r == 15).if_else(self.r()[15] + 12, self.r()[r])
     }
 }

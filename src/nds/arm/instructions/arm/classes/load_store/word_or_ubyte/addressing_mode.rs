@@ -1,7 +1,10 @@
-use crate::nds::arm::{
-    instructions::arm::Instruction,
-    models::{Bits, Context, ContextTrait, DisassemblyTrait},
-    ArmTrait,
+use crate::nds::{
+    arm::{
+        instructions::arm::Instruction,
+        models::{Bits, Context, ContextTrait, DisassemblyTrait},
+        ArmTrait,
+    },
+    IfElse,
 };
 
 #[inline(always)]
@@ -29,28 +32,29 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 
         0b01 => {
             // LSR
             ctx.dis.push_str_end_arg("LSR", Some(", "));
-            if shift_imm == 0 {
-                // LSR #32
-                0
-            } else {
-                rm >> shift_imm
-            }
+            let cond = shift_imm == 0; // LSR #32
+            cond.if_else(0, rm >> shift_imm)
         }
         0b10 => {
             // ASR
             ctx.dis.push_str_end_arg("ASR", Some(", "));
-            if shift_imm == 0 {
-                // ASR #32
-                if rm.get_bit(31) {
-                    // technically bit 31 is supposed to equal 1 but we cheat this
-                    // update from a few months later: what the fuck are you talking about
-                    0xFFFFFFFF
-                } else {
-                    0
-                }
-            } else {
-                ((rm as i32) >> shift_imm) as u32
-            }
+            let cond = shift_imm == 0; // ASR #32
+            cond.if_else(
+                rm.get_bit(31).if_else(0xFFFFFFFF, 0),
+                ((rm as i32) >> shift_imm) as u32,
+            )
+            // if shift_imm == 0 {
+            //     // ASR #32
+            //     if rm.get_bit(31) {
+            //         // technically bit 31 is supposed to equal 1 but we cheat this
+            //         // update from a few months later: what the fuck are you talking about
+            //         0xFFFFFFFF
+            //     } else {
+            //         0
+            //     }
+            // } else {
+            //     ((rm as i32) >> shift_imm) as u32
+            // }
         }
         0b11 => {
             if shift_imm == 0 {
