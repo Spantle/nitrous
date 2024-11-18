@@ -12,8 +12,7 @@ pub struct Gpu2d<const ENGINE_A: bool> {
     pub dispcnt: DispCnt,
     pub bgxcnt: [BGxCNT; 4],
 
-    pub bghofs: [u16; 4],
-    pub bgvofs: [u16; 4],
+    pub bgofs: [u32; 4],
 
     pub bg_vram: Vec<u8>,
     pub palette: Vec<u8>,
@@ -27,8 +26,7 @@ impl<const ENGINE_A: bool> Default for Gpu2d<ENGINE_A> {
             dispcnt: DispCnt::default(),
             bgxcnt: core::array::from_fn(|_| BGxCNT::default()),
 
-            bghofs: [0; 4],
-            bgvofs: [0; 4],
+            bgofs: [0; 4],
 
             bg_vram: vec![0; bg_vram_size],
             palette: vec![0; 1024],

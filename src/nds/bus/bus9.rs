@@ -333,23 +333,39 @@ impl BusTrait for Bus9 {
             0x0400100C..=0x0400100D => shared.gpus.b.bgxcnt[2] = value.into_halfword().into(),
             0x0400100E..=0x0400100F => shared.gpus.b.bgxcnt[3] = value.into_halfword().into(),
 
-            0x04000010..=0x04000011 => shared.gpus.a.bghofs[0] = value.into_halfword(),
-            0x04000012..=0x04000013 => shared.gpus.a.bgvofs[0] = value.into_halfword(),
-            0x04000014..=0x04000015 => shared.gpus.a.bghofs[1] = value.into_halfword(),
-            0x04000016..=0x04000017 => shared.gpus.a.bgvofs[1] = value.into_halfword(),
-            0x04000018..=0x04000019 => shared.gpus.a.bghofs[2] = value.into_halfword(),
-            0x0400001A..=0x0400001B => shared.gpus.a.bgvofs[2] = value.into_halfword(),
-            0x0400001C..=0x0400001D => shared.gpus.a.bghofs[3] = value.into_halfword(),
-            0x0400001E..=0x0400001F => shared.gpus.a.bgvofs[3] = value.into_halfword(),
+            0x04000010..=0x04000013 => {
+                shared.gpus.a.bgofs[0] = shared.gpus.a.bgofs[0]
+                    .set_part::<T>(addr as u32 - 0x04000010, value.into_word());
+            }
+            0x04000014..=0x04000017 => {
+                shared.gpus.a.bgofs[1] = shared.gpus.a.bgofs[1]
+                    .set_part::<T>(addr as u32 - 0x04000014, value.into_word());
+            }
+            0x04000018..=0x0400001B => {
+                shared.gpus.a.bgofs[2] = shared.gpus.a.bgofs[2]
+                    .set_part::<T>(addr as u32 - 0x04000018, value.into_word());
+            }
+            0x0400001C..=0x0400001F => {
+                shared.gpus.a.bgofs[3] = shared.gpus.a.bgofs[3]
+                    .set_part::<T>(addr as u32 - 0x0400001C, value.into_word());
+            }
 
-            0x04001010..=0x04001011 => shared.gpus.b.bghofs[0] = value.into_halfword(),
-            0x04001012..=0x04001013 => shared.gpus.b.bgvofs[0] = value.into_halfword(),
-            0x04001014..=0x04001015 => shared.gpus.b.bghofs[1] = value.into_halfword(),
-            0x04001016..=0x04001017 => shared.gpus.b.bgvofs[1] = value.into_halfword(),
-            0x04001018..=0x04001019 => shared.gpus.b.bghofs[2] = value.into_halfword(),
-            0x0400101A..=0x0400101B => shared.gpus.b.bgvofs[2] = value.into_halfword(),
-            0x0400101C..=0x0400101D => shared.gpus.b.bghofs[3] = value.into_halfword(),
-            0x0400101E..=0x0400101F => shared.gpus.b.bgvofs[3] = value.into_halfword(),
+            0x04001010..=0x04001013 => {
+                shared.gpus.b.bgofs[0] = shared.gpus.b.bgofs[0]
+                    .set_part::<T>(addr as u32 - 0x04001010, value.into_word());
+            }
+            0x04001014..=0x04001017 => {
+                shared.gpus.b.bgofs[1] = shared.gpus.b.bgofs[1]
+                    .set_part::<T>(addr as u32 - 0x04001014, value.into_word());
+            }
+            0x04001018..=0x0400101B => {
+                shared.gpus.b.bgofs[2] = shared.gpus.b.bgofs[2]
+                    .set_part::<T>(addr as u32 - 0x04001018, value.into_word());
+            }
+            0x0400101C..=0x0400101F => {
+                shared.gpus.b.bgofs[3] = shared.gpus.b.bgofs[3]
+                    .set_part::<T>(addr as u32 - 0x0400101C, value.into_word());
+            }
 
             0x04000020..=0x0400004F => self.logger.log_warn_once(format_debug!(
                 "GPU feature not implemented (W{} {:#010X}:{:#010X})",

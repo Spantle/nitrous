@@ -48,8 +48,10 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                     let bg_width = bg.len();
                     let bg_height = bg[0].len();
 
-                    let bg_x_offset = self.bghofs[id] as usize;
-                    let bg_y_offset = self.bgvofs[id] as usize;
+                    let (bg_x_offset, bg_y_offset) = (
+                        self.bgofs[id].get_bits(0, 15) as usize,
+                        self.bgofs[id].get_bits(16, 31) as usize,
+                    );
 
                     (0..256).for_each(|x| {
                         (0..192).for_each(|y| {
