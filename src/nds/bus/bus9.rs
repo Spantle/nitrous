@@ -212,8 +212,8 @@ impl BusTrait for Bus9 {
             0x04000214..=0x04000217 => self.interrupts.f.value().to_bytes::<T>(),
 
             0x04000240..=0x04000249 => {
-                let len = T.min(shared.vramcnt.len());
-                bytes[..len].copy_from_slice(&shared.vramcnt[..len]);
+                let len = T.min(shared.gpus.vramcnt.len());
+                bytes[..len].copy_from_slice(&shared.gpus.vramcnt[..len]);
                 bytes
             }
 
@@ -268,7 +268,7 @@ impl BusTrait for Bus9 {
 
             0x06800000..=0x068A4000 => {
                 let addr = addr - 0x06800000;
-                bytes.copy_from_slice(&shared.vram_lcdc_alloc[addr..addr + T]);
+                bytes.copy_from_slice(&shared.gpus.vram_lcdc_alloc[addr..addr + T]);
                 bytes
             }
 
@@ -463,8 +463,8 @@ impl BusTrait for Bus9 {
 
             0x04000304..=0x04000307 => shared.powcnt1 = value.into_word().into(),
             0x04000240..=0x04000249 => {
-                let len = T.min(shared.vramcnt.len());
-                shared.vramcnt[..len].copy_from_slice(&value[..len]);
+                let len = T.min(shared.gpus.vramcnt.len());
+                shared.gpus.vramcnt[..len].copy_from_slice(&value[..len]);
             }
 
             0x04000320..=0x040006A4 => self.logger.log_warn_once(format_debug!(
@@ -504,7 +504,7 @@ impl BusTrait for Bus9 {
 
             0x06800000..=0x068A4000 => {
                 let addr = addr - 0x06800000;
-                shared.vram_lcdc_alloc[addr..addr + T].copy_from_slice(&value);
+                shared.gpus.vram_lcdc_alloc[addr..addr + T].copy_from_slice(&value);
             }
 
             0x07000000..=0x07FFFFFF => self.logger.log_warn_once(format_debug!(

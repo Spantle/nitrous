@@ -6,15 +6,54 @@ use models::DispStat;
 
 use crate::nds::bus::{bus7::Bus7, bus9::Bus9};
 
-#[derive(Default)]
 pub struct Gpus {
     pub dispstat: DispStat, // 0x04000004
     pub vcount: u16,        // 0x04000006
+
+    pub vramcnt: [u8; 10], // 0x04000240 - 0x04000249, 0x04000247 is wramcnt
+
+    pub vram_lcdc_alloc: Vec<u8>, // 0x06800000
 
     pub a: Gpu2d<true>,
     pub b: Gpu2d<false>,
 
     x: u32, // TODO: this isn't real. ideally the clock function should just do an entire row at a time but I cannot be bothered touching cycle stuff rn. performance will suffer.
+}
+
+impl Default for Gpus {
+    fn default() -> Self {
+        Self {
+            dispstat: DispStat::default(),
+            vcount: 0,
+
+            vramcnt: [0; 10],
+
+            vram_lcdc_alloc: vec![0; 1024 * 656],
+
+            a: Gpu2d::default(),
+            b: Gpu2d::default(),
+
+            x: 0,
+        }
+    }
+}
+
+impl Gpus {
+    pub fn new_fake() -> Self {
+        Self {
+            dispstat: DispStat::default(),
+            vcount: 0,
+
+            vramcnt: [0; 10],
+
+            vram_lcdc_alloc: vec![0; 0],
+
+            a: Gpu2d::new_fake(),
+            b: Gpu2d::new_fake(),
+
+            x: 0,
+        }
+    }
 }
 
 impl Gpus {

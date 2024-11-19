@@ -34,6 +34,20 @@ impl<const ENGINE_A: bool> Default for Gpu2d<ENGINE_A> {
     }
 }
 
+impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
+    pub fn new_fake() -> Self {
+        Self {
+            dispcnt: DispCnt::default(),
+            bgxcnt: core::array::from_fn(|_| BGxCNT::default()),
+
+            bgofs: [0; 4],
+
+            bg_vram: vec![0; 0],
+            palette: vec![0; 0],
+        }
+    }
+}
+
 pub type BackgroundResult = (Vec<Vec<u16>>, bool);
 pub type BackgroundResults = Vec<BackgroundResult>;
 

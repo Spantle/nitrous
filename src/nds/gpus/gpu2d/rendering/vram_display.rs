@@ -12,7 +12,7 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                 let addr_offset = (vram_block * 0x20000) as usize;
                 let addr = addr_offset + (y * 256 + x) as usize * 2;
                 let mut bytes = [0; 2];
-                bytes.copy_from_slice(&shared.vram_lcdc_alloc[addr..addr + 2]);
+                bytes.copy_from_slice(&shared.gpus.vram_lcdc_alloc[addr..addr + 2]);
                 let halfword = u16::from_le_bytes(bytes);
                 let r = ((halfword.get_bits(0, 4) as f32) * COLOUR_MULT) as u8;
                 let g = ((halfword.get_bits(5, 9) as f32) * COLOUR_MULT) as u8;
