@@ -181,6 +181,7 @@ impl NitrousGUI {
             ui.checkbox(&mut self.gpu_map_viewer.open, "Map Viewer (WIP)");
             ui.checkbox(&mut self.gpu_palette_viewer.open, "Palette Viewer (WIP)");
         });
+        ui.checkbox(&mut self.benchmark.open, "Benchmark");
         ui.checkbox(&mut self.emulation_log.open, "Emulation Log");
         ui.checkbox(&mut self.ipcsync_log.open, "IPCSYNC Log");
         ui.checkbox(&mut self.memory_viewer.open, "Memory Viewer");

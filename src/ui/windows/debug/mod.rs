@@ -1,5 +1,6 @@
 pub mod arm;
 pub mod arm9_info;
+pub mod benchmark;
 pub mod emulation_log;
 pub mod gpu;
 pub mod ipcsync;
