@@ -1,7 +1,7 @@
 use crate::nds::{
     gpus::{
         gpu2d::{models::ColorPalette, BackgroundResult, Gpu2d},
-        vram::VramBanks,
+        vram::{VirtualLocation, VramBanks},
     },
     Bits, IfElse,
 };
@@ -32,7 +32,16 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
         };
         let size = self.calculate_size::<BG>();
 
-        let color_palette = bgcnt.get_color_palette();
+        let color_palette = bgcnt.get_color_palette(self.dispcnt.get_bg_extended_palettes());
+        let ext_palette_slot_offset = match (BG, bgcnt.get_ext_palette_slot()) {
+            (0, false) => 0,
+            (0, true) => 1024 * 16,
+            (1, false) => 1024 * 8,
+            (1, true) => 1024 * 24,
+            (2, _) => 1024 * 16,
+            (3, _) => 1024 * 24,
+            _ => 0,
+        };
         let mut pixels: Vec<Vec<u16>> = vec![vec![0; size.y]; size.x];
         // TODO: this could be done better, a world without this silly quadrant system and just good maths, but I really don't care right now. it's so late
         size.quadrants.iter().for_each(|quadrant| {
@@ -133,6 +142,45 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                                 tile_bytes.copy_from_slice(
                                     &self.palette[palette_address..palette_address + 2],
                                 );
+                                let mut color = u16::from_le_bytes(tile_bytes);
+                                color.set_bit(15, tile_byte != 0); // MASSIVE NOTE: THIS IS NOT REAL!!!! I SET THE TRANSPARENCY BIT IN THIS MODE BECAUSE I AM CHEATING!!!!
+
+                                let tile_pixel_x = tile_byte_i % 8;
+                                let tile_pixel_x_flipped = 7 - tile_pixel_x;
+                                let tile_pixel_y = tile_byte_i / 8;
+                                let tile_pixel_y_flipped = 7 - tile_pixel_y;
+
+                                // TODO: these will probably all need to be adjusted for different map sizes
+                                let tile_pixel_x =
+                                    horizontal_flip.if_else(tile_pixel_x_flipped, tile_pixel_x);
+                                let tile_pixel_y =
+                                    vertical_flip.if_else(tile_pixel_y_flipped, tile_pixel_y);
+                                let pixel_x = map_pixel_x + tile_pixel_x;
+                                let pixel_y = map_pixel_y + tile_pixel_y;
+
+                                pixels[pixel_x][pixel_y] = color;
+                            });
+                        }
+                        ColorPalette::Is256x16 => {
+                            // this is up here for performance
+                            let palette_offset_address = palette_number * 2 * 256;
+
+                            let tile_address = (character_base + tile_number * 64) as usize;
+                            let tile_bytes =
+                                vram_banks.read_slice::<64>(bg_vram_base + tile_address);
+                            let tile_bytes = tile_bytes.unwrap(); // TODO: this might need to be unwrap_or
+                            (0..tile_bytes.len()).for_each(|tile_byte_i| {
+                                let tile_byte = tile_bytes[tile_byte_i]; // a pixel
+                                let palette_address = (ext_palette_slot_offset
+                                    + ((tile_byte as u32) * 2 + palette_offset_address))
+                                    as usize;
+                                let virtual_location = match ENGINE_A {
+                                    true => VirtualLocation::BgExtendedPaletteA,
+                                    false => VirtualLocation::BgExtendedPaletteB,
+                                };
+                                let tile_bytes = vram_banks
+                                    .read_virtual_slice::<2>(virtual_location, palette_address)
+                                    .unwrap(); // TODO: this might need to be unwrap_or
                                 let mut color = u16::from_le_bytes(tile_bytes);
                                 color.set_bit(15, tile_byte != 0); // MASSIVE NOTE: THIS IS NOT REAL!!!! I SET THE TRANSPARENCY BIT IN THIS MODE BECAUSE I AM CHEATING!!!!
 

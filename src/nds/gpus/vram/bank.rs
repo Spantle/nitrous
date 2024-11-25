@@ -11,8 +11,8 @@ pub struct VramBank<const ID: u8> {
     enabled: bool,
 
     on_bus: bool,
-    start: usize,
-    end: usize,
+    pub start: usize,
+    pub end: usize,
 
     data: Vec<u8>,
 }
@@ -25,11 +25,11 @@ impl<const ID: u8> Default for VramBank<ID> {
         let (on_bus, start, end) = Self::map(mst, offset);
 
         let size = match ID {
-            0..=3 => 128,
-            4 => 64,
-            5..=6 => 16,
-            7 => 32,
-            8 => 16,
+            0..=3 => 128, // A, B, C, D
+            4 => 64,      // E
+            5..=6 => 16,  // F, G
+            7 => 32,      // H
+            8 => 16,      // I
             _ => unreachable!(),
         };
 
@@ -189,5 +189,22 @@ impl<const ID: u8> VramBank<ID> {
         }
 
         false
+    }
+
+    pub fn read_virtual_slice<const T: usize>(&self, addr: usize) -> (bool, [u8; T]) {
+        if self.on_bus || !self.enabled {
+            return (false, [0; T]);
+        }
+
+        if addr <= self.data.len() {
+            let start = addr;
+            let end = start + T;
+
+            let mut bytes = [0; T];
+            bytes.copy_from_slice(&self.data[start..end]);
+            return (true, bytes);
+        }
+
+        (false, [0; T])
     }
 }
