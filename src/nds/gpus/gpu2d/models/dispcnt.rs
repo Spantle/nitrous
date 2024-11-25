@@ -30,7 +30,7 @@ impl DispCnt {
     const CHARACTER_BASE_END: u32 = 26;
     const SCREEN_BASE_START: u32 = 27;
     const SCREEN_BASE_END: u32 = 29;
-    const BG_EXTENDED_PALETTES: u32 = 30;
+    const BG_EXTENDED_PALETTES_OFFSET: u32 = 30;
 
     pub fn value(&self) -> u32 {
         self.0
@@ -83,7 +83,7 @@ impl DispCnt {
     }
 
     pub fn get_bg_extended_palettes(&self) -> bool {
-        self.0.get_bit(Self::BG_EXTENDED_PALETTES)
+        self.0.get_bit(Self::BG_EXTENDED_PALETTES_OFFSET)
     }
 }
 

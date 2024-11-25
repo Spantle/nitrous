@@ -18,7 +18,7 @@ impl BGxCNT {
     const COLOR_PALETTE_OFFSET: u16 = 7;
     const SCREEN_BASE_BLOCK_START: u16 = 8;
     const SCREEN_BASE_BLOCK_END: u16 = 12;
-
+    const EXT_PALETTE_SLOT_OFFSET: u16 = 13;
     const SCREEN_SIZE_START: u16 = 14;
     const SCREEN_SIZE_END: u16 = 15;
 
@@ -37,16 +37,23 @@ impl BGxCNT {
         )
     }
 
-    pub fn get_color_palette(&self) -> ColorPalette {
+    pub fn get_color_palette(&self, extended_palettes: bool) -> ColorPalette {
         match self.0.get_bit(Self::COLOR_PALETTE_OFFSET) {
             false => ColorPalette::Is16x16,
-            true => ColorPalette::Is256x1,
+            true => match extended_palettes {
+                false => ColorPalette::Is256x1,
+                true => ColorPalette::Is256x16,
+            },
         }
     }
 
     pub fn get_screen_base_block(&self) -> u16 {
         self.0
             .get_bits(Self::SCREEN_BASE_BLOCK_START, Self::SCREEN_BASE_BLOCK_END)
+    }
+
+    pub fn get_ext_palette_slot(&self) -> bool {
+        self.0.get_bit(Self::EXT_PALETTE_SLOT_OFFSET)
     }
 
     pub fn get_screen_size(&self) -> u8 {
