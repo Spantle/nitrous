@@ -57,6 +57,7 @@ impl BGxCNT {
 
 #[derive(PartialEq)]
 pub enum ColorPalette {
-    Is16x16, // 0
-    Is256x1, // 1
+    Is16x16,  // 0
+    Is256x1,  // 1
+    Is256x16, // bit 30
 }

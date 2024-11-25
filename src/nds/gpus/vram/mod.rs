@@ -68,4 +68,55 @@ impl VramBanks {
 
         a | b | c | d | e | f | g | h | i
     }
+
+    pub fn read_virtual_slice<const T: usize>(
+        &self,
+        virtual_location: VirtualLocation,
+        addr: usize,
+    ) -> Option<[u8; T]> {
+        // TODO: there is probably a better way to do this
+        // but my current main priority is to make sure i understand the problem
+        match virtual_location {
+            VirtualLocation::BgExtendedPaletteA => {
+                let e_addr = addr % (1024 * 32);
+                let (e_s, e) = self.e.read_virtual_slice::<T>(e_addr);
+
+                let f_addr = self.f.start * (1024 * 32) + addr % (1024 * 32);
+                let (f_s, f) = self.f.read_slice::<T>(f_addr);
+
+                let g_addr = self.g.start * (1024 * 32) + addr % (1024 * 32);
+                let (g_s, g) = self.g.read_slice::<T>(g_addr);
+
+                let success = e_s | f_s | g_s;
+                if !success {
+                    return None;
+                }
+
+                let mut result = [0; T];
+                for x in 0..T {
+                    result[x] = e[x] | f[x] | g[x];
+                }
+
+                Some(result)
+            }
+            VirtualLocation::BgExtendedPaletteB => {
+                let (h_s, h) = self.h.read_virtual_slice::<T>(addr);
+
+                let success = h_s;
+                if !success {
+                    return None;
+                }
+
+                let mut result = [0; T];
+                result[..T].copy_from_slice(&h[..T]);
+
+                Some(result)
+            }
+        }
+    }
+}
+
+pub enum VirtualLocation {
+    BgExtendedPaletteA,
+    BgExtendedPaletteB,
 }
