@@ -43,8 +43,6 @@ impl DividerUnit {
             self.denominator_hi = value;
         }
 
-        self.control
-            .set_div_by_zero(self.denominator_lo == 0 && self.denominator_hi == 0);
         self.start();
     }
 
@@ -70,92 +68,90 @@ impl DividerUnit {
         // TODO: this can probably be written a lot better
         // here's hoping the compiler optimises it for now (it won't)
         if self.cycles == 0 {
-            if self.control.get_div_by_zero()
-                || (self.control.get_mode() != 2 && self.denominator_lo == 0)
-            {
-                if self.control.get_mode() == 0 {
-                    let merged =
-                        self.numerator_lo as i32 as i64 | (self.numerator_hi as i32 as i64) << 32;
-                    self.remainder_lo = self.numerator_lo;
-                    self.remainder_hi = (merged >> 32) as u32;
+            let dividing_by_zero = self.denominator_lo == 0 && self.denominator_hi == 0;
+            self.control.set_div_by_zero(dividing_by_zero);
 
-                    if self.numerator_lo as i32 >= 0 {
-                        self.result_lo = -1_i32 as u32;
-                        self.result_hi = 0;
-                    } else {
-                        self.result_lo = 1;
-                        self.result_hi = -1_i32 as u32;
-                    }
-                } else {
-                    self.remainder_lo = self.numerator_lo;
-                    self.remainder_hi = self.numerator_hi;
+            let (result, remainder) = match self.control.get_mode() {
+                0 => {
+                    if self.denominator_lo == 0 {
+                        let merged = self.numerator_lo as i32 as i64
+                            | (self.numerator_hi as i32 as i64) << 32;
 
-                    if self.numerator_lo as i32 >= 0 {
-                        (self.result_lo, self.result_hi) = split_lo_hi(-1_i64 as u64);
+                        let result = if self.numerator_lo as i32 >= 0 {
+                            merge_lo_hi(-1_i32 as u32, 0)
+                        } else {
+                            merge_lo_hi(1, -1_i32 as u32)
+                        } as u64;
+                        let remainder =
+                            merge_lo_hi(self.numerator_lo, (merged >> 32) as u32) as u64;
+
+                        (result, remainder)
+                    } else if self.numerator_lo == -0x8000_0000_i32 as u32
+                        && self.denominator_lo == -1_i32 as u32
+                    {
+                        (0x8000_0000, 0)
                     } else {
-                        (self.result_lo, self.result_hi) = split_lo_hi(1);
+                        (
+                            (self.numerator_lo as i32).wrapping_div(self.denominator_lo as i32)
+                                as u64,
+                            (self.numerator_lo as i32).wrapping_rem(self.denominator_lo as i32)
+                                as u64,
+                        )
                     }
                 }
-            } else {
-                let (result, remainder) = match self.control.get_mode() {
-                    0 => {
-                        if self.numerator_lo == -0x8000_0000_i32 as u32
-                            && self.denominator_lo == -1_i32 as u32
-                        {
-                            (0x8000_0000, 0)
-                        } else {
-                            (
-                                (self.numerator_lo as i32).wrapping_div(self.denominator_lo as i32)
-                                    as u64,
-                                (self.numerator_lo as i32).wrapping_rem(self.denominator_lo as i32)
-                                    as u64,
-                            )
-                        }
-                    }
-                    1 | 3 => {
-                        let numerator = merge_lo_hi(self.numerator_lo, self.numerator_hi);
-                        if numerator == -0x8000_0000_0000_0000_i64
-                            && self.denominator_lo == -1_i32 as u32
-                        {
-                            (0x8000_0000_0000_0000, 0)
-                        } else {
-                            (
-                                numerator.wrapping_div(self.denominator_lo as i32 as i64) as u64,
-                                numerator.wrapping_rem(self.denominator_lo as i32 as i64) as u64,
-                            )
-                        }
-                    }
-                    2 => {
-                        let numerator = merge_lo_hi(self.numerator_lo, self.numerator_hi);
-                        let denominator = merge_lo_hi(self.denominator_lo, self.denominator_hi);
-                        if numerator == -0x8000_0000_0000_0000_i64 && denominator == -1_i64 {
-                            (0x8000_0000_0000_0000, 0)
-                        } else {
-                            (
-                                numerator.wrapping_div(denominator) as u64,
-                                numerator.wrapping_rem(denominator) as u64,
-                            )
-                        }
-                    }
-                    _ => unreachable!(),
-                };
+                1 | 3 => {
+                    let numerator = merge_lo_hi(self.numerator_lo, self.numerator_hi);
+                    if self.denominator_lo == 0 {
+                        let result = if numerator >= 0 { -1_i64 as u64 } else { 1 };
+                        let remainder = numerator as u64;
 
-                // logger::debug(
-                //     logger::LogSource::Bus9,
-                //     format_debug!(
-                //         "{},{} / {},{} = {},{}",
-                //         self.numerator_lo as i32,
-                //         self.numerator_hi as i32,
-                //         self.denominator_lo as i32,
-                //         self.denominator_hi as i32,
-                //         result as i64,
-                //         remainder as i64
-                //     ),
-                // );
+                        (result, remainder)
+                    } else if numerator == -0x8000_0000_0000_0000_i64
+                        && self.denominator_lo == -1_i32 as u32
+                    {
+                        (0x8000_0000_0000_0000, 0)
+                    } else {
+                        (
+                            numerator.wrapping_div(self.denominator_lo as i32 as i64) as u64,
+                            numerator.wrapping_rem(self.denominator_lo as i32 as i64) as u64,
+                        )
+                    }
+                }
+                2 => {
+                    let numerator = merge_lo_hi(self.numerator_lo, self.numerator_hi);
+                    let denominator = merge_lo_hi(self.denominator_lo, self.denominator_hi);
+                    if denominator == 0 {
+                        let result = if numerator >= 0 { -1_i64 as u64 } else { 1 };
+                        let remainder = numerator as u64;
 
-                (self.result_lo, self.result_hi) = split_lo_hi(result);
-                (self.remainder_lo, self.remainder_hi) = split_lo_hi(remainder);
-            }
+                        (result, remainder)
+                    } else if numerator == -0x8000_0000_0000_0000_i64 && denominator == -1_i64 {
+                        (0x8000_0000_0000_0000, 0)
+                    } else {
+                        (
+                            numerator.wrapping_div(denominator) as u64,
+                            numerator.wrapping_rem(denominator) as u64,
+                        )
+                    }
+                }
+                _ => unreachable!(),
+            };
+
+            // logger::debug(
+            //     logger::LogSource::Bus9,
+            //     format_debug!(
+            //         "{},{} / {},{} = {},{}",
+            //         self.numerator_lo as i32,
+            //         self.numerator_hi as i32,
+            //         self.denominator_lo as i32,
+            //         self.denominator_hi as i32,
+            //         result as i64,
+            //         remainder as i64
+            //     ),
+            // );
+
+            (self.result_lo, self.result_hi) = split_lo_hi(result);
+            (self.remainder_lo, self.remainder_hi) = split_lo_hi(remainder);
 
             // logger::debug(
             //     logger::LogSource::Bus9,
@@ -211,16 +207,8 @@ impl DivisionControl {
         self.0.get_bits(Self::MODE_START, Self::MODE_END)
     }
 
-    fn get_div_by_zero(&self) -> bool {
-        self.0.get_bit(Self::DIV_BY_ZERO_OFFSET)
-    }
-
     fn set_div_by_zero(&mut self, value: bool) {
         self.0.set_bit(Self::DIV_BY_ZERO_OFFSET, value);
-    }
-
-    fn get_busy(&self) -> bool {
-        self.0.get_bit(Self::BUSY_OFFSET)
     }
 
     fn set_busy(&mut self, value: bool) {
