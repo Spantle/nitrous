@@ -131,7 +131,7 @@ impl<const ID: u8> VramBank<ID> {
                 }
             }
 
-            (5..6, Mst::F) => (false, 0, 0),
+            (5..=6, Mst::F) => (false, 0, 0),
             _ => unreachable!("invalid id/mst combination {}/{}", ID, mst as usize),
         };
 
