@@ -165,7 +165,7 @@ impl<const ID: u8> VramBank<ID> {
         }
 
         if addr >= self.start && addr <= self.end {
-            let start = addr - self.start;
+            let start = (addr - self.start) % self.data.len();
             let end = start + T;
 
             let mut bytes = [0; T];
