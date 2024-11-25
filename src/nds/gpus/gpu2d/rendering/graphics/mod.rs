@@ -1,7 +1,10 @@
 mod background;
 
 use crate::nds::{
-    gpus::gpu2d::{BackgroundResults, Gpu2d, GpuRenderResult},
+    gpus::{
+        gpu2d::{BackgroundResults, Gpu2d, GpuRenderResult},
+        vram::VramBanks,
+    },
     Bits, IfElse,
 };
 
@@ -9,7 +12,7 @@ const COLOUR_MULT: f32 = 255.0 / 31.0;
 
 impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
     // Display Mode: Graphics Display
-    pub fn render_graphics(&self) -> GpuRenderResult {
+    pub fn render_graphics(&self, vram_banks: &VramBanks) -> GpuRenderResult {
         let bg_mode = self.dispcnt.get_bg_mode();
         match bg_mode {
             0 => {
@@ -24,16 +27,16 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                 let mut bg_pixels: BackgroundResults = vec![(vec![vec![]], false); 4];
                 if self.dispcnt.get_screen_display_bg0() && !self.dispcnt.get_bg0_2d_3d_selection()
                 {
-                    bg_pixels[0] = self.render_background::<0>();
+                    bg_pixels[0] = self.render_background::<0>(vram_banks);
                 }
                 if self.dispcnt.get_screen_display_bg1() {
-                    bg_pixels[1] = self.render_background::<1>();
+                    bg_pixels[1] = self.render_background::<1>(vram_banks);
                 }
                 if self.dispcnt.get_screen_display_bg2() {
-                    bg_pixels[2] = self.render_background::<2>();
+                    bg_pixels[2] = self.render_background::<2>(vram_banks);
                 }
                 if self.dispcnt.get_screen_display_bg3() {
-                    bg_pixels[3] = self.render_background::<3>();
+                    bg_pixels[3] = self.render_background::<3>(vram_banks);
                 }
 
                 let mut backdrop_colour_bytes = [0; 2];

@@ -14,21 +14,17 @@ pub struct Gpu2d<const ENGINE_A: bool> {
 
     pub bgofs: [u32; 4],
 
-    pub bg_vram: Vec<u8>,
     pub palette: Vec<u8>,
 }
 
 impl<const ENGINE_A: bool> Default for Gpu2d<ENGINE_A> {
     fn default() -> Self {
-        let bg_vram_size = if ENGINE_A { 512 * 1024 } else { 128 * 1024 };
-
         Self {
             dispcnt: DispCnt::default(),
             bgxcnt: core::array::from_fn(|_| BGxCNT::default()),
 
             bgofs: [0; 4],
 
-            bg_vram: vec![0; bg_vram_size],
             palette: vec![0; 1024],
         }
     }
@@ -42,7 +38,6 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
 
             bgofs: [0; 4],
 
-            bg_vram: vec![0; 0],
             palette: vec![0; 0],
         }
     }
@@ -95,6 +90,6 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
             _ => unreachable!("if you see this then i'm wrong. this is very much reachable"),
         };
 
-        self.render_graphics()
+        self.render_graphics(&shared.gpus.vram_banks)
     }
 }

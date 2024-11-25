@@ -212,9 +212,26 @@ impl BusTrait for Bus9 {
             0x04000214..=0x04000217 => self.interrupts.f.value().to_bytes::<T>(),
 
             0x04000240..=0x04000249 => {
-                let len = T.min(shared.gpus.vramcnt.len());
-                bytes[..len].copy_from_slice(&shared.gpus.vramcnt[..len]);
-                bytes
+                let addr = addr - 0x04000240;
+                let mut result = [0; T];
+                #[allow(clippy::needless_range_loop)] // i would like to use the constant
+                for i in 0..T {
+                    result[i] = match addr + i {
+                        0 => shared.gpus.vram_banks.a.read_vramcnt(),
+                        1 => shared.gpus.vram_banks.b.read_vramcnt(),
+                        2 => shared.gpus.vram_banks.c.read_vramcnt(),
+                        3 => shared.gpus.vram_banks.d.read_vramcnt(),
+                        4 => shared.gpus.vram_banks.e.read_vramcnt(),
+                        5 => shared.gpus.vram_banks.f.read_vramcnt(),
+                        6 => shared.gpus.vram_banks.g.read_vramcnt(),
+                        7 => shared.gpus.wramcnt,
+                        8 => shared.gpus.vram_banks.h.read_vramcnt(),
+                        9 => shared.gpus.vram_banks.i.read_vramcnt(),
+                        _ => unreachable!(),
+                    };
+                }
+
+                result
             }
 
             0x04000280..=0x04000283 => self.div.control.value().to_bytes::<T>(),
@@ -266,12 +283,6 @@ impl BusTrait for Bus9 {
                 }
             }
 
-            0x06800000..=0x068A4000 => {
-                let addr = addr - 0x06800000;
-                bytes.copy_from_slice(&shared.gpus.vram_lcdc_alloc[addr..addr + T]);
-                bytes
-            }
-
             0x08000000..=0x0AFFFFFF => bytes, // gba slot, return nothing... for now?
 
             0xFFFF0000..=0xFFFF7FFF => {
@@ -285,6 +296,10 @@ impl BusTrait for Bus9 {
                     if let Some(bytes) = dma.read_slice::<T>(addr) {
                         return bytes;
                     }
+                }
+
+                if let Some(bytes) = shared.gpus.vram_banks.read_slice::<T>(addr) {
+                    return bytes;
                 }
 
                 self.logger.log_error_once(format_debug!(
@@ -448,6 +463,27 @@ impl BusTrait for Bus9 {
             0x04000210..=0x04000213 => self.interrupts.e = value.into_word().into(),
             0x04000214..=0x04000217 => self.interrupts.f.write_and_ack(value.into_word()),
 
+            0x04000240..=0x04000249 => {
+                // this sucks so much
+                let addr = addr - 0x04000240;
+                #[allow(clippy::needless_range_loop)] // i would like to use the constant
+                for i in 0..T {
+                    match addr + i {
+                        0 => shared.gpus.vram_banks.a.write_vramcnt(value[i]),
+                        1 => shared.gpus.vram_banks.b.write_vramcnt(value[i]),
+                        2 => shared.gpus.vram_banks.c.write_vramcnt(value[i]),
+                        3 => shared.gpus.vram_banks.d.write_vramcnt(value[i]),
+                        4 => shared.gpus.vram_banks.e.write_vramcnt(value[i]),
+                        5 => shared.gpus.vram_banks.f.write_vramcnt(value[i]),
+                        6 => shared.gpus.vram_banks.g.write_vramcnt(value[i]),
+                        7 => shared.gpus.wramcnt = value.into_byte(),
+                        8 => shared.gpus.vram_banks.h.write_vramcnt(value[i]),
+                        9 => shared.gpus.vram_banks.i.write_vramcnt(value[i]),
+                        _ => unreachable!(),
+                    }
+                }
+            }
+
             0x04000280 => self.div.set_control(value.into_word()),
             0x04000290..=0x04000293 => self.div.set_numerator::<true>(value.into_word()),
             0x04000294..=0x04000297 => self.div.set_numerator::<false>(value.into_word()),
@@ -462,10 +498,6 @@ impl BusTrait for Bus9 {
             )),
 
             0x04000304..=0x04000307 => shared.powcnt1 = value.into_word().into(),
-            0x04000240..=0x04000249 => {
-                let len = T.min(shared.gpus.vramcnt.len());
-                shared.gpus.vramcnt[..len].copy_from_slice(&value[..len]);
-            }
 
             0x04000320..=0x040006A4 => self.logger.log_warn_once(format_debug!(
                 "GPU3D not implemented (W{} {:#010X}:{:#010X})",
@@ -487,25 +519,12 @@ impl BusTrait for Bus9 {
                 }
             }
 
-            0x06000000..=0x061FFFFF => {
-                let addr = (addr - 0x06000000) % 0x80000;
-                shared.gpus.a.bg_vram[addr..addr + T].copy_from_slice(&value);
-            }
-            0x06200000..=0x063FFFFF => {
-                let addr = (addr - 0x06200000) % 0x20000;
-                shared.gpus.b.bg_vram[addr..addr + T].copy_from_slice(&value);
-            }
             0x06400000..=0x067FFFFF => self.logger.log_warn_once(format_debug!(
                 "OBJ VRAM not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
                 value.into_word()
             )),
-
-            0x06800000..=0x068A4000 => {
-                let addr = addr - 0x06800000;
-                shared.gpus.vram_lcdc_alloc[addr..addr + T].copy_from_slice(&value);
-            }
 
             0x07000000..=0x07FFFFFF => self.logger.log_warn_once(format_debug!(
                 "OAM not implemented (W{} {:#010X}:{:#010X})",
@@ -524,6 +543,9 @@ impl BusTrait for Bus9 {
                 if let Some(dma) = dma {
                     success = dma.write_slice::<T, Self>(addr, value);
                 }
+
+                success |= shared.gpus.vram_banks.write_slice::<T>(addr, value);
+
                 if !success {
                     self.logger.log_error(format!(
                         "Invalid write {} byte(s) at address {:#010X}: {:#010X}",

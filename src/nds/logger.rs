@@ -99,6 +99,7 @@ pub enum LogSource {
     DMA9,
     DMA7,
     Cart,
+    VramBank(u8),
 }
 
 impl Display for LogKind {
@@ -149,6 +150,7 @@ impl Display for LogSource {
             LogSource::DMA9 => write!(f, "DMA9"),
             LogSource::DMA7 => write!(f, "DMA7"),
             LogSource::Cart => write!(f, "Cart"),
+            LogSource::VramBank(id) => write!(f, "VramBank({})", id),
         }
     }
 }

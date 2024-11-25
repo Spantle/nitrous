@@ -1,5 +1,8 @@
 use crate::nds::{
-    gpus::gpu2d::{models::ColorPalette, BackgroundResult, Gpu2d},
+    gpus::{
+        gpu2d::{models::ColorPalette, BackgroundResult, Gpu2d},
+        vram::VramBanks,
+    },
     Bits, IfElse,
 };
 
@@ -10,10 +13,11 @@ struct Size {
 }
 
 impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
-    pub fn render_background<const BG: u8>(&self) -> BackgroundResult {
+    pub fn render_background<const BG: u8>(&self, vram_banks: &VramBanks) -> BackgroundResult {
         let mode = self.dispcnt.get_bg_mode();
 
         let bgcnt = &self.bgxcnt[BG as usize];
+        let bg_vram_base = if ENGINE_A { 0x06000000 } else { 0x06200000 };
         let character_base = if ENGINE_A {
             bgcnt.get_character_base_block() as u32 * (1024 * 16)
                 + self.dispcnt.get_character_base() * (1024 * 64)
@@ -45,9 +49,9 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
 
                     let map_tile_i = ((map_tile_y * 32 + map_tile_x) + map_tile_i_offset) as u32;
                     let map_tile_address = (screen_base + map_tile_i * 2) as usize;
-                    let mut map_tile_bytes = [0; 2];
-                    map_tile_bytes
-                        .copy_from_slice(&self.bg_vram[map_tile_address..map_tile_address + 2]);
+                    let map_tile_bytes = vram_banks
+                        .read_slice::<2>(bg_vram_base + map_tile_address)
+                        .unwrap(); // TODO: this might need to be unwrap_or
                     let map_tile = u16::from_le_bytes(map_tile_bytes); // the tile in the map itself
 
                     let tile_number = (map_tile as u32).get_bits(0, 9); // the ID of the tile pixel data
@@ -63,7 +67,9 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
 
                             // tile data pixel in vram
                             let tile_address = (character_base + tile_number * 32) as usize;
-                            let tile_bytes = &self.bg_vram[tile_address..tile_address + 32];
+                            let tile_bytes =
+                                vram_banks.read_slice::<32>(bg_vram_base + tile_address);
+                            let tile_bytes = tile_bytes.unwrap(); // TODO: this might need to be unwrap_or
 
                             // iterate through each byte in the pixel data
                             (0..tile_bytes.len()).for_each(|tile_byte_i| {
@@ -117,7 +123,9 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                         }
                         ColorPalette::Is256x1 => {
                             let tile_address = (character_base + tile_number * 64) as usize;
-                            let tile_bytes = &self.bg_vram[tile_address..tile_address + 64];
+                            let tile_bytes =
+                                vram_banks.read_slice::<64>(bg_vram_base + tile_address);
+                            let tile_bytes = tile_bytes.unwrap(); // TODO: this might need to be unwrap_or
                             (0..tile_bytes.len()).for_each(|tile_byte_i| {
                                 let tile_byte = tile_bytes[tile_byte_i]; // a pixel
                                 let palette_address = tile_byte as usize * 2;

@@ -11,9 +11,11 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                 let vram_block = self.dispcnt.get_vram_block();
                 let addr_offset = (vram_block * 0x20000) as usize;
                 let addr = addr_offset + (y * 256 + x) as usize * 2;
-                let mut bytes = [0; 2];
-                bytes.copy_from_slice(&shared.gpus.vram_lcdc_alloc[addr..addr + 2]);
-                let halfword = u16::from_le_bytes(bytes);
+                let bytes = shared.gpus.vram_banks.read_slice::<2>(0x06800000 + addr);
+                let halfword = match bytes {
+                    Some(bytes) => u16::from_le_bytes(bytes),
+                    None => 0,
+                };
                 let r = ((halfword.get_bits(0, 4) as f32) * COLOUR_MULT) as u8;
                 let g = ((halfword.get_bits(5, 9) as f32) * COLOUR_MULT) as u8;
                 let b = ((halfword.get_bits(10, 14) as f32) * COLOUR_MULT) as u8;

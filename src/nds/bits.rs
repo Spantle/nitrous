@@ -74,6 +74,7 @@ where
 pub trait Bytes {
     fn into_word(self) -> u32;
     fn into_halfword(self) -> u16;
+    fn into_byte(self) -> u8;
 }
 
 impl<const T: usize> Bytes for [u8; T] {
@@ -91,6 +92,15 @@ impl<const T: usize> Bytes for [u8; T] {
         let len = T.min(2);
         bytes[..len].copy_from_slice(&self[..len]);
         u16::from_le_bytes(bytes)
+    }
+
+    #[inline(always)]
+    fn into_byte(self) -> u8 {
+        if T > 1 {
+            panic!("attempted to convert {} bytes into a byte", T);
+        }
+
+        self[0]
     }
 }
 
