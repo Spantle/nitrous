@@ -6,9 +6,7 @@ pub struct IpcSync {
     value9: u32,
     value7: u32,
 
-    #[serde(skip)]
     pub log: Vec<IpcsyncLog>,
-    #[serde(skip)]
     pub logging_enabled: bool,
 
     send_irq9to7: bool,
@@ -77,6 +75,7 @@ impl IpcSync {
     }
 }
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub enum IpcsyncLog {
     // is_arm9, value
     Read(bool, u32),

@@ -8,6 +8,7 @@ pub trait BusTrait {
     const KIND: ArmKind;
 
     fn reset(&mut self);
+    fn load_state(&mut self, bus: Self);
 
     fn load_bios(&mut self, bios: Vec<u8>);
     fn load_bios_from_path(&mut self, path: &str);
@@ -83,6 +84,7 @@ impl BusTrait for FakeBus {
     const KIND: ArmKind = ArmKind::Arm9;
 
     fn reset(&mut self) {}
+    fn load_state(&mut self, _bus: Self) {}
 
     fn load_bios(&mut self, _bios: Vec<u8>) {}
     fn load_bios_from_path(&mut self, _path: &str) {}

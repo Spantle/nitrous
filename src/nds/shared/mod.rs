@@ -54,6 +54,18 @@ impl Shared {
         }
     }
 
+    pub fn load_state(&mut self, shared: Self) {
+        self.cart.load_state(shared.cart);
+        self.gpus = shared.gpus;
+        self.psram = shared.psram;
+        self.wram = shared.wram;
+
+        self.ipcsync = shared.ipcsync;
+        self.ipcfifo = shared.ipcfifo;
+        self.postflg = shared.postflg;
+        self.powcnt1 = shared.powcnt1;
+    }
+
     pub fn reset(&mut self) {
         self.cart.reset();
         self.gpus = Gpus::default();

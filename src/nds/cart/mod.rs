@@ -34,6 +34,14 @@ impl Cartridge {
         true
     }
 
+    pub fn load_state(&mut self, cart: Self) {
+        self.romctrl = cart.romctrl;
+        self.auxspicnt = cart.auxspicnt;
+        self.command = cart.command;
+        self.exmemcnt = cart.exmemcnt;
+        self.exmemstat = cart.exmemstat;
+    }
+
     pub fn reset(&mut self) {
         self.romctrl = RomCtrl::default();
         self.auxspicnt = AuxSpiCnt::default();

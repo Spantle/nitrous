@@ -137,6 +137,21 @@ impl Emulator {
         );
     }
 
+    pub fn load_state(&mut self, emulator: Emulator) {
+        self.arm9 = emulator.arm9;
+        self.arm7 = emulator.arm7;
+
+        self.bus9.load_state(emulator.bus9);
+        self.bus7.load_state(emulator.bus7);
+
+        self.dma9 = emulator.dma9;
+        self.dma7 = emulator.dma7;
+
+        self.shared.load_state(emulator.shared);
+
+        self.cycle_state = emulator.cycle_state;
+    }
+
     pub fn reset(&mut self, load_binary: bool) {
         let was_running = self.is_running();
         self.pause();

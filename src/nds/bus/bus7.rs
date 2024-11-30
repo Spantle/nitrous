@@ -45,6 +45,12 @@ impl BusTrait for Bus7 {
         self.wram7 = vec![0; 1024 * 64];
     }
 
+    fn load_state(&mut self, bus: Self) {
+        self.interrupts = bus.interrupts;
+        self.timers = bus.timers;
+        self.wram7 = bus.wram7;
+    }
+
     fn load_bios(&mut self, bios: Vec<u8>) {
         self.logger.log_info("Successfully loaded BIOS");
         self.bios = bios;

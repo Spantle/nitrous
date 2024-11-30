@@ -4,7 +4,7 @@ use web_time::{Duration, Instant};
 
 use crate::nds::{
     arm::ArmBool,
-    logger::{set_pause_on_error, set_pause_on_warn},
+    logger::{self, set_pause_on_error, set_pause_on_warn},
     Emulator,
 };
 
@@ -40,6 +40,8 @@ pub struct NitrousGUI {
 
     #[serde(skip)]
     pub load_rom_channel: (Sender<Vec<u8>>, Receiver<Vec<u8>>),
+    #[serde(skip)]
+    pub load_state_channel: (Sender<Emulator>, Receiver<Emulator>),
 
     // Screen options
     pub screen_options: ScreenOptions,
@@ -89,6 +91,7 @@ impl Default for NitrousGUI {
             emulator: Emulator::default(),
 
             load_rom_channel: channel(),
+            load_state_channel: channel(),
 
             screen_options: ScreenOptions::default(),
 
@@ -254,6 +257,11 @@ impl eframe::App for NitrousGUI {
 
             if let Ok(bytes) = self.load_rom_channel.1.try_recv() {
                 self.emulator.load_rom(bytes);
+            }
+
+            if let Ok(emulator) = self.load_state_channel.1.try_recv() {
+                self.emulator.load_state(emulator);
+                logger::info(logger::LogSource::Emu, "Emulator state loaded successfully");
             }
 
             self.preferences
