@@ -1,3 +1,7 @@
+use std::io::{Read, Write};
+
+use crate::nds::logger;
+
 use super::{NitrousGUI, NitrousUI};
 
 impl NitrousGUI {
@@ -72,6 +76,114 @@ impl NitrousGUI {
                     ctx.request_repaint();
                 }
             });
+            return true;
+        }
+
+        if ui.button("Save state").clicked() {
+            let result = serde_json::to_string(&self.emulator);
+            match result {
+                Ok(state) => {
+                    let task = rfd::AsyncFileDialog::new()
+                        .add_filter("Nitrous State", &["gz"])
+                        .save_file();
+
+                    let ctx = ui.ctx().clone();
+                    execute(async move {
+                        let file = task.await;
+                        if let Some(file) = file {
+                            // compress with zstd_safe
+                            let mut e = flate2::write::GzEncoder::new(
+                                Vec::new(),
+                                flate2::Compression::default(),
+                            );
+                            let success = e.write_all(state.as_bytes());
+                            match success {
+                                Ok(_) => {
+                                    let compressed = e.finish();
+                                    match compressed {
+                                        Ok(compressed) => {
+                                            let result = file.write(compressed.as_slice()).await;
+                                            match result {
+                                                Ok(_) => {
+                                                    logger::info(
+                                                        logger::LogSource::Emu,
+                                                        "Emulator state saved",
+                                                    );
+                                                }
+                                                Err(e) => {
+                                                    logger::error(
+                                                        logger::LogSource::Emu,
+                                                        format!(
+                                                            "Failed to save emulator state: {}",
+                                                            e
+                                                        ),
+                                                    );
+                                                }
+                                            }
+                                            ctx.request_repaint();
+                                        }
+                                        Err(e) => {
+                                            logger::error(
+                                                logger::LogSource::Emu,
+                                                format!("Failed to compress emulator state: {}", e),
+                                            );
+                                        }
+                                    }
+                                }
+                                Err(e) => {
+                                    logger::error(
+                                        logger::LogSource::Emu,
+                                        format!("Failed to compress emulator state: {}", e),
+                                    );
+                                }
+                            }
+                        }
+                    });
+                }
+                Err(e) => {
+                    logger::error(
+                        logger::LogSource::Emu,
+                        format!("Failed to serialize emulator state: {}", e),
+                    );
+                }
+            }
+
+            return true;
+        }
+
+        if ui.button("Load state").clicked() {
+            let channel = self.load_state_channel.0.clone();
+            let task = rfd::AsyncFileDialog::new()
+                .add_filter("Nitrous State", &["gz"])
+                .pick_file();
+
+            let ctx = ui.ctx().clone();
+            execute(async move {
+                let file = task.await;
+                if let Some(file) = file {
+                    let bytes = file.read().await;
+                    let mut d = flate2::read::GzDecoder::new(bytes.as_slice());
+                    let mut decompressed_bytes = Vec::new();
+                    d.read_to_end(&mut decompressed_bytes).unwrap();
+
+                    let result = serde_json::from_slice(&decompressed_bytes);
+                    match result {
+                        Ok(emulator) => {
+                            logger::info(logger::LogSource::Emu, "Loading emulator state");
+                            let _result = channel.send(emulator);
+                            ctx.request_repaint();
+                        }
+                        Err(e) => {
+                            logger::error(
+                                logger::LogSource::Emu,
+                                format!("Failed to load emulator state: {}", e),
+                            );
+                        }
+                    }
+                    ctx.request_repaint();
+                }
+            });
+
             return true;
         }
 

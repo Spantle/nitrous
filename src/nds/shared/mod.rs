@@ -2,16 +2,19 @@ use models::{ExtKeyIn, IpcFifo, IpcSync, KeyInput, PostFlg, PowCnt1};
 
 use super::{cart::Cartridge, gpus::Gpus};
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Shared {
     pub cart: Cartridge,
     pub gpus: Gpus,
     pub psram: Vec<u8>,
     pub wram: Vec<u8>, // 32kb
 
+    #[serde(skip)]
     pub keyinput: KeyInput, // 0x04000130
+    #[serde(skip)]
     pub extkeyin: ExtKeyIn, // 0x04000136
-    pub ipcsync: IpcSync,   // 0x04000180
-    pub ipcfifo: IpcFifo,   // 0x04000184, 0x04000188, 0x04100000
+    pub ipcsync: IpcSync, // 0x04000180
+    pub ipcfifo: IpcFifo, // 0x04000184, 0x04000188, 0x04100000
     pub postflg: PostFlg, // 0x04000300 TODO: there's a tiny bit of logic behind this, and it's technically not "shared"
     pub powcnt1: PowCnt1, // 0x04000304
 }
@@ -49,6 +52,18 @@ impl Shared {
             postflg: PostFlg::default(),
             powcnt1: PowCnt1::default(),
         }
+    }
+
+    pub fn load_state(&mut self, shared: Self) {
+        self.cart.load_state(shared.cart);
+        self.gpus = shared.gpus;
+        self.psram = shared.psram;
+        self.wram = shared.wram;
+
+        self.ipcsync = shared.ipcsync;
+        self.ipcfifo = shared.ipcfifo;
+        self.postflg = shared.postflg;
+        self.powcnt1 = shared.powcnt1;
     }
 
     pub fn reset(&mut self) {

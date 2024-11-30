@@ -3,7 +3,7 @@ use bank::VramBank;
 mod bank;
 mod models;
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct VramBanks {
     pub a: VramBank<0>,
     pub b: VramBank<1>,

@@ -12,13 +12,15 @@ use super::{
 
 static IS_EMULATOR_RUNNING: AtomicBool = AtomicBool::new(false);
 
-#[derive(PartialEq)]
+#[derive(PartialEq, serde::Deserialize, serde::Serialize)]
 pub enum CycleState {
     Arm9_1,
     Arm9_2,
     Arm7,
 }
 
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(default)]
 pub struct Emulator {
     pub arm9: Arm<Bus9>,
     pub arm7: Arm<Bus7>,
@@ -133,6 +135,21 @@ impl Emulator {
             0x027FFC80,
             self.bus9.firmware[0x3FE00..0x3FEFF].into(),
         );
+    }
+
+    pub fn load_state(&mut self, emulator: Emulator) {
+        self.arm9 = emulator.arm9;
+        self.arm7 = emulator.arm7;
+
+        self.bus9.load_state(emulator.bus9);
+        self.bus7.load_state(emulator.bus7);
+
+        self.dma9 = emulator.dma9;
+        self.dma7 = emulator.dma7;
+
+        self.shared.load_state(emulator.shared);
+
+        self.cycle_state = emulator.cycle_state;
     }
 
     pub fn reset(&mut self, load_binary: bool) {

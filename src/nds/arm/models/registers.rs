@@ -1,4 +1,4 @@
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, serde::Deserialize, serde::Serialize)]
 pub struct Registers(pub [u32; 16]);
 
 impl Registers {

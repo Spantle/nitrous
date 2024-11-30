@@ -8,7 +8,7 @@ use vram::VramBanks;
 
 use crate::nds::bus::{bus7::Bus7, bus9::Bus9};
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct Gpus {
     pub dispstat: DispStat, // 0x04000004
     pub vcount: u16,        // 0x04000006

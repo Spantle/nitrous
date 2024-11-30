@@ -1,7 +1,7 @@
 use crate::nds::{interrupts::Interrupts, Bits};
 
 // I could've made this a generic, but this actually seems nicer (considering the logging + too many generics for something this simple)
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct IpcSync {
     value9: u32,
     value7: u32,
@@ -75,6 +75,7 @@ impl IpcSync {
     }
 }
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub enum IpcsyncLog {
     // is_arm9, value
     Read(bool, u32),

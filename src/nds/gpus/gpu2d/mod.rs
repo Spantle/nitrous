@@ -7,7 +7,7 @@ pub mod rendering;
 
 // TODO: this might need to be refactored to be more like Bus
 //       where we have a trait and use an Enum for Kind rather than const ENGINE_A
-
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Gpu2d<const ENGINE_A: bool> {
     pub dispcnt: DispCnt,
     pub bgxcnt: [BGxCNT; 4],

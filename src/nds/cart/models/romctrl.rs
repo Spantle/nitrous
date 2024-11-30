@@ -1,7 +1,7 @@
 use crate::nds::{interrupts::Interrupts, Bits};
 
 // I have to stop writing code at 2am, this can be done a lot better
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct RomCtrl {
     value: u32,
 

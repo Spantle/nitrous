@@ -5,6 +5,7 @@ use crate::nds::{
 
 use super::models::{Mst, Offset};
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct VramBank<const ID: u8> {
     mst: Mst,
     offset: Offset,

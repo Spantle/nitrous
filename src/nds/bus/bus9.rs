@@ -11,10 +11,13 @@ use crate::nds::{
 
 use super::BusTrait;
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Bus9 {
     logger: Logger,
 
+    #[serde(skip)]
     pub bios: Vec<u8>,
+    #[serde(skip)]
     pub firmware: Vec<u8>,
     pub interrupts: Interrupts,
 
@@ -44,6 +47,12 @@ impl BusTrait for Bus9 {
         self.interrupts = Interrupts::default();
         self.timers = Timers::default();
         self.div = DividerUnit::default();
+    }
+
+    fn load_state(&mut self, bus: Self) {
+        self.interrupts = bus.interrupts;
+        self.timers = bus.timers;
+        self.div = bus.div;
     }
 
     fn load_bios(&mut self, bios: Vec<u8>) {

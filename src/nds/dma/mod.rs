@@ -5,6 +5,7 @@ use models::DmaChannel;
 use super::{arm::ArmKind, bus::BusTrait, shared::Shared, Bits, Bytes};
 
 // TODO: maybe merge dma9 and dma7 into this struct
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Dma {
     channel: [DmaChannel; 4],
 }

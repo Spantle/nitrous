@@ -3,7 +3,7 @@
 
 use crate::nds::Bits;
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct ExMem(pub u16);
 
 impl ExMem {

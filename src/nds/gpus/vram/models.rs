@@ -1,4 +1,4 @@
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug, Default, serde::Deserialize, serde::Serialize)]
 pub enum Mst {
     #[default]
     A = 0,
@@ -23,7 +23,7 @@ impl From<u8> for Mst {
     }
 }
 
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Copy, Default, serde::Deserialize, serde::Serialize)]
 pub enum Offset {
     #[default]
     A,

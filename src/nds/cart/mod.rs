@@ -6,10 +6,13 @@ mod models;
 
 // TODO: we need to stream this
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct Cartridge {
+    #[serde(skip)]
     pub loaded: bool,
+    #[serde(skip)]
     pub rom: Vec<u8>,
+    #[serde(skip)]
     pub metadata: models::Metadata,
 
     pub romctrl: RomCtrl,
@@ -29,6 +32,14 @@ impl Cartridge {
 
         self.loaded = true;
         true
+    }
+
+    pub fn load_state(&mut self, cart: Self) {
+        self.romctrl = cart.romctrl;
+        self.auxspicnt = cart.auxspicnt;
+        self.command = cart.command;
+        self.exmemcnt = cart.exmemcnt;
+        self.exmemstat = cart.exmemstat;
     }
 
     pub fn reset(&mut self) {

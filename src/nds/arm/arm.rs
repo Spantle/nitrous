@@ -6,6 +6,7 @@ use super::{
     ArmKind, ArmTrait,
 };
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Arm<Bus: BusTrait> {
     _phantom: std::marker::PhantomData<Bus>,
 

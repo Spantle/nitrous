@@ -1,6 +1,6 @@
 use super::Bits;
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct DividerUnit {
     pub control: DivisionControl,
 
@@ -185,7 +185,7 @@ fn split_lo_hi(value: u64) -> (u32, u32) {
     (value as u32, (value >> 32) as u32)
 }
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct DivisionControl(u32);
 
 impl DivisionControl {

@@ -1,6 +1,6 @@
 use super::Bits;
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct Interrupts {
     pub me: InterruptMasterEnable, // 0x04000208, IME
     pub e: InterruptFlags,         // 0x04000210, IE
@@ -13,7 +13,7 @@ impl Interrupts {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct InterruptMasterEnable(u32);
 
 impl From<u32> for InterruptMasterEnable {
@@ -33,7 +33,7 @@ impl InterruptMasterEnable {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct InterruptFlags(u32);
 
 impl From<u32> for InterruptFlags {

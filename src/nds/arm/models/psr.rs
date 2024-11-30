@@ -4,6 +4,7 @@ use bitflags::bitflags;
 
 use crate::nds::Bits;
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Psr(pub u32);
 
 bitflags! {
