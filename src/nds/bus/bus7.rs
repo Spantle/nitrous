@@ -10,9 +10,11 @@ use crate::nds::{
 
 use super::BusTrait;
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Bus7 {
     logger: Logger,
 
+    #[serde(skip)]
     pub bios: Vec<u8>,
     pub interrupts: Interrupts,
 

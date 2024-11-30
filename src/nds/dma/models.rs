@@ -6,6 +6,7 @@ use crate::nds::{arm::ArmKind, bus::BusTrait, logger, shared::Shared, Bits};
 // TODO: IRQ upon end of word count
 // TODO: maybe some edge cases? idk read gbatek lmao
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct DmaChannel {
     index: u8,
 
@@ -200,7 +201,7 @@ impl DmaChannel {
     }
 }
 
-#[derive(Clone, Copy, Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct DmaCnt(u32);
 
 impl DmaCnt {

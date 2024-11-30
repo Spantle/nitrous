@@ -1,5 +1,6 @@
 use super::{interrupts::Interrupts, logger, Bits};
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Timers {
     timers: [Timer; 4],
 }
@@ -29,6 +30,7 @@ impl Timers {
     }
 }
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Timer {
     index: u8,
 
@@ -141,7 +143,7 @@ impl Timer {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 struct TmCnt(u16);
 
 impl TmCnt {

@@ -2,7 +2,7 @@ use bitflags::bitflags;
 
 use super::Bits;
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct HaltCnt(u8);
 
 impl From<u8> for HaltCnt {

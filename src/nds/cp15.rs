@@ -1,5 +1,6 @@
 use super::Bits;
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct CP15 {
     pub inst_tcm: Vec<u8>, // 32kb
     pub data_tcm: Vec<u8>, // 16kb
@@ -32,6 +33,7 @@ impl Default for CP15 {
     }
 }
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Cp15ControlRegister(u32);
 
 impl From<u32> for Cp15ControlRegister {

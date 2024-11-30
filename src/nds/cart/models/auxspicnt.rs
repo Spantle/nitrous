@@ -1,6 +1,6 @@
 use crate::nds::Bits;
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct AuxSpiCnt(u16);
 
 impl AuxSpiCnt {

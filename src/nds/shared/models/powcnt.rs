@@ -1,6 +1,6 @@
 use crate::nds::Bits;
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct PowCnt1(u32);
 
 impl From<u32> for PowCnt1 {

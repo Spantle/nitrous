@@ -1,12 +1,14 @@
 use crate::nds::{interrupts::Interrupts, Bits};
 
 // I could've made this a generic, but this actually seems nicer (considering the logging + too many generics for something this simple)
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct IpcSync {
     value9: u32,
     value7: u32,
 
+    #[serde(skip)]
     pub log: Vec<IpcsyncLog>,
+    #[serde(skip)]
     pub logging_enabled: bool,
 
     send_irq9to7: bool,

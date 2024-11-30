@@ -2,6 +2,7 @@
 
 use crate::nds::Bits;
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct DispStat(u16);
 
 impl Default for DispStat {

@@ -29,6 +29,7 @@ pub trait LoggerTrait {
     fn log_error_once<T: Into<String> + Display>(&self, content: T);
 }
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct Logger(pub LogSource);
 
 pub struct FakeLogger;
@@ -87,7 +88,7 @@ pub enum LogKind {
     Error,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, serde::Deserialize, serde::Serialize)]
 pub enum LogSource {
     Emu,
     Arm9(u32),

@@ -4,6 +4,7 @@ use super::Registers;
 
 const ARR_SIZE: usize = 16;
 
+#[derive(serde::Deserialize, serde::Serialize)]
 pub struct StackTrace {
     pub enabled: bool,
     branch_history: VecDeque<u32>,

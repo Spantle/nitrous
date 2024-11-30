@@ -2,7 +2,7 @@ use std::collections::VecDeque;
 
 use crate::nds::{interrupts::Interrupts, Bits};
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct IpcFifo {
     cnt9: IpcFifoCnt,
     cnt7: IpcFifoCnt,
@@ -15,7 +15,7 @@ pub struct IpcFifo {
     did_receive: bool,
 }
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 struct IpcFifoCnt {
     send_fifo_empty_irq: bool,
     receive_fifo_not_empty_irq: bool,

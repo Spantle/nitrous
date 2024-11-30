@@ -12,13 +12,15 @@ use super::{
 
 static IS_EMULATOR_RUNNING: AtomicBool = AtomicBool::new(false);
 
-#[derive(PartialEq)]
+#[derive(PartialEq, serde::Deserialize, serde::Serialize)]
 pub enum CycleState {
     Arm9_1,
     Arm9_2,
     Arm7,
 }
 
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(default)]
 pub struct Emulator {
     pub arm9: Arm<Bus9>,
     pub arm7: Arm<Bus7>,

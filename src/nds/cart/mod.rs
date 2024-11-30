@@ -6,10 +6,13 @@ mod models;
 
 // TODO: we need to stream this
 
-#[derive(Default)]
+#[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct Cartridge {
+    #[serde(skip)]
     pub loaded: bool,
+    #[serde(skip)]
     pub rom: Vec<u8>,
+    #[serde(skip)]
     pub metadata: models::Metadata,
 
     pub romctrl: RomCtrl,
