@@ -519,13 +519,6 @@ impl BusTrait for Bus9 {
                 }
             }
 
-            0x06400000..=0x067FFFFF => self.logger.log_warn_once(format_debug!(
-                "OBJ VRAM not implemented (W{} {:#010X}:{:#010X})",
-                T,
-                addr,
-                value.into_word()
-            )),
-
             0x07000000..=0x07FFFFFF => self.logger.log_warn_once(format_debug!(
                 "OAM not implemented (W{} {:#010X}:{:#010X})",
                 T,
