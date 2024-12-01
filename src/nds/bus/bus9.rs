@@ -528,12 +528,15 @@ impl BusTrait for Bus9 {
                 }
             }
 
-            0x07000000..=0x07FFFFFF => self.logger.log_warn_once(format_debug!(
-                "OAM not implemented (W{} {:#010X}:{:#010X})",
-                T,
-                addr,
-                value.into_word()
-            )),
+            0x07000000..=0x07FFFFFF => {
+                let addr = (addr - 0x07000000) % 0x800;
+                if addr < 0x400 {
+                    shared.gpus.a.oam[addr..addr + T].copy_from_slice(&value);
+                } else {
+                    let addr = addr - 0x400;
+                    shared.gpus.b.oam[addr..addr + T].copy_from_slice(&value);
+                }
+            }
 
             0xFFFF0000..=0xFFFF7FFF => {
                 let addr = addr - 0xFFFF0000;
