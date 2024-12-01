@@ -20,6 +20,8 @@ pub struct Bus7 {
 
     pub timers: Timers,
     pub wram7: Vec<u8>, // 64kb
+
+    pub rcnt: u16,
 }
 
 impl Default for Bus7 {
@@ -32,6 +34,8 @@ impl Default for Bus7 {
 
             timers: Timers::default(),
             wram7: vec![0; 1024 * 64],
+
+            rcnt: 0,
         }
     }
 }
@@ -167,14 +171,7 @@ impl BusTrait for Bus7 {
             0x0400010E..=0x0400010F => self.timers.get(3).get_control().to_bytes::<T>(),
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
-            0x04000134..=0x04000135 => {
-                self.logger.log_warn_once(format_debug!(
-                    "RCNT not implemented (R{} {:#010X})",
-                    T,
-                    addr
-                ));
-                bytes
-            }
+            0x04000134..=0x04000135 => self.rcnt.to_bytes::<T>(),
             0x04000136..=0x04000137 => shared.extkeyin.value().to_bytes::<T>(),
             0x04000138 => {
                 self.logger.log_warn_once(format_debug!(
@@ -289,7 +286,7 @@ impl BusTrait for Bus7 {
             0x0400010C..=0x0400010D => self.timers.get_mut(3).set_l(value.into_halfword()),
             0x0400010E..=0x0400010F => self.timers.get_mut(3).set_h(value.into_halfword()),
 
-            0x04000134..=0x04000135 => {} // Debug RCNT, doesn't really do anything apparently
+            0x04000134..=0x04000135 => self.rcnt = value.into_halfword(),
             0x04000138 => self.logger.log_warn_once(format_debug!(
                 "RTC not implemented (W{} {:#010X}:{:#010X})",
                 T,
