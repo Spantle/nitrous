@@ -311,10 +311,9 @@ impl BusTrait for Bus9 {
                     return bytes;
                 }
 
-                self.logger.log_error_once(format_debug!(
+                self.logger.log_error_once(format!(
                     "Invalid read {} byte(s) at address {:#010X}",
-                    T,
-                    addr
+                    T, addr
                 ));
                 bytes
             }
@@ -347,16 +346,39 @@ impl BusTrait for Bus9 {
             0x04001000..=0x04001003 => shared.gpus.b.dispcnt = value.into_word().into(),
             0x04000004..=0x04000005 => shared.gpus.dispstat = value.into_halfword().into(),
 
-            0x04000008..=0x04000009 => shared.gpus.a.bgxcnt[0] = value.into_halfword().into(),
-            0x0400000A..=0x0400000B => shared.gpus.a.bgxcnt[1] = value.into_halfword().into(),
-            0x0400000C..=0x0400000D => shared.gpus.a.bgxcnt[2] = value.into_halfword().into(),
-            0x0400000E..=0x0400000F => shared.gpus.a.bgxcnt[3] = value.into_halfword().into(),
+            0x04000008..=0x0400000F => {
+                for i in 0..T {
+                    let value = value[i] as u16;
+                    match addr + i {
+                        0x04000008 => shared.gpus.a.bgxcnt[0].0.set_bits(0, 7, value),
+                        0x04000009 => shared.gpus.a.bgxcnt[0].0.set_bits(8, 15, value),
+                        0x0400000A => shared.gpus.a.bgxcnt[1].0.set_bits(0, 7, value),
+                        0x0400000B => shared.gpus.a.bgxcnt[1].0.set_bits(8, 15, value),
+                        0x0400000C => shared.gpus.a.bgxcnt[2].0.set_bits(0, 7, value),
+                        0x0400000D => shared.gpus.a.bgxcnt[2].0.set_bits(8, 15, value),
+                        0x0400000E => shared.gpus.a.bgxcnt[3].0.set_bits(0, 7, value),
+                        0x0400000F => shared.gpus.a.bgxcnt[3].0.set_bits(8, 15, value),
+                        _ => unreachable!(),
+                    }
+                }
+            }
 
-            0x04001008..=0x04001009 => shared.gpus.b.bgxcnt[0] = value.into_halfword().into(),
-            0x0400100A..=0x0400100B => shared.gpus.b.bgxcnt[1] = value.into_halfword().into(),
-            0x0400100C..=0x0400100D => shared.gpus.b.bgxcnt[2] = value.into_halfword().into(),
-            0x0400100E..=0x0400100F => shared.gpus.b.bgxcnt[3] = value.into_halfword().into(),
-
+            0x04001008..=0x0400100F => {
+                for i in 0..T {
+                    let value = value[i] as u16;
+                    match addr + i {
+                        0x04001008 => shared.gpus.b.bgxcnt[0].0.set_bits(0, 7, value),
+                        0x04001009 => shared.gpus.b.bgxcnt[0].0.set_bits(8, 15, value),
+                        0x0400100A => shared.gpus.b.bgxcnt[1].0.set_bits(0, 7, value),
+                        0x0400100B => shared.gpus.b.bgxcnt[1].0.set_bits(8, 15, value),
+                        0x0400100C => shared.gpus.b.bgxcnt[2].0.set_bits(0, 7, value),
+                        0x0400100D => shared.gpus.b.bgxcnt[2].0.set_bits(8, 15, value),
+                        0x0400100E => shared.gpus.b.bgxcnt[3].0.set_bits(0, 7, value),
+                        0x0400100F => shared.gpus.b.bgxcnt[3].0.set_bits(8, 15, value),
+                        _ => unreachable!(),
+                    }
+                }
+            }
             0x04000010..=0x04000013 => {
                 shared.gpus.a.bgofs[0].set_part::<T>(addr as u32 - 0x04000010, value.into_word())
             }

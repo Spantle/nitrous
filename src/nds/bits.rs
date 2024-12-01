@@ -88,6 +88,10 @@ impl<const T: usize> Bytes for [u8; T] {
 
     #[inline(always)]
     fn into_halfword(self) -> u16 {
+        if T > 2 {
+            panic!("attempted to convert {} bytes into a halfword", T);
+        }
+
         let mut bytes = [0; 2];
         let len = T.min(2);
         bytes[..len].copy_from_slice(&self[..len]);

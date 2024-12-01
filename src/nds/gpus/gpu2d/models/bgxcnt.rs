@@ -1,7 +1,7 @@
 use crate::nds::Bits;
 
 #[derive(Default, serde::Deserialize, serde::Serialize)]
-pub struct BGxCNT(u16);
+pub struct BGxCNT(pub u16);
 
 impl From<u16> for BGxCNT {
     fn from(value: u16) -> Self {

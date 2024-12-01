@@ -232,10 +232,9 @@ impl BusTrait for Bus7 {
                     }
                 }
 
-                self.logger.log_error_once(format_debug!(
+                self.logger.log_error_once(format!(
                     "Invalid read {} byte(s) at address {:#010X}",
-                    T,
-                    addr
+                    T, addr
                 ));
                 bytes
             }
