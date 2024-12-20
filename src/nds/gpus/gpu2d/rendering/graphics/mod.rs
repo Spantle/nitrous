@@ -2,7 +2,7 @@ mod background;
 
 use crate::nds::{
     gpus::{
-        gpu2d::{BackgroundResults, Gpu2d, GpuRenderResult},
+        gpu2d::{models::ColorSpecialEffect, BackgroundResults, Gpu2d, GpuRenderResult},
         vram::VramBanks,
     },
     Bits, IfElse,
@@ -39,11 +39,16 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                     bg_pixels[3] = self.render_background::<3>(vram_banks);
                 }
 
+                let colorfx = self.bldcnt.get_color_special_effect();
+                let eva = self.bldalpha[0].ev();
+                let evb = self.bldalpha[1].ev();
+
                 let mut backdrop_colour_bytes = [0; 2];
                 backdrop_colour_bytes.copy_from_slice(&self.palette[0..2]);
                 let backdrop_colour = u16::from_le_bytes(backdrop_colour_bytes);
                 let mut pixels: Vec<u16> = vec![backdrop_colour; 256 * 192];
-                for id in ids {
+                for (i, id) in ids.iter().enumerate() {
+                    let id = *id;
                     if !bg_pixels[id].1 {
                         continue;
                     }
@@ -57,6 +62,20 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                         self.bgofs[id].get_bits(16, 31) as usize,
                     );
 
+                    let colorfx = match colorfx {
+                        ColorSpecialEffect::AlphaBlending => {
+                            if i != 0
+                                && self.bldcnt.get_first_target_pixel(ids[i] as u16)
+                                && self.bldcnt.get_second_target_pixel(ids[i - 1] as u16)
+                            {
+                                ColorSpecialEffect::AlphaBlending
+                            } else {
+                                ColorSpecialEffect::None
+                            }
+                        }
+                        _ => ColorSpecialEffect::None,
+                    };
+
                     (0..256).for_each(|x| {
                         (0..192).for_each(|y| {
                             let i = y * 256 + x;
@@ -65,8 +84,20 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
 
                             let new_pixel = bg[x][y];
                             let existing_pixel = pixels[i];
-                            let is_transparent = !new_pixel.get_bit(15); // transparent: 0, normal: 1
-                            pixels[i] = is_transparent.if_else(existing_pixel, new_pixel)
+                            match colorfx {
+                                ColorSpecialEffect::AlphaBlending => {
+                                    pixels[i] = ColorSpecialEffect::alpha_blend(
+                                        new_pixel,
+                                        existing_pixel,
+                                        eva,
+                                        evb,
+                                    );
+                                }
+                                _ => {
+                                    let is_transparent = !new_pixel.get_bit(15); // transparent: 0, normal: 1
+                                    pixels[i] = is_transparent.if_else(existing_pixel, new_pixel);
+                                }
+                            }
                         });
                     });
                 }

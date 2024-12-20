@@ -187,6 +187,14 @@ impl BusTrait for Bus9 {
             0x0400100C..=0x0400100D => shared.gpus.b.bgxcnt[2].value().to_bytes::<T>(),
             0x0400100E..=0x0400100F => shared.gpus.b.bgxcnt[3].value().to_bytes::<T>(),
 
+            0x04000050..=0x04000051 => shared.gpus.a.bldcnt.value().to_bytes::<T>(),
+            0x04000052 => shared.gpus.a.bldalpha[0].value().to_bytes::<T>(),
+            0x04000053 => shared.gpus.a.bldalpha[1].value().to_bytes::<T>(),
+
+            0x04001050..=0x04001051 => shared.gpus.b.bldcnt.value().to_bytes::<T>(),
+            0x04001052 => shared.gpus.b.bldalpha[0].value().to_bytes::<T>(),
+            0x04001053 => shared.gpus.b.bldalpha[1].value().to_bytes::<T>(),
+
             0x04000060..=0x04000061 => {
                 self.logger.log_warn_once(format_debug!(
                     "GPU3D not implemented (R{} {:#010X})",
@@ -417,18 +425,31 @@ impl BusTrait for Bus9 {
                 addr,
                 value.into_word()
             )),
-            0x04000050..=0x04000058 => self.logger.log_warn_once(format_debug!(
-                "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
-                T,
-                addr,
-                value.into_word()
-            )),
-            0x04001050..=0x04001058 => self.logger.log_warn_once(format_debug!(
-                "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
-                T,
-                addr,
-                value.into_word()
-            )),
+
+            0x04000050..=0x04000053 => {
+                for i in 0..T {
+                    let value = value[i];
+                    match addr + i {
+                        0x04000050 => shared.gpus.a.bldcnt.0.set_bits(0, 7, value as u16),
+                        0x04000051 => shared.gpus.a.bldcnt.0.set_bits(8, 15, value as u16),
+                        0x04000052 => shared.gpus.a.bldalpha[0] = value.into(),
+                        0x04000053 => shared.gpus.a.bldalpha[1] = value.into(),
+                        _ => unreachable!(),
+                    }
+                }
+            }
+            0x04001050..=0x04001053 => {
+                for i in 0..T {
+                    let value = value[i];
+                    match addr + i {
+                        0x04001050 => shared.gpus.b.bldcnt.0.set_bits(0, 7, value as u16),
+                        0x04001051 => shared.gpus.b.bldcnt.0.set_bits(8, 15, value as u16),
+                        0x04001052 => shared.gpus.b.bldalpha[0] = value.into(),
+                        0x04001053 => shared.gpus.b.bldalpha[1] = value.into(),
+                        _ => unreachable!(),
+                    }
+                }
+            }
 
             0x0400005C..=0x0400005F => {} // not real
 
