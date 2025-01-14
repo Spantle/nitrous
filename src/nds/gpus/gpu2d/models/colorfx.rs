@@ -49,16 +49,19 @@ pub enum ColorSpecialEffect {
 
 impl ColorSpecialEffect {
     pub fn alpha_blend(first: u16, second: u16, eva: f32, evb: f32) -> u16 {
-        if !first.get_bit(15) {
-            return second;
+        if !first.get_bit(15) || !second.get_bit(15) {
+            if !first.get_bit(15) {
+                return second;
+            }
+            return first;
         }
 
-        let r = 31_f32.min(first.get_bits(0, 4) as f32 * evb + second.get_bits(0, 4) as f32 * eva)
+        let r = 31_f32.min(first.get_bits(0, 4) as f32 * eva + second.get_bits(0, 4) as f32 * evb)
             as u16;
-        let g = 31_f32.min(first.get_bits(5, 9) as f32 * evb + second.get_bits(5, 9) as f32 * eva)
+        let g = 31_f32.min(first.get_bits(5, 9) as f32 * eva + second.get_bits(5, 9) as f32 * evb)
             as u16;
         let b = 31_f32
-            .min(first.get_bits(10, 14) as f32 * evb + second.get_bits(10, 14) as f32 * eva)
+            .min(first.get_bits(10, 14) as f32 * eva + second.get_bits(10, 14) as f32 * evb)
             as u16;
         let mut result = 0;
         result.set_bits(0, 4, r);

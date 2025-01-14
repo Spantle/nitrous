@@ -426,7 +426,7 @@ impl BusTrait for Bus9 {
                 value.into_word()
             )),
 
-            0x04000050..=0x04000053 => {
+            0x04000050..=0x04000055 => {
                 for i in 0..T {
                     let value = value[i];
                     match addr + i {
@@ -434,11 +434,13 @@ impl BusTrait for Bus9 {
                         0x04000051 => shared.gpus.a.bldcnt.0.set_bits(8, 15, value as u16),
                         0x04000052 => shared.gpus.a.bldalpha[0] = value.into(),
                         0x04000053 => shared.gpus.a.bldalpha[1] = value.into(),
-                        _ => unreachable!(),
+                        0x04000054 => shared.gpus.a.bldy[0] = value,
+                        0x04000055 => shared.gpus.a.bldy[1] = value,
+                        _ => {}
                     }
                 }
             }
-            0x04001050..=0x04001053 => {
+            0x04001050..=0x04001055 => {
                 for i in 0..T {
                     let value = value[i];
                     match addr + i {
@@ -446,7 +448,9 @@ impl BusTrait for Bus9 {
                         0x04001051 => shared.gpus.b.bldcnt.0.set_bits(8, 15, value as u16),
                         0x04001052 => shared.gpus.b.bldalpha[0] = value.into(),
                         0x04001053 => shared.gpus.b.bldalpha[1] = value.into(),
-                        _ => unreachable!(),
+                        0x04001054 => shared.gpus.b.bldy[0] = value,
+                        0x04001055 => shared.gpus.b.bldy[1] = value,
+                        _ => {}
                     }
                 }
             }

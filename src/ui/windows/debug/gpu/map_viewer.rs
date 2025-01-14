@@ -1,7 +1,7 @@
 use crate::{
     nds::{
         gpus::gpu2d::{BackgroundResult, BackgroundResults},
-        Bits,
+        Bits, IfElse,
     },
     ui::NitrousWindow,
 };
@@ -63,7 +63,12 @@ impl MapViewerWindow {
                 let g = ((pixel.get_bits(5, 9) as f32) * COLOUR_MULT) as u8;
                 let b = ((pixel.get_bits(10, 14) as f32) * COLOUR_MULT) as u8;
 
-                pixels[i] = egui::Color32::from_rgba_premultiplied(r, g, b, 255);
+                pixels[i] = egui::Color32::from_rgba_premultiplied(
+                    r,
+                    g,
+                    b,
+                    pixel.get_bit(15).if_else(255, 0),
+                );
             });
         });
 

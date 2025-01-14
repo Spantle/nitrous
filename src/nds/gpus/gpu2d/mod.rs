@@ -15,6 +15,7 @@ pub struct Gpu2d<const ENGINE_A: bool> {
     pub bgofs: [u32; 4],
     pub bldcnt: BldCnt,
     pub bldalpha: [BldAlpha; 2],
+    pub bldy: [u8; 2],
 
     pub palette: Vec<u8>,
     pub oam: Vec<u8>,
@@ -29,6 +30,7 @@ impl<const ENGINE_A: bool> Default for Gpu2d<ENGINE_A> {
             bgofs: [0; 4],
             bldcnt: BldCnt::default(),
             bldalpha: core::array::from_fn(|_| BldAlpha::default()),
+            bldy: [0; 2],
 
             palette: vec![0; 1024],
             oam: vec![0; 1024],
@@ -45,6 +47,7 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
             bgofs: [0; 4],
             bldcnt: BldCnt::default(),
             bldalpha: core::array::from_fn(|_| BldAlpha::default()),
+            bldy: [0; 2],
 
             palette: vec![0; 0],
             oam: vec![0; 0],
