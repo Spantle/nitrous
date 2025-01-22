@@ -1,4 +1,5 @@
 mod background;
+mod obj;
 
 use crate::nds::{
     gpus::{
@@ -23,21 +24,23 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                         .cmp(&self.bgxcnt[a].get_priority())
                         .then(b.cmp(&a))
                 });
+                ids.push(4);
 
-                let mut bg_pixels: BackgroundResults = vec![(vec![vec![]], false); 4];
+                let mut pixel_layers: BackgroundResults = vec![(vec![vec![]], false); 5];
                 if self.dispcnt.get_screen_display_bg0() && !self.dispcnt.get_bg0_2d_3d_selection()
                 {
-                    bg_pixels[0] = self.render_background::<0>(vram_banks);
+                    pixel_layers[0] = self.render_background::<0>(vram_banks);
                 }
                 if self.dispcnt.get_screen_display_bg1() {
-                    bg_pixels[1] = self.render_background::<1>(vram_banks);
+                    pixel_layers[1] = self.render_background::<1>(vram_banks);
                 }
                 if self.dispcnt.get_screen_display_bg2() {
-                    bg_pixels[2] = self.render_background::<2>(vram_banks);
+                    pixel_layers[2] = self.render_background::<2>(vram_banks);
                 }
                 if self.dispcnt.get_screen_display_bg3() {
-                    bg_pixels[3] = self.render_background::<3>(vram_banks);
+                    pixel_layers[3] = self.render_background::<3>(vram_banks);
                 }
+                pixel_layers[4] = self.render_objs(vram_banks);
 
                 let colorfx = self.bldcnt.get_color_special_effect();
                 let eva = self.bldalpha[0].ev();
@@ -49,57 +52,73 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                 let mut pixels: Vec<u16> = vec![backdrop_colour; 256 * 192];
                 for (i, id) in ids.iter().enumerate() {
                     let id = *id;
-                    if !bg_pixels[id].1 {
+                    if !pixel_layers[id].1 {
                         continue;
                     }
 
-                    let bg = &bg_pixels[id].0;
-                    let bg_width = bg.len();
-                    let bg_height = bg[0].len();
+                    if id < 4 {
+                        let bg = &pixel_layers[id].0;
+                        let bg_width = bg.len();
+                        let bg_height = bg[0].len();
 
-                    let (bg_x_offset, bg_y_offset) = (
-                        self.bgofs[id].get_bits(0, 15) as usize,
-                        self.bgofs[id].get_bits(16, 31) as usize,
-                    );
+                        let (bg_x_offset, bg_y_offset) = (
+                            self.bgofs[id].get_bits(0, 15) as usize,
+                            self.bgofs[id].get_bits(16, 31) as usize,
+                        );
 
-                    let colorfx = match colorfx {
-                        ColorSpecialEffect::AlphaBlending => {
-                            if i != 0
-                                && self.bldcnt.get_first_target_pixel(ids[i] as u16)
-                                && self.bldcnt.get_second_target_pixel(ids[i - 1] as u16)
-                            {
-                                ColorSpecialEffect::AlphaBlending
-                            } else {
-                                ColorSpecialEffect::None
-                            }
-                        }
-                        _ => ColorSpecialEffect::None,
-                    };
-
-                    (0..256).for_each(|x| {
-                        (0..192).for_each(|y| {
-                            let i = y * 256 + x;
-                            let x = (x + bg_x_offset) % bg_width;
-                            let y = (y + bg_y_offset) % bg_height;
-
-                            let new_pixel = bg[x][y];
-                            let existing_pixel = pixels[i];
-                            match colorfx {
-                                ColorSpecialEffect::AlphaBlending => {
-                                    pixels[i] = ColorSpecialEffect::alpha_blend(
-                                        new_pixel,
-                                        existing_pixel,
-                                        eva,
-                                        evb,
-                                    );
-                                }
-                                _ => {
-                                    let is_transparent = !new_pixel.get_bit(15); // transparent: 0, normal: 1
-                                    pixels[i] = is_transparent.if_else(existing_pixel, new_pixel);
+                        let colorfx = match colorfx {
+                            ColorSpecialEffect::AlphaBlending => {
+                                if i != 0
+                                    && self.bldcnt.get_first_target_pixel(ids[i] as u16)
+                                    && self.bldcnt.get_second_target_pixel(ids[i - 1] as u16)
+                                {
+                                    ColorSpecialEffect::AlphaBlending
+                                } else {
+                                    ColorSpecialEffect::None
                                 }
                             }
+                            _ => ColorSpecialEffect::None,
+                        };
+
+                        (0..256).for_each(|x| {
+                            (0..192).for_each(|y| {
+                                let i = y * 256 + x;
+                                let x = (x + bg_x_offset) % bg_width;
+                                let y = (y + bg_y_offset) % bg_height;
+
+                                let new_pixel = bg[x][y];
+                                let existing_pixel = pixels[i];
+                                match colorfx {
+                                    ColorSpecialEffect::AlphaBlending => {
+                                        pixels[i] = ColorSpecialEffect::alpha_blend(
+                                            new_pixel,
+                                            existing_pixel,
+                                            eva,
+                                            evb,
+                                        );
+                                    }
+                                    _ => {
+                                        let is_transparent = !new_pixel.get_bit(15); // transparent: 0, normal: 1
+                                        pixels[i] =
+                                            is_transparent.if_else(existing_pixel, new_pixel);
+                                    }
+                                }
+                            });
                         });
-                    });
+                    } else {
+                        let bg = &pixel_layers[id].0;
+
+                        (0..256).for_each(|x| {
+                            (0..192).for_each(|y| {
+                                let i = y * 256 + x;
+
+                                let new_pixel = bg[x][y];
+                                let existing_pixel = pixels[i];
+                                let is_transparent = !new_pixel.get_bit(15); // transparent: 0, normal: 1
+                                pixels[i] = is_transparent.if_else(existing_pixel, new_pixel);
+                            });
+                        });
+                    }
                 }
 
                 let image_data = egui::ImageData::from(egui::ColorImage {
@@ -115,7 +134,7 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                     size: [256, 192],
                 });
 
-                GpuRenderResult::new(image_data, bg_pixels)
+                GpuRenderResult::new(image_data, pixel_layers)
             }
             _ => GpuRenderResult::new_empty(egui::ImageData::from(egui::ColorImage {
                 pixels: vec![egui::Color32::from_rgb(0, 0, 100 + 10 * bg_mode); 256 * 192],
