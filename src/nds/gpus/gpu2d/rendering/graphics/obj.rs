@@ -28,10 +28,11 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                 continue;
             }
 
-            let character_name = oam2.get_bits(0, 9);
+            let character_name = oam2.get_bits(0, 9) as usize;
             let palette_number = oam2.get_bits(12, 15);
             let palette_offset_address = palette_number << 4;
             let (width, height) = match (oam0.get_bits(14, 15), oam1.get_bits(14, 15)) {
+                // shape, size
                 (0, 0) => (8, 8),
                 (0, 1) => (16, 16),
                 (0, 2) => (32, 32),
@@ -50,8 +51,8 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
 
             let x = oam1.get_bits(0, 8) as usize;
             let y = oam0.get_bits(0, 7) as usize;
-            for obj_quad_x in 0..width / 8 {
-                for obj_quad_y in 0..height / 8 {
+            for obj_quad_y in 0..height / 8 {
+                for obj_quad_x in 0..width / 8 {
                     // let obj_bytes = vram_banks.read_slice::<64>(
                     //     obj_vram_base
                     //         + (character_name as usize + obj_quad_x + (obj_quad_y * width))
@@ -59,14 +60,12 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                     //             * 8
                     //             * 2,
                     // );
-                    let character_name_x = ((character_name as usize % 32) + obj_quad_x) * 64;
-                    let character_name_y = ((character_name as usize / 32) + obj_quad_y) * 64 * 32;
-                    let obj_bytes = vram_banks.read_slice::<64>(
-                        obj_vram_base + (character_name_x + (character_name_y * 8)) as usize,
-                    );
-                    let obj_bytes = obj_bytes.unwrap_or([0; 64]);
-                    (0..obj_bytes.len()).for_each(|obj_byte_i| {
-                        if true {
+                    let obj_offset =
+                        (character_name * 4 + obj_quad_x + (obj_quad_y * (width / 8))) * 32;
+                    let obj_bytes = vram_banks.read_slice::<32>(obj_vram_base + obj_offset);
+                    let obj_bytes = obj_bytes.unwrap_or([0; 32]);
+                    (0..32).for_each(|obj_byte_i| {
+                        if false {
                             let obj_byte = obj_bytes[obj_byte_i];
                             let palette_address =
                                 (512 + obj_byte as usize * 2) | palette_offset_address as usize;
@@ -115,9 +114,9 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                             l_color.set_bit(15, true);
                             r_color.set_bit(15, true);
 
-                            let l_obj_pixel_x = obj_byte_i * 2 % 8;
-                            let r_obj_pixel_x = (obj_byte_i * 2 + 1) % 8;
-                            let obj_pixel_y = obj_byte_i / 8;
+                            let l_obj_pixel_x = (obj_byte_i * 2) % 8;
+                            let r_obj_pixel_x = ((obj_byte_i * 2) + 1) % 8;
+                            let obj_pixel_y = obj_byte_i * 2 / 8;
 
                             let l_pixel_x = x + (obj_quad_x * 8) + l_obj_pixel_x;
                             let r_pixel_x = x + (obj_quad_x * 8) + r_obj_pixel_x;
