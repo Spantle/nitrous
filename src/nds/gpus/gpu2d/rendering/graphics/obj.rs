@@ -1,14 +1,11 @@
 use crate::nds::{
-    gpus::{
-        gpu2d::{BackgroundResult, Gpu2d},
-        vram::VramBanks,
-    },
-    Bits, Bytes,
+    gpus::{gpu2d::Gpu2d, vram::VramBanks},
+    Bits, Bytes, IfElse,
 };
 
 impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
-    pub fn render_objs(&self, vram_banks: &VramBanks) -> BackgroundResult {
-        let mut pixels: Vec<Vec<u16>> = vec![vec![0; 255]; 511];
+    pub fn render_objs(&self, vram_banks: &VramBanks) -> Vec<(Vec<Vec<u16>>, bool)> {
+        let mut pixels: Vec<(Vec<Vec<u16>>, bool)> = vec![(vec![vec![0; 255]; 511], true); 4];
         let obj_vram_base: usize = if ENGINE_A { 0x06400000 } else { 0x06600000 };
         let tile_obj_mapping = self.dispcnt.get_tile_obj_mapping();
         let tile_obj_1d_boundary = self.dispcnt.get_tile_obj_1d_boundary();
@@ -31,7 +28,7 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
             }
         };
 
-        for i in 0..128 {
+        for i in (0..128).rev() {
             let addr = i * 8;
 
             let mut oam0 = [0; 2];
@@ -74,31 +71,18 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
             };
 
             let is_256x1 = oam0.get_bit(13);
+            let horizontal_flip = oam1.get_bit(12);
+            let vertical_flip = oam1.get_bit(13);
             let x = oam1.get_bits(0, 8) as usize;
             let y = oam0.get_bits(0, 7) as usize;
             for obj_quad_y in 0..(height / 8) {
                 for obj_quad_x in 0..(width / 8) {
-                    // let obj_bytes = vram_banks.read_slice::<64>(
-                    //     obj_vram_base
-                    //         + (character_name as usize + obj_quad_x + (obj_quad_y * width))
-                    //             * 8
-                    //             * 8
-                    //             * 2,
-                    // );
-                    // let obj_offset =
-                    //     (character_name * 4 + obj_quad_x + (obj_quad_y * (width / 8))) * 32;
-                    // let obj_bytes = vram_banks.read_slice::<32>(obj_vram_base + obj_offset);
-                    // let obj_bytes = obj_bytes.unwrap_or([0; 32]);
-                    // (0..32).for_each(|obj_byte_i| {
                     // 16/16 vs 256/1
                     if is_256x1 {
                         if is_extended_palette {
-                            println!("obj extended palette");
+                            // TODO: obj extended palette
+                            // println!("obj extended palette");
                         } else {
-                            // let tile_address = (character_name
-                            //     + obj_quad_x
-                            //     + (obj_quad_y * ((width / 8) + character_name)))
-                            //     * 64;
                             let tile_address = (character_name * (boundary_value / 32)
                                 + obj_quad_x
                                 + (obj_quad_y * (width / 8)))
@@ -114,31 +98,22 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                                     &self.palette[palette_address..palette_address + 2],
                                 );
                                 let mut color = u16::from_le_bytes(obj_bytes);
-                                color.set_bit(15, true);
+                                color.set_bit(15, obj_byte != 0);
 
                                 let obj_pixel_x = obj_byte_i % 8;
                                 let obj_pixel_y = obj_byte_i / 8;
                                 let pixel_x = x + (obj_quad_x * 8) + obj_pixel_x;
                                 let pixel_y = y + (obj_quad_y * 8) + obj_pixel_y;
 
-                                // let mut color = 0b1_00000_00000_00000;
-                                // let priority = oam2.get_bits(10, 11);
-                                // match priority {
-                                //     0 => color.set_bits(0, 4, 0b11111),
-                                //     1 => color.set_bits(5, 9, 0b11111),
-                                //     2 => color.set_bits(10, 14, 0b11111),
-                                //     3 => color.set_bits(0, 9, 0b1111111111),
-                                //     _ => unreachable!(),
-                                // }
-
-                                pixels[pixel_x % 511][pixel_y % 255] = color;
+                                let priority = oam2.get_bits(10, 11) as usize;
+                                pixels[priority].0[pixel_x % 511][pixel_y % 255] = (obj_byte != 0)
+                                    .if_else(
+                                        color,
+                                        pixels[priority].0[pixel_x % 511][pixel_y % 255],
+                                    );
                             });
                         }
                     } else {
-                        // WORKS FOR AA TEXT
-                        // let tile_address =
-                        //     (character_name * 4 + obj_quad_x + (obj_quad_y * (width / 8))) * 32;
-
                         let tile_address = (character_name * (boundary_value / 32)
                             + obj_quad_x
                             + (obj_quad_y * (width / 8)))
@@ -175,26 +150,24 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                             let r_pixel_x = x + (obj_quad_x * 8) + r_obj_pixel_x;
                             let pixel_y = y + (obj_quad_y * 8) + obj_pixel_y;
 
-                            // let mut color = 0b1_00000_00000_00000;
-                            // let priority = oam2.get_bits(10, 11);
-                            // match priority {
-                            //     0 => color.set_bits(0, 4, 0b11111),
-                            //     1 => color.set_bits(5, 9, 0b11111),
-                            //     2 => color.set_bits(10, 14, 0b11111),
-                            //     3 => color.set_bits(0, 9, 0b1111111111),
-                            //     _ => unreachable!(),
-                            // }
-
-                            pixels[l_pixel_x % 511][pixel_y % 255] = l_color;
-                            pixels[r_pixel_x % 511][pixel_y % 255] = r_color;
+                            let priority = oam2.get_bits(10, 11) as usize;
+                            pixels[priority].0[l_pixel_x % 511][pixel_y % 255] =
+                                (obj_byte != 0 && l_obj_palette_i != 0).if_else(
+                                    l_color,
+                                    pixels[priority].0[l_pixel_x % 511][pixel_y % 255],
+                                );
+                            pixels[priority].0[r_pixel_x % 511][pixel_y % 255] =
+                                (obj_byte != 0 && r_obj_palette_i != 0).if_else(
+                                    r_color,
+                                    pixels[priority].0[r_pixel_x % 511][pixel_y % 255],
+                                );
                         });
                     }
-                    // });
                 }
             }
         }
 
-        (pixels, true)
+        pixels
     }
 
     // this sucks
