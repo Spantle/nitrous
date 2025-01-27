@@ -134,7 +134,7 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                     size: [256, 192],
                 });
 
-                GpuRenderResult::new(image_data, pixel_layers)
+                GpuRenderResult::new(image_data, pixel_layers, self.generate_tilemap(vram_banks))
             }
             _ => GpuRenderResult::new_empty(egui::ImageData::from(egui::ColorImage {
                 pixels: vec![egui::Color32::from_rgb(0, 0, 100 + 10 * bg_mode); 256 * 192],

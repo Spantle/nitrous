@@ -15,6 +15,7 @@ impl DispCnt {
     const BG_MODE_START: u32 = 0;
     const BG_MODE_END: u32 = 2;
     const BG0_2D_3D_SELECTION: u32 = 3;
+    const TILE_OBJ_MAPPING: u32 = 4;
 
     const SCREEN_DISPLAY_BG0: u32 = 8;
     const SCREEN_DISPLAY_BG1: u32 = 9;
@@ -25,12 +26,15 @@ impl DispCnt {
     const DISPLAY_MODE_END: u32 = 17;
     const VRAM_BLOCK_START: u32 = 18;
     const VRAM_BLOCK_END: u32 = 19;
+    const TILE_OBJ_1D_BOUNARY_START: u32 = 20;
+    const TILE_OBJ_1D_BOUNARY_END: u32 = 21;
 
     const CHARACTER_BASE_START: u32 = 24;
     const CHARACTER_BASE_END: u32 = 26;
     const SCREEN_BASE_START: u32 = 27;
     const SCREEN_BASE_END: u32 = 29;
     const BG_EXTENDED_PALETTES_OFFSET: u32 = 30;
+    const OBJ_EXTENDED_PALETTES_OFFSET: u32 = 31;
 
     pub fn value(&self) -> u32 {
         self.0
@@ -42,6 +46,10 @@ impl DispCnt {
 
     pub fn get_bg0_2d_3d_selection(&self) -> bool {
         self.0.get_bit(Self::BG0_2D_3D_SELECTION)
+    }
+
+    pub fn get_tile_obj_mapping(&self) -> bool {
+        self.0.get_bit(Self::TILE_OBJ_MAPPING)
     }
 
     pub fn get_screen_display_bg0(&self) -> bool {
@@ -72,6 +80,13 @@ impl DispCnt {
             .get_bits(Self::VRAM_BLOCK_START, Self::VRAM_BLOCK_END)
     }
 
+    pub fn get_tile_obj_1d_boundary(&self) -> u32 {
+        self.0.get_bits(
+            Self::TILE_OBJ_1D_BOUNARY_START,
+            Self::TILE_OBJ_1D_BOUNARY_END,
+        )
+    }
+
     pub fn get_character_base(&self) -> u32 {
         self.0
             .get_bits(Self::CHARACTER_BASE_START, Self::CHARACTER_BASE_END)
@@ -84,6 +99,10 @@ impl DispCnt {
 
     pub fn get_bg_extended_palettes(&self) -> bool {
         self.0.get_bit(Self::BG_EXTENDED_PALETTES_OFFSET)
+    }
+
+    pub fn get_obj_extended_palettes(&self) -> bool {
+        self.0.get_bit(Self::OBJ_EXTENDED_PALETTES_OFFSET)
     }
 }
 

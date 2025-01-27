@@ -26,7 +26,7 @@ impl PaletteViewerWindow {
                     (0..16).for_each(|palette_i| {
                         body.row(16.0, |mut row| {
                             (0..16).for_each(|color_i| {
-                                let palette_address = (palette_i * 16 + color_i) * 2;
+                                let palette_address = 512 + (palette_i * 16 + color_i) * 2;
                                 let mut color_bytes = [0; 2];
                                 color_bytes.copy_from_slice(
                                     &palette_a[palette_address..palette_address + 2],

@@ -16,7 +16,10 @@ use super::{
             arm9_info::Arm9LegacyInfoWindow,
             benchmark::BenchmarkWindow,
             emulation_log::EmulationLogWindow,
-            gpu::{map_viewer::MapViewerWindow, palette_viewer::PaletteViewerWindow},
+            gpu::{
+                map_viewer::MapViewerWindow, palette_viewer::PaletteViewerWindow,
+                tile_viewer::TileViewerWindow,
+            },
             ipcsync::IpcsyncLogWindow,
             memory_viewer::MemoryViewerWindow,
             register_viewer::RegisterViewerWindow,
@@ -56,6 +59,7 @@ pub struct NitrousGUI {
 
     pub gpu_map_viewer: MapViewerWindow,
     pub gpu_palette_viewer: PaletteViewerWindow,
+    pub gpu_tile_viewer: TileViewerWindow,
 
     pub benchmark: BenchmarkWindow,
     pub emulation_log: EmulationLogWindow,
@@ -104,6 +108,7 @@ impl Default for NitrousGUI {
 
             gpu_map_viewer: MapViewerWindow::default(),
             gpu_palette_viewer: PaletteViewerWindow::default(),
+            gpu_tile_viewer: TileViewerWindow::default(),
 
             benchmark: BenchmarkWindow::default(),
             emulation_log: EmulationLogWindow::default(),

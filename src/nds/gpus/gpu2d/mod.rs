@@ -61,13 +61,19 @@ pub type BackgroundResults = Vec<BackgroundResult>;
 pub struct GpuRenderResult {
     pub image_data: egui::ImageData,
     pub bgs: Option<BackgroundResults>,
+    pub tiles: (Vec<Vec<u16>>, usize),
 }
 
 impl GpuRenderResult {
-    pub fn new(image_data: egui::ImageData, bgs: BackgroundResults) -> Self {
+    pub fn new(
+        image_data: egui::ImageData,
+        bgs: BackgroundResults,
+        tiles: (Vec<Vec<u16>>, usize),
+    ) -> Self {
         Self {
             image_data,
             bgs: Some(bgs),
+            tiles,
         }
     }
 
@@ -75,6 +81,7 @@ impl GpuRenderResult {
         Self {
             image_data,
             bgs: None,
+            tiles: (vec![vec![0; 1]; 1], 0),
         }
     }
 }

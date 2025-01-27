@@ -292,6 +292,7 @@ impl NitrousGUI {
 
             ui.checkbox(&mut self.gpu_map_viewer.open, "Map Viewer (WIP)");
             ui.checkbox(&mut self.gpu_palette_viewer.open, "Palette Viewer (WIP)");
+            ui.checkbox(&mut self.gpu_tile_viewer.open, "Tile Viewer (WIP)");
         });
         ui.checkbox(&mut self.benchmark.open, "Benchmark");
         ui.checkbox(&mut self.emulation_log.open, "Emulation Log");

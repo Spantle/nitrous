@@ -103,6 +103,7 @@ impl NitrousGUI {
         });
 
         self.gpu_map_viewer.show(ctx, &engine_a_result.bgs);
+        self.gpu_tile_viewer.show(ctx, &engine_b_result.tiles);
     }
 
     fn display_windowed_screen(
