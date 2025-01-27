@@ -99,8 +99,10 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                             //     + obj_quad_x
                             //     + (obj_quad_y * ((width / 8) + character_name)))
                             //     * 64;
-                            let tile_address =
-                                (character_name * 2 + obj_quad_x + (obj_quad_y * (width / 8))) * 64;
+                            let tile_address = (character_name * (boundary_value / 32)
+                                + obj_quad_x
+                                + (obj_quad_y * (width / 8)))
+                                * 64;
                             let obj_bytes =
                                 vram_banks.read_slice::<64>(obj_vram_base + tile_address);
                             let obj_bytes = obj_bytes.unwrap_or([0; 64]);
@@ -134,9 +136,13 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                         }
                     } else {
                         // WORKS FOR AA TEXT
-                        let tile_address =
-                            (character_name * 4 + obj_quad_x + (obj_quad_y * (width / 8))) * 32;
-                        // let tile_address = (0x3E00 + obj_quad_x + (obj_quad_y * (width / 8))) * 32;
+                        // let tile_address =
+                        //     (character_name * 4 + obj_quad_x + (obj_quad_y * (width / 8))) * 32;
+
+                        let tile_address = (character_name * (boundary_value / 32)
+                            + obj_quad_x
+                            + (obj_quad_y * (width / 8)))
+                            * 32;
                         let obj_bytes = vram_banks.read_slice::<32>(obj_vram_base + tile_address);
                         let obj_bytes = obj_bytes.unwrap_or([0; 32]);
                         (0..obj_bytes.len()).for_each(|obj_byte_i| {
