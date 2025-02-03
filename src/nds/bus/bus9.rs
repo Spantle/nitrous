@@ -532,7 +532,7 @@ impl BusTrait for Bus9 {
                         4 => shared.gpus.vram_banks.e.write_vramcnt(value[i]),
                         5 => shared.gpus.vram_banks.f.write_vramcnt(value[i]),
                         6 => shared.gpus.vram_banks.g.write_vramcnt(value[i]),
-                        7 => shared.gpus.wramcnt = value.into_byte(),
+                        7 => shared.gpus.wramcnt = value[i],
                         8 => shared.gpus.vram_banks.h.write_vramcnt(value[i]),
                         9 => shared.gpus.vram_banks.i.write_vramcnt(value[i]),
                         _ => unreachable!(),
