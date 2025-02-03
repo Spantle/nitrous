@@ -103,8 +103,7 @@ impl Timer {
                 self.next_run = self.next_run_prescaler;
 
                 // TODO: can i remove this if statement?
-                // TODO: "6" is a temporary hack to make timers run at the correct speed. THIS NEEDS TO BE SET BACK TO "1" IN THE FUTURE
-                let (new_counter, overflow) = self.counter.overflowing_add(6);
+                let (new_counter, overflow) = self.counter.overflowing_add(1);
                 self.counter = new_counter;
                 if overflow {
                     self.counter = self.reload;

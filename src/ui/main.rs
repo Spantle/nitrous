@@ -164,7 +164,7 @@ impl eframe::App for NitrousGUI {
         let target_frame_cycle_execution_time_secs = target_frame_time_secs * 0.75;
 
         let measured_fps_min_capped = measured_fps.max(10.0); // For when the window is minimized, to recover easier
-        let mut target_cycles_current_frame = (66_000_000.0 / measured_fps_min_capped) as u64;
+        let mut target_cycles_current_frame = (33_000_000.0 / measured_fps_min_capped) as u64;
 
         if self.last_frame_cycles_execution_time != Duration::ZERO && self.last_cycle_count != 0 {
             let measured_nanoseconds_per_instruction =
@@ -182,18 +182,14 @@ impl eframe::App for NitrousGUI {
 
         let frame_cycles_start = Instant::now();
 
-        let target_cycles_arm9 = target_cycles_current_frame;
+        let target_cycles_arm7 = target_cycles_current_frame;
 
         let (cycles_ran_arm9, cycles_ran_arm7, cycles_ran_gpu) = self.emulator.run_for(
-            target_cycles_arm9,
-            self.last_cycle_arm7_discrepency,
+            target_cycles_arm7,
             (&mut self.arm9_disassembler, &mut self.arm7_disassembler),
         );
 
-        let arm7_discrepency = cycles_ran_arm7 - (cycles_ran_arm9 / 2) as i32;
-        self.last_cycle_arm7_discrepency = arm7_discrepency;
-
-        self.last_cycle_count = cycles_ran_arm9;
+        self.last_cycle_count = cycles_ran_arm7;
         self.last_frame_cycles_execution_time = frame_cycles_start.elapsed();
 
         let emulation_time = emulation_start_time.elapsed();
@@ -209,11 +205,11 @@ impl eframe::App for NitrousGUI {
                 emulation_time: emulation_time.as_millis() as u32,
                 last_ui_time: self.last_ui_time.as_millis() as u32,
                 last_idle_time: idle_time.as_millis() as u32,
-                target_cycles_arm9,
+                target_cycles_arm7,
                 cycles_ran_arm9,
                 cycles_ran_arm7,
                 cycles_ran_gpu,
-                last_cycles_ran_arm9: self.last_cycle_count,
+                last_cycles_ran_arm7: self.last_cycle_count,
             },
         );
 

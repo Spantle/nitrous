@@ -39,19 +39,19 @@ impl BenchmarkWindow {
                     ui.add(drag_value);
                 });
                 ui.horizontal(|ui| {
-                    let mut seconds = (self.cycles_to_run as f64) / 66_000_000_f64;
+                    let mut seconds = (self.cycles_to_run as f64) / 33_000_000_f64;
                     let drag_value = egui::DragValue::new(&mut seconds).speed(1_000_000.0);
                     ui.label("(Theoretical) Seconds to run");
                     ui.add(drag_value);
 
-                    self.cycles_to_run = (seconds * 66_000_000_f64) as u64;
+                    self.cycles_to_run = (seconds * 33_000_000_f64) as u64;
                 });
 
                 ui.horizontal(|ui| {
                     if ui.button("Run").clicked() {
                         let start_time = Instant::now();
                         emulator.start();
-                        emulator.run_for(self.cycles_to_run, 0, disassembler_windows);
+                        emulator.run_for(self.cycles_to_run, disassembler_windows);
                         emulator.pause();
                         let end_time = Instant::now();
                         self.last_result = Some(end_time - start_time);

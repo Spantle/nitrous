@@ -18,10 +18,10 @@ pub struct FpsInfo {
     pub emulation_time: u32,
     pub last_ui_time: u32,
     pub last_idle_time: u32,
-    pub last_cycles_ran_arm9: u64,
-    pub target_cycles_arm9: u64,
+    pub last_cycles_ran_arm7: u64,
+    pub target_cycles_arm7: u64,
     pub cycles_ran_arm9: u64,
-    pub cycles_ran_arm7: i32,
+    pub cycles_ran_arm7: u64,
     pub cycles_ran_gpu: u64,
 }
 
@@ -111,13 +111,13 @@ impl FpsInfoWindow {
                             );
                             row(
                                 &mut body,
-                                "ARM9 Last Cycles Ran",
-                                &format!("{}", fps_info.last_cycles_ran_arm9),
+                                "ARM7 Last Cycles Ran",
+                                &format!("{}", fps_info.last_cycles_ran_arm7),
                             );
                             row(
                                 &mut body,
-                                "ARM9 Target Cycles",
-                                &format!("{}", fps_info.target_cycles_arm9),
+                                "ARM7 Target Cycles",
+                                &format!("{}", fps_info.target_cycles_arm7),
                             );
                             row(
                                 &mut body,

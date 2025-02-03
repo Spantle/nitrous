@@ -234,42 +234,41 @@ impl Emulator {
 
     pub fn run_for(
         &mut self,
-        target_cycles_arm9: u64,
-        last_cycle_arm7_discrepency: i32,
+        target_cycles_arm7: u64,
         disassembler_windows: (&mut ArmDisassemblerWindow, &mut ArmDisassemblerWindow),
-    ) -> (u64, i32, u64) {
+    ) -> (u64, u64, u64) {
+        let mut cycles_ran_arm7 = 0;
         let mut cycles_ran_arm9 = 0;
-        let mut cycles_ran_arm7 = last_cycle_arm7_discrepency;
         let mut cycles_ran_gpu = 0;
 
         if !self.is_running() {
-            return (0, last_cycle_arm7_discrepency, 0);
+            return (0, 0, 0);
         }
 
-        while cycles_ran_arm9 < target_cycles_arm9 {
+        while cycles_ran_arm7 < target_cycles_arm7 {
             if !self.is_running() {
                 break;
             }
 
-            let arm9_cycles = self
-                .arm9
-                .clock(&mut self.bus9, &mut self.shared, &mut self.dma9);
+            let arm7_cycles = self
+                .arm7
+                .clock(&mut self.bus7, &mut self.shared, &mut self.dma7);
 
-            cycles_ran_arm9 += arm9_cycles as u64;
+            cycles_ran_arm7 += arm7_cycles as u64;
 
-            let target_cycles_arm7 = (cycles_ran_arm9 / 2) as i32;
-            let target_cycles_gpu = cycles_ran_arm9 / 2;
+            let target_cycles_arm9 = cycles_ran_arm7 * 2;
+            let target_cycles_gpu = ((cycles_ran_arm7 as f64) / 2_f64) as u64;
 
-            while cycles_ran_arm7 < target_cycles_arm7 {
+            while cycles_ran_arm9 < target_cycles_arm9 {
                 if !self.is_running() {
                     // TODO: the arm7 can fall behind if we stop it early and continue everything else. not sure if it matters
                     break;
                 }
 
-                let arm7_cycles = self
-                    .arm7
-                    .clock(&mut self.bus7, &mut self.shared, &mut self.dma7);
-                cycles_ran_arm7 += arm7_cycles as i32;
+                let arm9_cycles = self
+                    .arm9
+                    .clock(&mut self.bus9, &mut self.shared, &mut self.dma9);
+                cycles_ran_arm9 += arm9_cycles as u64;
 
                 self.bus9
                     .timers
