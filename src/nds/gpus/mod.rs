@@ -47,7 +47,7 @@ impl Gpus {
         let hblanking = self.x >= 256;
         let hblank_start = self.x == 256;
         let vblanking = self.vcount >= 192 && self.vcount != 262;
-        let vblank_start = self.vcount == 192;
+        let vblank_start = self.vcount == 192 && self.x == 0;
         self.dispstat.set_hblank_flag(hblanking);
         self.dispstat.set_vblank_flag(vblanking);
 
