@@ -1,3 +1,5 @@
+use crate::nds::logger;
+
 use super::{NitrousGUI, NitrousWindow};
 
 #[derive(serde::Deserialize, serde::Serialize)]
@@ -96,7 +98,29 @@ impl NitrousGUI {
                         .size(size)
                         .vertical(|mut strip| {
                             self.display_screen(&mut strip, top_screen);
-                            self.display_screen(&mut strip, bot_screen);
+
+                            let mut pressed = false;
+                            let bot_screen = self.display_screen(&mut strip, bot_screen);
+                            if bot_screen.clicked() {
+                                if let Some(position) = bot_screen.interact_pointer_pos() {
+                                    let left_top = bot_screen.rect.left_top();
+                                    let x =
+                                        (position.x - left_top.x) / bot_screen.rect.width() * 256.0;
+                                    let y = (position.y - left_top.y) / bot_screen.rect.height()
+                                        * 192.0;
+
+                                    let valid = x >= 0.0 && y >= 0.0 && x <= 256.0 && y <= 192.0;
+                                    if valid {
+                                        pressed = true;
+                                        logger::debug(
+                                            logger::LogSource::Emu,
+                                            format!("Touchscreen click: {} {}", x, y),
+                                        );
+                                    }
+                                }
+                            }
+
+                            self.emulator.shared.extkeyin.set_pen_down(!pressed);
                         });
                 },
             );
@@ -186,15 +210,22 @@ impl NitrousGUI {
         }
     }
 
-    fn display_screen(&mut self, strip: &mut egui_extras::Strip<'_, '_>, image: egui::Image<'_>) {
+    fn display_screen(
+        &mut self,
+        strip: &mut egui_extras::Strip<'_, '_>,
+        image: egui::Image<'_>,
+    ) -> egui::Response {
+        let mut response: Option<egui::Response> = None;
         strip.strip(|builder| {
             builder
                 .size(egui_extras::Size::remainder())
                 .horizontal(|mut strip| {
                     strip.cell(|ui| {
-                        ui.add(image);
+                        let image = image.sense(egui::Sense::click());
+                        response = Some(ui.add(image));
                     });
                 });
         });
+        response.unwrap()
     }
 }

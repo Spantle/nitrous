@@ -37,6 +37,7 @@ epic = []
 
 # [profile.release]
 # lto = true
+# incremental = true
 
 [profile.profiling]
 inherits = "release"

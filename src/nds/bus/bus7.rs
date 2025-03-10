@@ -4,6 +4,7 @@ use crate::nds::{
     interrupts::Interrupts,
     logger::{self, format_debug, Logger, LoggerTrait},
     shared::Shared,
+    spi::Spi,
     timers::Timers,
     Bits, Bytes,
 };
@@ -18,6 +19,7 @@ pub struct Bus7 {
     pub bios: Vec<u8>,
     pub interrupts: Interrupts,
 
+    pub spi: Spi,
     pub timers: Timers,
     pub wram7: Vec<u8>, // 64kb
 
@@ -32,6 +34,7 @@ impl Default for Bus7 {
             bios: vec![],
             interrupts: Interrupts::default(),
 
+            spi: Spi::default(),
             timers: Timers::default(),
             wram7: vec![0; 1024 * 64],
 
@@ -189,12 +192,10 @@ impl BusTrait for Bus7 {
             0x040001A2..=0x040001A3 => bytes, // TODO: I NEED THIS
             0x040001A4..=0x040001A7 => shared.cart.romctrl.value().to_bytes::<T>(),
 
-            0x040001C0..=0x040001C3 => {
-                self.logger.log_warn_once(format_debug!(
-                    "SPI not implemented (R{} {:#010X})",
-                    T,
-                    addr
-                ));
+            0x040001C0..=0x040001C1 => self.spi.spicnt.value().to_bytes::<T>(),
+            0x040001C2..=0x040001C3 => {
+                self.logger
+                    .log_warn(format!("SPI not implemented (R{} {:#010X})", T, addr));
                 bytes
             }
 
@@ -311,7 +312,8 @@ impl BusTrait for Bus7 {
                     .update(addr - 0x040001A8, T, value.into_word())
             }
 
-            0x040001C0..=0x040001C3 => self.logger.log_warn_once(format_debug!(
+            0x040001C0..=0x040001C1 => self.spi.spicnt.set(value.into_halfword()),
+            0x040001C2..=0x040001C3 => self.logger.log_warn(format!(
                 "SPI not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,

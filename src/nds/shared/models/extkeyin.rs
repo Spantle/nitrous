@@ -20,6 +20,8 @@ impl ExtKeyIn {
     const BUTTON_X_OFFSET: u16 = 0;
     const BUTTON_Y_OFFSET: u16 = 1;
 
+    const PEN_DOWN_OFFSET: u16 = 6;
+
     pub fn value(&self) -> u16 {
         self.0
     }
@@ -38,5 +40,9 @@ impl ExtKeyIn {
 
     pub fn set_button_y(&mut self, released: bool) {
         self.0.set_bit(Self::BUTTON_Y_OFFSET, released);
+    }
+
+    pub fn set_pen_down(&mut self, released: bool) {
+        self.0.set_bit(Self::PEN_DOWN_OFFSET, released);
     }
 }
