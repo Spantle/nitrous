@@ -188,9 +188,7 @@ fn lookup_miscellaneous_instructions(
         }
         0b0111 => {
             // Software breakpoint
-            ctx.logger
-                .log_error("software breakpoint instruction not implemented");
-            0
+            exceptions::instructions::bkpt(arm_bool, ctx)
         }
         0b1000 | 0b1010 | 0b1100 | 0b1110 => {
             // multiplies are identified by 0b1xy0
