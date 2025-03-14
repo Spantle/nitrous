@@ -1,4 +1,4 @@
-use crate::nds::logger;
+use crate::nds::logger::{self, format_debug};
 
 use super::{NitrousGUI, NitrousWindow};
 
@@ -101,7 +101,8 @@ impl NitrousGUI {
 
                             let mut pressed = false;
                             let bot_screen = self.display_screen(&mut strip, bot_screen);
-                            if bot_screen.clicked() {
+                            // only fires for about a second(???)
+                            if bot_screen.is_pointer_button_down_on() {
                                 if let Some(position) = bot_screen.interact_pointer_pos() {
                                     let left_top = bot_screen.rect.left_top();
                                     let x =
@@ -114,7 +115,7 @@ impl NitrousGUI {
                                         pressed = true;
                                         logger::debug(
                                             logger::LogSource::Emu,
-                                            format!("Touchscreen click: {} {}", x, y),
+                                            format_debug!("Touchscreen click: {} {}", x, y),
                                         );
                                     }
                                 }
