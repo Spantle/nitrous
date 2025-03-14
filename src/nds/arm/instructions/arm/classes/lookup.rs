@@ -37,9 +37,10 @@ pub fn lookup_instruction_class(
         }
         0b001 => {
             // Data Processing (immediate)
+            // bit 20-21, and bits 23-24
             if inst_set & 0b11 == 0b10 && inst_set >> 3 & 0b11 == 0b10 {
                 // Miscellaneous
-                return lookup_miscellaneous_instructions(arm_bool, inst_set, ctx);
+                return status_register_access::instructions::msr(inst_set, ctx);
             }
 
             data_processing::lookup::<true, _>(inst_set, ctx)
