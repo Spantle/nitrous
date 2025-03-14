@@ -294,7 +294,7 @@ impl BusTrait for Bus7 {
                 value.into_word()
             )),
 
-            0x04000180..=0x04000183 => shared.ipcsync.set::<false>(value.into_word()),
+            0x04000180..=0x04000183 => shared.ipcsync.set::<false, T>(addr - 0x04000180, value),
             0x04000184..=0x04000187 => shared
                 .ipcfifo
                 .set_cnt::<false>(&mut self.interrupts, value.into_word()),

@@ -1,4 +1,4 @@
-use crate::nds::{interrupts::Interrupts, Bits};
+use crate::nds::{interrupts::Interrupts, Bits, Bytes};
 
 // I could've made this a generic, but this actually seems nicer (considering the logging + too many generics for something this simple)
 #[derive(Default, serde::Deserialize, serde::Serialize)]
@@ -31,31 +31,62 @@ impl IpcSync {
         value
     }
 
-    pub fn set<const ARM_BOOL: bool>(&mut self, value: u32) {
+    pub fn set<const ARM_BOOL: bool, const T: usize>(&mut self, base_addr: usize, value: [u8; T]) {
         if self.logging_enabled {
-            self.log.push(IpcsyncLog::Write(ARM_BOOL, value));
+            self.log
+                .push(IpcsyncLog::Write(ARM_BOOL, value.into_word()));
         }
 
-        let etc = value.get_bits(4, 31);
-        let input = value.get_bits(8, 11);
-        let send_irq = value.get_bit(13);
-        let receive_irq_enable = value.get_bit(14);
-        match ARM_BOOL {
-            true => {
-                self.value9.set_bits(4, 31, etc);
-                self.value7.set_bits(0, 3, input);
+        // thanks libnds for making me commit this crime
+        (0..T).for_each(|i| {
+            let addr = base_addr + i;
+            match addr {
+                0 => {
+                    let etc = value[i].get_bits(4, 7) as u32;
+                    match ARM_BOOL {
+                        true => self.value9.set_bits(4, 7, etc),
+                        false => self.value7.set_bits(4, 7, etc),
+                    }
+                }
+                1 => {
+                    let etc = value[i] as u32; // 8-15
+                    let input = value[i].get_bits(0, 3) as u32; // 8-11
+                    let send_irq = value[i].get_bit(5); // 13
+                    let receive_irq_enable = value[i].get_bit(6); // 14
+                    match ARM_BOOL {
+                        true => {
+                            self.value9.set_bits(8, 15, etc);
+                            self.value7.set_bits(0, 3, input);
 
-                self.send_irq9to7 = send_irq;
-                self.value9.set_bit(14, receive_irq_enable);
-            }
-            false => {
-                self.value7.set_bits(4, 31, etc);
-                self.value9.set_bits(0, 3, input);
+                            self.send_irq9to7 = send_irq;
+                            self.value9.set_bit(14, receive_irq_enable);
+                        }
+                        false => {
+                            self.value7.set_bits(8, 15, etc);
+                            self.value9.set_bits(0, 3, input);
 
-                self.send_irq7to9 = send_irq;
-                self.value7.set_bit(14, receive_irq_enable);
+                            self.send_irq7to9 = send_irq;
+                            self.value7.set_bit(14, receive_irq_enable);
+                        }
+                    }
+                }
+                2 => {
+                    let etc = value[i] as u32; // 16-23
+                    match ARM_BOOL {
+                        true => self.value9.set_bits(16, 23, etc),
+                        false => self.value7.set_bits(16, 23, etc),
+                    }
+                }
+                3 => {
+                    let etc = value[i] as u32; // 24-31
+                    match ARM_BOOL {
+                        true => self.value9.set_bits(24, 31, etc),
+                        false => self.value7.set_bits(24, 31, etc),
+                    }
+                }
+                _ => unreachable!(),
             }
-        };
+        });
     }
 
     pub fn update_interrupts(

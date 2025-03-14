@@ -497,7 +497,7 @@ impl BusTrait for Bus9 {
             0x0400010C..=0x0400010D => self.timers.get_mut(3).set_l(value.into_halfword()),
             0x0400010E..=0x0400010F => self.timers.get_mut(3).set_h(value.into_halfword()),
 
-            0x04000180..=0x04000183 => shared.ipcsync.set::<true>(value.into_word()),
+            0x04000180..=0x04000183 => shared.ipcsync.set::<true, T>(addr - 0x04000180, value),
             0x04000184..=0x04000187 => shared
                 .ipcfifo
                 .set_cnt::<true>(&mut self.interrupts, value.into_word()),
