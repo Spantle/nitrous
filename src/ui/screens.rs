@@ -93,6 +93,13 @@ impl NitrousGUI {
                         egui_extras::Size::exact(192.0 * self.screen_options.scale)
                     };
 
+                    let mut mouse_down = false;
+                    let mut touch_pos = None;
+                    ui.input(|input| {
+                        mouse_down = input.pointer.primary_down();
+                        touch_pos = input.pointer.interact_pos();
+                    });
+
                     egui_extras::StripBuilder::new(ui)
                         .size(size)
                         .size(size)
@@ -101,9 +108,8 @@ impl NitrousGUI {
 
                             let mut pressed = false;
                             let bot_screen = self.display_screen(&mut strip, bot_screen);
-                            // only fires for about a second(???)
-                            if bot_screen.is_pointer_button_down_on() {
-                                if let Some(position) = bot_screen.interact_pointer_pos() {
+                            if mouse_down && bot_screen.contains_pointer() {
+                                if let Some(position) = touch_pos {
                                     let left_top = bot_screen.rect.left_top();
                                     let x =
                                         (position.x - left_top.x) / bot_screen.rect.width() * 256.0;
@@ -117,6 +123,8 @@ impl NitrousGUI {
                                             logger::LogSource::Emu,
                                             format_debug!("Touchscreen click: {} {}", x, y),
                                         );
+
+                                        self.emulator.shared.touchscreen_point = (x, y);
                                     }
                                 }
                             }
