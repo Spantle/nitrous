@@ -37,9 +37,10 @@ pub fn lookup_instruction_class(
         }
         0b001 => {
             // Data Processing (immediate)
+            // bit 20-21, and bits 23-24
             if inst_set & 0b11 == 0b10 && inst_set >> 3 & 0b11 == 0b10 {
                 // Miscellaneous
-                return lookup_miscellaneous_instructions(arm_bool, inst_set, ctx);
+                return status_register_access::instructions::msr(inst_set, ctx);
             }
 
             data_processing::lookup::<true, _>(inst_set, ctx)
@@ -187,9 +188,7 @@ fn lookup_miscellaneous_instructions(
         }
         0b0111 => {
             // Software breakpoint
-            ctx.logger
-                .log_error("software breakpoint instruction not implemented");
-            0
+            exceptions::instructions::bkpt(arm_bool, ctx)
         }
         0b1000 | 0b1010 | 0b1100 | 0b1110 => {
             // multiplies are identified by 0b1xy0

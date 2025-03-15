@@ -10,9 +10,6 @@ pub struct IpcFifo {
     send_queue7: VecDeque<u32>,
     recent9: u32,
     recent7: u32,
-
-    did_send: bool,
-    did_receive: bool,
 }
 
 #[derive(Default, serde::Deserialize, serde::Serialize)]
@@ -40,8 +37,6 @@ impl IpcFifo {
 
         if value.get_bit(3) {
             send_queue.clear();
-
-            self.did_send = true;
         }
 
         cnt.send_fifo_empty_irq = value.get_bit(2);
@@ -89,7 +84,6 @@ impl IpcFifo {
         }
         send_queue.push_back(value);
         cnt.error = send_queue.len() == 16;
-        self.did_send = true;
     }
 
     pub fn receive<const ARM_BOOL: bool>(&mut self) -> u32 {
@@ -110,7 +104,6 @@ impl IpcFifo {
 
         let value = receive_queue.pop_front().unwrap();
         *recent = value;
-        self.did_receive = true;
         value
     }
 
@@ -120,20 +113,17 @@ impl IpcFifo {
         interrupts7: &mut Interrupts,
     ) {
         interrupts9.f.falsy_set_ipc_send_fifo_empty(
-            self.did_receive && self.cnt9.send_fifo_empty_irq && self.send_queue9.is_empty(),
+            self.cnt9.send_fifo_empty_irq && self.send_queue9.is_empty(),
         );
         interrupts9.f.falsy_set_ipc_receive_fifo_not_empty(
-            self.did_send && self.cnt9.receive_fifo_not_empty_irq && !self.send_queue7.is_empty(),
+            self.cnt9.receive_fifo_not_empty_irq && !self.send_queue7.is_empty(),
         );
 
         interrupts7.f.falsy_set_ipc_send_fifo_empty(
-            self.did_receive && self.cnt7.send_fifo_empty_irq && self.send_queue7.is_empty(),
+            self.cnt7.send_fifo_empty_irq && self.send_queue7.is_empty(),
         );
         interrupts7.f.falsy_set_ipc_receive_fifo_not_empty(
-            self.did_send && self.cnt7.receive_fifo_not_empty_irq && !self.send_queue9.is_empty(),
+            self.cnt7.receive_fifo_not_empty_irq && !self.send_queue9.is_empty(),
         );
-
-        self.did_send = false;
-        self.did_receive = false;
     }
 }
