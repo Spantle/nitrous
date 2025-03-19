@@ -1,41 +1,66 @@
-use super::{logger, Bits};
+use super::{logger, shared::Shared, Bits};
 
 // been a while since i've worked on this, this is not my greatest code but it needs to be done asap
-
+// also touchscreen stuff was mostly borrowed from CorgiDS
 #[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct Spi {
-    pub spicnt: SpiControl,
+    pub cnt: SpiControl,
+    pub data: u16,
 
-    data: u16,
-    data_position: u8,
+    control_byte: u8,
+    data_pos: u8,
+    output_coords: u16,
 }
 
 impl Spi {
-    pub fn write(&mut self, input: u8) {
-        if !self.spicnt.get_enabled() {
+    pub fn write(&mut self, shared: &Shared, input: u16) {
+        if !self.cnt.get_enabled() {
             return;
         }
 
-        match self.spicnt.get_device() {
-            0 => logger::warn_once(logger::LogSource::Spi, "firmware not implemented"),
+        self.data = match self.cnt.get_device() {
+            0 => {
+                logger::warn_once(logger::LogSource::Spi, "powerman not implemented");
+                0
+            }
             1 => {
-                let start_bit = input.get_bit(7);
-                if start_bit {
+                logger::warn_once(logger::LogSource::Spi, "firmware not implemented");
+                0
+            }
+            2 => {
+                let data = match self.data_pos {
+                    0 => (self.output_coords >> 5) & 0xFF,
+                    1 => (self.output_coords << 3) & 0xFF,
+                    _ => 0,
+                };
+
+                if input.get_bit(7) {
+                    self.control_byte = input as u8; // fuck it
+                    self.data_pos = 0;
+
+                    // let start_bit = input.get_bit(7);
+                    // if start_bit {
                     let channel = input.get_bits(4, 6);
-                    self.data = match channel {
-                        1 => 0, // touchscreen Y
-                        5 => 0, // touchscreen X
+                    self.output_coords = match channel {
+                        1 => ((shared.touchscreen_point.1 as u32) << 4) as u16, // touchscreen Y
+                        5 => ((shared.touchscreen_point.0 as u32) << 4) as u16, // touchscreen X
                         _ => 0,
                     };
 
                     let conversion_mode = input.get_bit(3);
                     if conversion_mode {
-                        self.data &= 0x0FF0;
+                        self.output_coords &= 0x0FF0;
                     }
-                }
+                } else {
+                    self.data_pos += 1;
+                };
+
+                data
             }
-            2 => logger::warn_once(logger::LogSource::Spi, "powerman not implemented"),
-            3 => logger::warn_once(logger::LogSource::Spi, "512KHz not implemented"),
+            3 => {
+                logger::warn_once(logger::LogSource::Spi, "reserved device implemented");
+                0
+            }
             _ => unreachable!(),
         }
     }
