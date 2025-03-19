@@ -17,8 +17,6 @@ pub struct Bus9 {
 
     #[serde(skip)]
     pub bios: Vec<u8>,
-    #[serde(skip)]
-    pub firmware: Vec<u8>,
     pub interrupts: Interrupts,
 
     pub timers: Timers,
@@ -31,7 +29,6 @@ impl Default for Bus9 {
             logger: Logger(logger::LogSource::Bus9),
 
             bios: Vec::new(),
-            firmware: Vec::new(),
             interrupts: Interrupts::default(),
 
             timers: Timers::default(),
@@ -68,19 +65,15 @@ impl BusTrait for Bus9 {
         };
     }
 
-    fn load_firmware(&mut self, firmware: Vec<u8>) {
-        self.logger.log_info("Successfully loaded firmware");
-        self.firmware = firmware;
+    fn load_firmware(&mut self, _firmware: Vec<u8>) {
+        self.logger.log_error("Tried to load firmware on ARM9");
     }
 
     fn load_firmware_from_path(&mut self, path: &str) {
-        let file = std::fs::read(path);
-        match file {
-            Ok(firmware) => self.load_firmware(firmware),
-            Err(e) => self
-                .logger
-                .log_error(format!("Failed to load firmware: {}", e)),
-        };
+        self.logger.log_error(format!(
+            "Tried to load firmware on ARM9 from path: {}",
+            path
+        ));
     }
 
     fn is_requesting_interrupt(&self) -> bool {

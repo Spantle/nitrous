@@ -264,7 +264,7 @@ impl eframe::App for NitrousGUI {
 
                 self.preferences.try_load_bios(&mut self.emulator.bus9);
                 self.preferences.try_load_bios(&mut self.emulator.bus7);
-                self.preferences.try_load_firmware(&mut self.emulator.bus9);
+                self.preferences.try_load_firmware(&mut self.emulator.bus7);
             }
 
             if let Ok(bytes) = self.load_rom_channel.1.try_recv() {
@@ -281,7 +281,7 @@ impl eframe::App for NitrousGUI {
             self.preferences
                 .load_bios_from_channel(&mut self.emulator.bus7);
             self.preferences
-                .load_firmware_from_channel(&mut self.emulator.bus9);
+                .load_firmware_from_channel(&mut self.emulator.bus7);
         }
 
         ctx.request_repaint();

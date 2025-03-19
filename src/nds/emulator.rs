@@ -133,7 +133,7 @@ impl Emulator {
             shared,
             &mut None,
             0x027FFC80,
-            self.bus9.firmware[0x3FE00..0x3FEFF].into(),
+            self.bus7.firmware[0x3FE00..0x3FE70].into(),
         );
     }
 

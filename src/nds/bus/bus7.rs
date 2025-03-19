@@ -1,6 +1,7 @@
 use crate::nds::{
     arm::ArmKind,
     dma::Dma,
+    emulator::set_emulator_running,
     interrupts::Interrupts,
     logger::{self, format_debug, Logger, LoggerTrait},
     shared::Shared,
@@ -17,6 +18,8 @@ pub struct Bus7 {
 
     #[serde(skip)]
     pub bios: Vec<u8>,
+    #[serde(skip)]
+    pub firmware: Vec<u8>,
     pub interrupts: Interrupts,
 
     pub spi: Spi,
@@ -31,7 +34,8 @@ impl Default for Bus7 {
         Bus7 {
             logger: Logger(logger::LogSource::Bus7),
 
-            bios: vec![],
+            bios: Vec::new(),
+            firmware: Vec::new(),
             interrupts: Interrupts::default(),
 
             spi: Spi::default(),
@@ -71,15 +75,19 @@ impl BusTrait for Bus7 {
         };
     }
 
-    fn load_firmware(&mut self, _firmware: Vec<u8>) {
-        self.logger.log_error("Tried to load firmware on ARM7");
+    fn load_firmware(&mut self, firmware: Vec<u8>) {
+        self.logger.log_info("Successfully loaded firmware");
+        self.firmware = firmware;
     }
 
     fn load_firmware_from_path(&mut self, path: &str) {
-        self.logger.log_error(format!(
-            "Tried to load firmware on ARM7 from path: {}",
-            path
-        ));
+        let file = std::fs::read(path);
+        match file {
+            Ok(firmware) => self.load_firmware(firmware),
+            Err(e) => self
+                .logger
+                .log_error(format!("Failed to load firmware: {}", e)),
+        };
     }
 
     fn is_requesting_interrupt(&self) -> bool {
@@ -309,7 +317,10 @@ impl BusTrait for Bus7 {
             }
 
             0x040001C0..=0x040001C1 => self.spi.cnt.set(value.into_halfword()),
-            0x040001C2..=0x040001C3 => self.spi.write(shared, value.into_halfword()),
+            0x040001C2..=0x040001C3 => {
+                self.spi
+                    .write(&self.firmware, shared, value.into_halfword())
+            }
 
             0x04000204..=0x04000205 => shared.cart.exmemstat.0 = value.into_halfword(),
             0x04000206..=0x04000207 => self.logger.log_warn_once(format_debug!(

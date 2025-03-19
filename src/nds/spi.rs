@@ -1,19 +1,24 @@
 use super::{logger, shared::Shared, Bits};
 
 // been a while since i've worked on this, this is not my greatest code but it needs to be done asap
-// also touchscreen stuff was mostly borrowed from CorgiDS
+// also touchscreen+firmware stuff was mostly borrowed from CorgiDS
 #[derive(Default, serde::Deserialize, serde::Serialize)]
 pub struct Spi {
     pub cnt: SpiControl,
     pub data: u16,
 
-    control_byte: u8,
-    data_pos: u8,
-    output_coords: u16,
+    fw_command_id: FirmwareCommand,
+    fw_address: u32,
+    fw_total_args: u8,
+    fw_status_reg: u8,
+
+    tsc_control_byte: u8,
+    tsc_data_pos: u8,
+    tsc_output_coords: u16,
 }
 
 impl Spi {
-    pub fn write(&mut self, shared: &Shared, input: u16) {
+    pub fn write(&mut self, firmware: &[u8], shared: &Shared, input: u16) {
         if !self.cnt.get_enabled() {
             return;
         }
@@ -24,24 +29,56 @@ impl Spi {
                 0
             }
             1 => {
-                logger::warn_once(logger::LogSource::Spi, "firmware not implemented");
-                0
+                self.fw_total_args += 1;
+
+                let data = match self.fw_command_id {
+                    FirmwareCommand::ReadStream => {
+                        if self.fw_total_args < 5 {
+                            self.fw_address <<= 8;
+                            self.fw_address |= input as u32;
+                            input
+                        } else {
+                            self.fw_address += 1;
+                            firmware[(self.fw_address as usize - 1) & (1024 * 256 - 1)] as u16
+                        }
+                    }
+                    FirmwareCommand::ReadStatusReg => self.fw_status_reg as u16,
+                    _ => {
+                        match input {
+                            0x03 => self.fw_command_id = FirmwareCommand::ReadStream,
+                            0x04 => self.fw_status_reg &= !0x1,
+                            0x05 => self.fw_command_id = FirmwareCommand::ReadStatusReg,
+                            0x06 => self.fw_status_reg |= 0x1,
+                            _ => logger::warn(
+                                logger::LogSource::Spi,
+                                format!("unknown firmware command {}", input),
+                            ),
+                        }
+                        input
+                    }
+                };
+
+                if !self.cnt.get_chipset_hold() {
+                    self.fw_command_id = FirmwareCommand::None;
+                    self.fw_address = 0;
+                    self.fw_total_args = 0;
+                };
+
+                data
             }
             2 => {
-                let data = match self.data_pos {
-                    0 => (self.output_coords >> 5) & 0xFF,
-                    1 => (self.output_coords << 3) & 0xFF,
+                let data = match self.tsc_data_pos {
+                    0 => (self.tsc_output_coords >> 5) & 0xFF,
+                    1 => (self.tsc_output_coords << 3) & 0xFF,
                     _ => 0,
                 };
 
                 if input.get_bit(7) {
-                    self.control_byte = input as u8; // fuck it
-                    self.data_pos = 0;
+                    self.tsc_control_byte = input as u8; // screw it
+                    self.tsc_data_pos = 0;
 
-                    // let start_bit = input.get_bit(7);
-                    // if start_bit {
                     let channel = input.get_bits(4, 6);
-                    self.output_coords = match channel {
+                    self.tsc_output_coords = match channel {
                         1 => ((shared.touchscreen_point.1 as u32) << 4) as u16, // touchscreen Y
                         5 => ((shared.touchscreen_point.0 as u32) << 4) as u16, // touchscreen X
                         _ => 0,
@@ -49,10 +86,10 @@ impl Spi {
 
                     let conversion_mode = input.get_bit(3);
                     if conversion_mode {
-                        self.output_coords &= 0x0FF0;
+                        self.tsc_output_coords &= 0x0FF0;
                     }
                 } else {
-                    self.data_pos += 1;
+                    self.tsc_data_pos += 1;
                 };
 
                 data
@@ -77,7 +114,7 @@ impl SpiControl {
     const DEVICE_START: u16 = 8;
     const DEVICE_END: u16 = 9;
 
-    // const CHIPSET_HOLD_OFFSET: u16 = 11;
+    const CHIPSET_HOLD_OFFSET: u16 = 11;
 
     // const IRQ_OFFSET: u16 = 14;
     const ENABLE_OFFSET: u16 = 15;
@@ -96,7 +133,19 @@ impl SpiControl {
         self.0.get_bits(Self::DEVICE_START, Self::DEVICE_END)
     }
 
+    pub fn get_chipset_hold(&self) -> bool {
+        self.0.get_bit(Self::CHIPSET_HOLD_OFFSET)
+    }
+
     pub fn get_enabled(&self) -> bool {
         self.0.get_bit(Self::ENABLE_OFFSET)
     }
+}
+
+#[derive(Default, serde::Deserialize, serde::Serialize)]
+enum FirmwareCommand {
+    #[default]
+    None,
+    ReadStatusReg,
+    ReadStream,
 }
