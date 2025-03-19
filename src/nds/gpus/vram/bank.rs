@@ -182,7 +182,7 @@ impl<const ID: u8> VramBank<ID> {
             return false;
         }
 
-        if addr >= self.start && addr <= self.end {
+        if addr >= self.start && (addr + T) <= self.end {
             let start = addr - self.start;
             let end = start + T;
             self.data[start..end].copy_from_slice(&value);
