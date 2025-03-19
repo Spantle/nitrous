@@ -322,6 +322,10 @@ impl NitrousGUI {
                 ui.checkbox(&mut objs[2], "OBJs 2");
                 ui.checkbox(&mut objs[3], "OBJs 3");
             });
+
+            ui.checkbox(&mut self.mode_safety, "Mode Safety");
+            self.emulator.shared.gpus.a.mode_safety = self.mode_safety;
+            self.emulator.shared.gpus.b.mode_safety = self.mode_safety;
         });
         ui.checkbox(&mut self.benchmark.open, "Benchmark");
         ui.checkbox(&mut self.emulation_log.open, "Emulation Log");

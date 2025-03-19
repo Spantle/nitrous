@@ -37,6 +37,7 @@ use super::{
 pub struct NitrousGUI {
     #[serde(skip)]
     is_first_run: bool,
+    pub mode_safety: bool, // gpu option
 
     #[serde(skip)]
     pub emulator: Emulator,
@@ -121,6 +122,8 @@ impl Default for NitrousGUI {
 
             fps_info: FpsInfoWindow::default(),
 
+            mode_safety: false,
+
             last_cycle_count: 0,
             last_frame_cycles_execution_time: Duration::ZERO,
             last_cycle_arm7_discrepency: 0,
@@ -156,6 +159,10 @@ impl eframe::App for NitrousGUI {
         let emulation_start_time = Instant::now();
 
         self.handle_input(ctx);
+
+        // TODO: don't have this here or anywhere idk
+        self.emulator.shared.gpus.a.mode_safety = self.mode_safety;
+        self.emulator.shared.gpus.b.mode_safety = self.mode_safety;
 
         self.fps_info.fps_counter.push_current_time();
         let measured_fps = self.fps_info.fps_counter.average_fps();
