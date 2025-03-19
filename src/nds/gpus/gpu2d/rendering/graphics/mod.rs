@@ -115,6 +115,23 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                             pixels[i] = is_transparent.if_else(existing_pixel, new_pixel);
                         });
                     });
+
+                    // hack for games like sushi the cat where everything is on 1 priority
+                    // i'm not in the mood to make this better. this whole thing needs refactoring
+                    let priority = self.bgxcnt[id].get_priority() as usize;
+                    if priority != i {
+                        let obj_layer = &obj_layers[priority].0;
+                        (0..256).for_each(|x| {
+                            (0..192).for_each(|y| {
+                                let i = y * 256 + x;
+
+                                let new_pixel = obj_layer[x][y];
+                                let existing_pixel = pixels[i];
+                                let is_transparent = !new_pixel.get_bit(15); // transparent: 0, normal: 1
+                                pixels[i] = is_transparent.if_else(existing_pixel, new_pixel);
+                            });
+                        });
+                    };
                 }
             }
 
