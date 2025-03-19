@@ -10,6 +10,7 @@ pub mod gpus;
 mod interrupts;
 pub mod logger;
 pub mod shared;
+mod spi;
 mod timers;
 
 pub use bits::*;

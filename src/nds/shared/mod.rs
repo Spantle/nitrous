@@ -17,6 +17,9 @@ pub struct Shared {
     pub ipcfifo: IpcFifo, // 0x04000184, 0x04000188, 0x04100000
     pub postflg: PostFlg, // 0x04000300 TODO: there's a tiny bit of logic behind this, and it's technically not "shared"
     pub powcnt1: PowCnt1, // 0x04000304
+
+    #[serde(skip)]
+    pub touchscreen_point: (f32, f32), // not real
 }
 
 impl Default for Shared {
@@ -33,6 +36,8 @@ impl Default for Shared {
             ipcfifo: IpcFifo::default(),
             postflg: PostFlg::default(),
             powcnt1: PowCnt1::default(),
+
+            touchscreen_point: (0.0, 0.0),
         }
     }
 }
@@ -51,6 +56,8 @@ impl Shared {
             ipcfifo: IpcFifo::default(),
             postflg: PostFlg::default(),
             powcnt1: PowCnt1::default(),
+
+            touchscreen_point: (0.0, 0.0),
         }
     }
 
