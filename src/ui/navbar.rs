@@ -293,6 +293,35 @@ impl NitrousGUI {
             ui.checkbox(&mut self.gpu_map_viewer.open, "Map Viewer (WIP)");
             ui.checkbox(&mut self.gpu_palette_viewer.open, "Palette Viewer (WIP)");
             ui.checkbox(&mut self.gpu_tile_viewer.open, "Tile Viewer (WIP)");
+
+            ui.menu_button("[A] Toggle BGs", |ui| {
+                let bgs = &mut self.emulator.shared.gpus.a.show_bgs;
+                ui.checkbox(&mut bgs[0], "BG 0");
+                ui.checkbox(&mut bgs[1], "BG 1");
+                ui.checkbox(&mut bgs[2], "BG 2");
+                ui.checkbox(&mut bgs[3], "BG 3");
+            });
+            ui.menu_button("[A] Toggle OBJs", |ui| {
+                let objs = &mut self.emulator.shared.gpus.a.show_objs;
+                ui.checkbox(&mut objs[0], "OBJs 0");
+                ui.checkbox(&mut objs[1], "OBJs 1");
+                ui.checkbox(&mut objs[2], "OBJs 2");
+                ui.checkbox(&mut objs[3], "OBJs 3");
+            });
+            ui.menu_button("[B] Toggle BGs", |ui| {
+                let bgs = &mut self.emulator.shared.gpus.b.show_bgs;
+                ui.checkbox(&mut bgs[0], "BG 0");
+                ui.checkbox(&mut bgs[1], "BG 1");
+                ui.checkbox(&mut bgs[2], "BG 2");
+                ui.checkbox(&mut bgs[3], "BG 3");
+            });
+            ui.menu_button("[B] Toggle OBJs", |ui| {
+                let objs = &mut self.emulator.shared.gpus.b.show_objs;
+                ui.checkbox(&mut objs[0], "OBJs 0");
+                ui.checkbox(&mut objs[1], "OBJs 1");
+                ui.checkbox(&mut objs[2], "OBJs 2");
+                ui.checkbox(&mut objs[3], "OBJs 3");
+            });
         });
         ui.checkbox(&mut self.benchmark.open, "Benchmark");
         ui.checkbox(&mut self.emulation_log.open, "Emulation Log");

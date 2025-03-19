@@ -19,6 +19,10 @@ pub struct Gpu2d<const ENGINE_A: bool> {
 
     pub palette: Vec<u8>,
     pub oam: Vec<u8>,
+
+    // custom stuff
+    pub show_bgs: [bool; 4],
+    pub show_objs: [bool; 4],
 }
 
 impl<const ENGINE_A: bool> Default for Gpu2d<ENGINE_A> {
@@ -34,6 +38,9 @@ impl<const ENGINE_A: bool> Default for Gpu2d<ENGINE_A> {
 
             palette: vec![0; 1024],
             oam: vec![0; 1024],
+
+            show_bgs: [true; 4],
+            show_objs: [true; 4],
         }
     }
 }
@@ -51,6 +58,9 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
 
             palette: vec![0; 0],
             oam: vec![0; 0],
+
+            show_bgs: [true; 4],
+            show_objs: [true; 4],
         }
     }
 }

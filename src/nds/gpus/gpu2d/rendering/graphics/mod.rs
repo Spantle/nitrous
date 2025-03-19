@@ -26,17 +26,19 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                 });
 
                 let mut pixel_layers: BackgroundResults = vec![(vec![vec![]], false); 4];
-                if self.dispcnt.get_screen_display_bg0() && !self.dispcnt.get_bg0_2d_3d_selection()
+                if self.dispcnt.get_screen_display_bg0()
+                    && self.show_bgs[0]
+                    && !self.dispcnt.get_bg0_2d_3d_selection()
                 {
                     pixel_layers[0] = self.render_background::<0>(vram_banks);
                 }
-                if self.dispcnt.get_screen_display_bg1() {
+                if self.dispcnt.get_screen_display_bg1() && self.show_bgs[1] {
                     pixel_layers[1] = self.render_background::<1>(vram_banks);
                 }
-                if self.dispcnt.get_screen_display_bg2() {
+                if self.dispcnt.get_screen_display_bg2() && self.show_bgs[2] {
                     pixel_layers[2] = self.render_background::<2>(vram_banks);
                 }
-                if self.dispcnt.get_screen_display_bg3() {
+                if self.dispcnt.get_screen_display_bg3() && self.show_bgs[3] {
                     pixel_layers[3] = self.render_background::<3>(vram_banks);
                 }
                 let obj_layers = self.render_objs(vram_banks);
@@ -50,7 +52,7 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                 let backdrop_colour = u16::from_le_bytes(backdrop_colour_bytes);
                 let mut pixels: Vec<u16> = vec![backdrop_colour; 256 * 192];
                 for (i, id) in ids.iter().enumerate() {
-                    let id = *id;
+                    let id: usize = *id;
                     if pixel_layers[id].1 {
                         let bg = &pixel_layers[id].0;
                         let bg_width = bg.len();
@@ -102,17 +104,19 @@ impl<const ENGINE_A: bool> Gpu2d<ENGINE_A> {
                         });
                     }
 
-                    let obj_layer = &obj_layers[3 - id].0;
-                    (0..256).for_each(|x| {
-                        (0..192).for_each(|y| {
-                            let i = y * 256 + x;
+                    if self.show_objs[3 - i] {
+                        let obj_layer = &obj_layers[3 - i].0;
+                        (0..256).for_each(|x| {
+                            (0..192).for_each(|y| {
+                                let i = y * 256 + x;
 
-                            let new_pixel = obj_layer[x][y];
-                            let existing_pixel = pixels[i];
-                            let is_transparent = !new_pixel.get_bit(15); // transparent: 0, normal: 1
-                            pixels[i] = is_transparent.if_else(existing_pixel, new_pixel);
+                                let new_pixel = obj_layer[x][y];
+                                let existing_pixel = pixels[i];
+                                let is_transparent = !new_pixel.get_bit(15); // transparent: 0, normal: 1
+                                pixels[i] = is_transparent.if_else(existing_pixel, new_pixel);
+                            });
                         });
-                    });
+                    }
                 }
 
                 let image_data = egui::ImageData::from(egui::ColorImage {
