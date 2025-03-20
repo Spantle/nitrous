@@ -5,6 +5,7 @@ use crate::nds::{
     interrupts::Interrupts,
     logger::{self, format_debug, Logger, LoggerTrait},
     shared::Shared,
+    sqrt::SquareRootUnit,
     timers::Timers,
     Bits, Bytes,
 };
@@ -21,6 +22,7 @@ pub struct Bus9 {
 
     pub timers: Timers,
     pub div: DividerUnit,
+    pub sqrt: SquareRootUnit,
 }
 
 impl Default for Bus9 {
@@ -33,6 +35,7 @@ impl Default for Bus9 {
 
             timers: Timers::default(),
             div: DividerUnit::default(),
+            sqrt: SquareRootUnit::default(),
         }
     }
 }
@@ -262,14 +265,10 @@ impl BusTrait for Bus9 {
             0x040002A8..=0x040002AB => self.div.remainder_lo.to_bytes::<T>(),
             0x040002AC..=0x040002AF => self.div.remainder_hi.to_bytes::<T>(),
 
-            0x040002B0..=0x040002BF => {
-                self.logger.log_warn_once(format_debug!(
-                    "SQRT not implemented (R{} {:#010X})",
-                    T,
-                    addr
-                ));
-                bytes
-            }
+            0x040002B0 => self.sqrt.control.value().to_bytes::<T>(),
+            0x040002B4 => self.sqrt.result.to_bytes::<T>(),
+            0x040002B8 => self.sqrt.param_lo.to_bytes::<T>(),
+            0x040002BC => self.sqrt.param_hi.to_bytes::<T>(),
 
             0x04000300 => shared.postflg.0.to_bytes::<T>(),
             0x04000304..=0x04000307 => shared.powcnt1.value().to_bytes::<T>(),
@@ -554,12 +553,9 @@ impl BusTrait for Bus9 {
             0x04000298..=0x0400029B => self.div.set_denominator::<true>(value.into_word()),
             0x0400029C..=0x0400029F => self.div.set_denominator::<false>(value.into_word()),
 
-            0x040002B0..=0x040002BF => self.logger.log_warn_once(format_debug!(
-                "SQRT not implemented (W{} {:#010X}:{:#010X})",
-                T,
-                addr,
-                value.into_word()
-            )),
+            0x040002B0 => self.sqrt.set_control(value.into_word()),
+            0x040002B8 => self.sqrt.set_param::<true>(value.into_word()),
+            0x040002BC => self.sqrt.set_param::<false>(value.into_word()),
 
             0x04000304..=0x04000307 => shared.powcnt1 = value.into_word().into(),
 

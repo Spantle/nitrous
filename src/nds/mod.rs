@@ -11,6 +11,7 @@ mod interrupts;
 pub mod logger;
 pub mod shared;
 mod spi;
+mod sqrt;
 mod timers;
 
 pub use bits::*;

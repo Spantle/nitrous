@@ -2,7 +2,7 @@
 name = "NitrousDS"
 version = "0.0.0"
 edition = "2021"
-rust-version = "1.80"
+rust-version = "1.84"
 
 [dependencies]
 bitflags = "2.6.0"

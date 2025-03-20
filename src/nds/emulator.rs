@@ -211,6 +211,7 @@ impl Emulator {
                 self.bus9.timers.clock(cycles, &mut self.bus9.interrupts);
                 self.bus7.timers.clock(cycles, &mut self.bus7.interrupts);
                 self.bus9.div.clock(cycles);
+                self.bus9.sqrt.clock();
 
                 cycles
             }
@@ -278,6 +279,7 @@ impl Emulator {
                     .timers
                     .clock(arm7_cycles, &mut self.bus7.interrupts);
                 self.bus9.div.clock(arm7_cycles);
+                self.bus9.sqrt.clock();
 
                 disassembler_windows
                     .1

@@ -75,7 +75,7 @@ impl DividerUnit {
                 0 => {
                     if self.denominator_lo == 0 {
                         let merged = self.numerator_lo as i32 as i64
-                            | (self.numerator_hi as i32 as i64) << 32;
+                            | ((self.numerator_hi as i32 as i64) << 32);
 
                         let result = if self.numerator_lo as i32 >= 0 {
                             merge_lo_hi(-1_i32 as u32, 0)
@@ -177,7 +177,7 @@ impl DividerUnit {
 
 #[inline(always)]
 fn merge_lo_hi(lo: u32, hi: u32) -> i64 {
-    ((hi as u64) << 32 | lo as u64) as i64
+    (((hi as u64) << 32) | lo as u64) as i64
 }
 
 #[inline(always)]
