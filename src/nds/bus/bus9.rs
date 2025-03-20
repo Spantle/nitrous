@@ -207,6 +207,14 @@ impl BusTrait for Bus9 {
             0x0400010E..=0x0400010F => self.timers.get(3).get_control().to_bytes::<T>(),
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
+            0x04000132..=0x04000133 => {
+                self.logger.log_warn_once(format_debug!(
+                    "KEYCNT not implemented (R{} {:#010X})",
+                    T,
+                    addr
+                ));
+                bytes
+            }
             0x04000136..=0x04000137 => shared.extkeyin.value().to_bytes::<T>(),
 
             0x04000180..=0x04000183 => shared.ipcsync.value::<true>().to_bytes::<T>(),
@@ -489,6 +497,13 @@ impl BusTrait for Bus9 {
             0x0400010A..=0x0400010B => self.timers.get_mut(2).set_h(value.into_halfword()),
             0x0400010C..=0x0400010D => self.timers.get_mut(3).set_l(value.into_halfword()),
             0x0400010E..=0x0400010F => self.timers.get_mut(3).set_h(value.into_halfword()),
+
+            0x04000132..=0x04000133 => self.logger.log_warn_once(format_debug!(
+                "KEYCNT not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
 
             0x04000180..=0x04000183 => shared.ipcsync.set::<true, T>(addr - 0x04000180, value),
             0x04000184..=0x04000187 => shared

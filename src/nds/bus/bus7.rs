@@ -1,7 +1,6 @@
 use crate::nds::{
     arm::ArmKind,
     dma::Dma,
-    emulator::set_emulator_running,
     interrupts::Interrupts,
     logger::{self, format_debug, Logger, LoggerTrait},
     shared::Shared,
@@ -182,6 +181,14 @@ impl BusTrait for Bus7 {
             0x0400010E..=0x0400010F => self.timers.get(3).get_control().to_bytes::<T>(),
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
+            0x04000132..=0x04000133 => {
+                self.logger.log_warn_once(format_debug!(
+                    "KEYCNT not implemented (R{} {:#010X})",
+                    T,
+                    addr
+                ));
+                bytes
+            }
             0x04000134..=0x04000135 => self.rcnt.to_bytes::<T>(),
             0x04000136..=0x04000137 => shared.extkeyin.value().to_bytes::<T>(),
             0x04000138 => {
@@ -291,6 +298,12 @@ impl BusTrait for Bus7 {
             0x0400010C..=0x0400010D => self.timers.get_mut(3).set_l(value.into_halfword()),
             0x0400010E..=0x0400010F => self.timers.get_mut(3).set_h(value.into_halfword()),
 
+            0x04000132..=0x04000133 => self.logger.log_warn_once(format_debug!(
+                "KEYCNT not implemented (W{} {:#010X}:{:#010X})",
+                T,
+                addr,
+                value.into_word()
+            )),
             0x04000134..=0x04000135 => self.rcnt = value.into_halfword(),
             0x04000138 => self.logger.log_warn_once(format_debug!(
                 "RTC not implemented (W{} {:#010X}:{:#010X})",
