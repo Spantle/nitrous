@@ -89,7 +89,11 @@ impl<const T: usize> Bytes for [u8; T] {
     #[inline(always)]
     fn into_halfword(self) -> u16 {
         if T > 2 {
-            panic!("attempted to convert {} bytes into a halfword", T);
+            panic!(
+                "attempted to convert {} bytes into a halfword ({:08X})",
+                T,
+                self.into_word()
+            );
         }
 
         let mut bytes = [0; 2];
@@ -101,7 +105,11 @@ impl<const T: usize> Bytes for [u8; T] {
     #[inline(always)]
     fn into_byte(self) -> u8 {
         if T > 1 {
-            panic!("attempted to convert {} bytes into a byte", T);
+            panic!(
+                "attempted to convert {} bytes into a byte ({:08X})",
+                T,
+                self.into_word()
+            );
         }
 
         self[0]
