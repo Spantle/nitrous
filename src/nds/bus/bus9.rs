@@ -352,7 +352,7 @@ impl BusTrait for Bus9 {
 
             0x04000000..=0x04000003 => shared.gpus.a.dispcnt = value.into_word().into(),
             0x04001000..=0x04001003 => shared.gpus.b.dispcnt = value.into_word().into(),
-            0x04000004..=0x04000005 => shared.gpus.dispstat = (value.into_word() as u16).into(),
+            0x04000004..=0x04000005 => shared.gpus.dispstat.set(value.into_halfword()),
 
             0x04000008..=0x0400000F => {
                 for i in 0..T {

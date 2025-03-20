@@ -24,11 +24,21 @@ impl DispStat {
     const VBLANK_IRQ_ENABLE_OFFSET: u16 = 3;
     const HBLANK_IRQ_ENABLE_OFFSET: u16 = 4;
     const VCOUNTER_IRQ_ENABLE_OFFSET: u16 = 5;
-    const VCOUNT_SETTING_OFFSET: u16 = 7;
+    const VCOUNT_SETTING_START: u16 = 7;
     const VCOUNT_SETTING_END: u16 = 15;
 
     pub fn value(&self) -> u16 {
         self.0
+    }
+
+    pub fn set(&mut self, value: u16) {
+        let vblank_flag = self.get_vblank_flag();
+        let hblank_flag = self.get_hblank_flag();
+        let vcounter_flag = self.get_vcounter_flag();
+        self.0 = value;
+        self.set_vblank_flag(vblank_flag);
+        self.set_hblank_flag(hblank_flag);
+        self.set_vcounter_flag(vcounter_flag);
     }
 
     pub fn get_vblank_flag(&self) -> bool {
@@ -81,11 +91,11 @@ impl DispStat {
 
     pub fn get_vcount_setting(&self) -> u16 {
         self.0
-            .get_bits(Self::VCOUNT_SETTING_OFFSET, Self::VCOUNT_SETTING_END)
+            .get_bits(Self::VCOUNT_SETTING_START, Self::VCOUNT_SETTING_END)
     }
 
     pub fn set_vcount_setting(&mut self, value: u16) {
         self.0
-            .set_bits(Self::VCOUNT_SETTING_OFFSET, Self::VCOUNT_SETTING_END, value);
+            .set_bits(Self::VCOUNT_SETTING_START, Self::VCOUNT_SETTING_END, value);
     }
 }

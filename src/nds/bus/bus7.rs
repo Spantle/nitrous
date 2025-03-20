@@ -274,8 +274,7 @@ impl BusTrait for Bus7 {
                 self.wram7[addr..addr + T].copy_from_slice(&value);
             }
 
-            0x04000004..=0x04000005 => shared.gpus.dispstat = value.into_halfword().into(),
-
+            // 0x04000004..=0x04000005 => shared.gpus.dispstat.set(value.into_halfword()), // does arm7 have write access to dispstat?
             0x04000050..=0x04000058 => self.logger.log_warn_once(format_debug!(
                 "Colour Special Effects not implemented (W{} {:#010X}:{:#010X})",
                 T,
