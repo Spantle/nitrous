@@ -29,7 +29,7 @@ impl Spi {
                 0
             }
             1 => {
-                self.fw_total_args += 1;
+                self.fw_total_args = self.fw_total_args.wrapping_add(1);
 
                 let data = match self.fw_command_id {
                     FirmwareCommand::ReadStream => {
@@ -49,7 +49,7 @@ impl Spi {
                             0x04 => self.fw_status_reg &= !0x1,
                             0x05 => self.fw_command_id = FirmwareCommand::ReadStatusReg,
                             0x06 => self.fw_status_reg |= 0x1,
-                            _ => logger::warn(
+                            _ => logger::error(
                                 logger::LogSource::Spi,
                                 format!("unknown firmware command {}", input),
                             ),
@@ -95,7 +95,7 @@ impl Spi {
                 data
             }
             3 => {
-                logger::warn_once(logger::LogSource::Spi, "reserved device implemented");
+                logger::error_once(logger::LogSource::Spi, "reserved device not implemented");
                 0
             }
             _ => unreachable!(),

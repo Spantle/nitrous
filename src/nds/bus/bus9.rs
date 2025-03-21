@@ -211,11 +211,8 @@ impl BusTrait for Bus9 {
 
             0x04000130..=0x04000131 => shared.keyinput.value().to_bytes::<T>(),
             0x04000132..=0x04000133 => {
-                self.logger.log_warn_once(format_debug!(
-                    "KEYCNT not implemented (R{} {:#010X})",
-                    T,
-                    addr
-                ));
+                self.logger
+                    .log_error(format!("KEYCNT not implemented (R{} {:#010X})", T, addr));
                 bytes
             }
             0x04000136..=0x04000137 => shared.extkeyin.value().to_bytes::<T>(),
@@ -352,7 +349,7 @@ impl BusTrait for Bus9 {
 
             0x04000000..=0x04000003 => shared.gpus.a.dispcnt = value.into_word().into(),
             0x04001000..=0x04001003 => shared.gpus.b.dispcnt = value.into_word().into(),
-            0x04000004..=0x04000005 => shared.gpus.dispstat.set(value.into_halfword()),
+            0x04000004..=0x04000005 => shared.gpus.dispstat.set(value.into_word() as u16), // we cast like this for shonumi's tests. this should be safe since 40..6 is read-only vcount
 
             0x04000008..=0x0400000F => {
                 for i in 0..T {
@@ -497,7 +494,7 @@ impl BusTrait for Bus9 {
             0x0400010C..=0x0400010D => self.timers.get_mut(3).set_l(value.into_halfword()),
             0x0400010E..=0x0400010F => self.timers.get_mut(3).set_h(value.into_halfword()),
 
-            0x04000132..=0x04000133 => self.logger.log_warn_once(format_debug!(
+            0x04000132..=0x04000133 => self.logger.log_error(format!(
                 "KEYCNT not implemented (W{} {:#010X}:{:#010X})",
                 T,
                 addr,
@@ -603,12 +600,12 @@ impl BusTrait for Bus9 {
                 success |= shared.gpus.vram_banks.write_slice::<T>(addr, value);
 
                 if !success {
-                    self.logger.log_error(format!(
-                        "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
-                        T,
-                        addr,
-                        value.into_word()
-                    ));
+                    // self.logger.log_error(format!(
+                    //     "Invalid write {} byte(s) at address {:#010X}: {:#010X}",
+                    //     T,
+                    //     addr,
+                    //     value.into_word()
+                    // ));
                 }
             }
         }

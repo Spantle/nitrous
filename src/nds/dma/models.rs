@@ -87,7 +87,7 @@ impl DmaChannel {
                 logger::error(
                     self.log_source::<Bus>(),
                     format!(
-                        "DMA{} has start timing {} which isn't supported",
+                        "DMA{} has start timing {} which is not implemented",
                         self.index, start_timing
                     ),
                 );
@@ -100,7 +100,10 @@ impl DmaChannel {
         if self.internal_cnt_l == 0 {
             logger::error(
                 self.log_source::<Bus>(),
-                format!("DMA{} has 0 word count. Not implemented.", self.index),
+                format!(
+                    "DMA{} has 0 word count which is not implemented.",
+                    self.index
+                ),
             );
         }
     }
