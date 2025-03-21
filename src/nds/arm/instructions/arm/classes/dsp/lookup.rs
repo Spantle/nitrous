@@ -11,7 +11,7 @@ use super::instructions;
 #[inline(always)]
 pub fn lookup_multiplies(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     // bits 21-22
-    let opcode = inst_set >> 1 & 0b11;
+    let opcode = (inst_set >> 1) & 0b11;
 
     match opcode {
         0b00 => instructions::smla(ctx),

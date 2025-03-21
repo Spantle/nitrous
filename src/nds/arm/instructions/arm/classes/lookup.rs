@@ -24,7 +24,7 @@ pub fn lookup_instruction_class(
         0b000 => {
             if !ctx.inst.get_bit(4) || !ctx.inst.get_bit(7) {
                 // bit 20, and bits 23-24
-                if inst_set & 1 == 0 && inst_set >> 3 & 0b11 == 0b10 {
+                if inst_set & 1 == 0 && (inst_set >> 3) & 0b11 == 0b10 {
                     // Miscellaneous
                     return lookup_miscellaneous_instructions(arm_bool, inst_set, ctx);
                 } else {
@@ -38,7 +38,7 @@ pub fn lookup_instruction_class(
         0b001 => {
             // Data Processing (immediate)
             // bit 20-21, and bits 23-24
-            if inst_set & 0b11 == 0b10 && inst_set >> 3 & 0b11 == 0b10 {
+            if inst_set & 0b11 == 0b10 && (inst_set >> 3) & 0b11 == 0b10 {
                 // Miscellaneous
                 return status_register_access::instructions::msr(inst_set, ctx);
             }
@@ -60,7 +60,7 @@ pub fn lookup_instruction_class(
         0b101 => {
             // Branch
             // bits 28-31
-            if inst_set >> 8 & 0b1111 == 0b1111 {
+            if (inst_set >> 8) & 0b1111 == 0b1111 {
                 // Branch with link and change to Thumb (BLX (1))
                 branch::instructions::b::<true, true>(ctx)
             } else {
@@ -69,7 +69,7 @@ pub fn lookup_instruction_class(
         }
         0b111 => {
             // bit 24
-            if inst_set >> 4 & 1 == 0 {
+            if (inst_set >> 4) & 1 == 0 {
                 // Coprocessor data processing
                 coprocessor::lookup(inst_set, ctx)
             } else {
@@ -98,7 +98,7 @@ fn lookup_multiples_and_extra_load_store_instructions(
     if !ctx.inst.get_bit(6) {
         if !ctx.inst.get_bit(5) {
             // bit 24
-            if inst_set >> 4 & 1 == 0 {
+            if (inst_set >> 4) & 1 == 0 {
                 // Multiply
                 return data_processing::lookup_multiply(inst_set, ctx);
             } else {
@@ -107,7 +107,7 @@ fn lookup_multiples_and_extra_load_store_instructions(
             }
         } else {
             // bit 22
-            if inst_set >> 2 & 1 == 0 {
+            if (inst_set >> 2) & 1 == 0 {
                 // Load/store halfword (register offset)
                 return load_store::halfword_or_ibyte::lookup::<false, _>(inst_set, ctx);
             } else {
@@ -125,7 +125,7 @@ fn lookup_multiples_and_extra_load_store_instructions(
         ctx.logger
             .log_error("load/store two words instruction not implemented");
         // bit 22
-        if inst_set >> 2 & 1 == 0 {
+        if (inst_set >> 2) & 1 == 0 {
             // Load/store two words (register offset)
             0
         } else {
@@ -134,7 +134,7 @@ fn lookup_multiples_and_extra_load_store_instructions(
         }
     } else {
         // bit 22
-        if inst_set >> 2 & 1 == 0 {
+        if (inst_set >> 2) & 1 == 0 {
             // Load signed halfword/byte (register offset)
             load_store::halfword_or_ibyte::lookup::<false, _>(inst_set, ctx)
         } else {
@@ -154,7 +154,7 @@ fn lookup_miscellaneous_instructions(
     match bits {
         0b0000 => {
             // bit 21
-            if inst_set >> 1 & 1 == 0 {
+            if (inst_set >> 1) & 1 == 0 {
                 // Move status register to register
                 status_register_access::instructions::mrs(inst_set, ctx)
             } else {
@@ -164,7 +164,7 @@ fn lookup_miscellaneous_instructions(
         }
         0b0001 => {
             // bit 22
-            if inst_set >> 2 & 1 == 0 {
+            if (inst_set >> 2) & 1 == 0 {
                 // Branch/exchange instruction set
                 branch::instructions::bx::<false>(ctx)
             } else if arm_bool == ArmBool::ARM9 {

@@ -145,15 +145,15 @@ pub fn lookup_multiply<Ctx: ContextTrait>(
     inst_set: u16,
     ctx: &mut Context<Instruction, Ctx>,
 ) -> u32 {
-    let u = inst_set >> 2 & 1 != 0;
-    let a = inst_set >> 1 & 1 != 0;
+    let u = (inst_set >> 2) & 1 != 0;
+    let a = (inst_set >> 1) & 1 != 0;
     let s = inst_set & 1 != 0;
     if s {
         ctx.dis.set_inst_suffix("S");
     }
 
     // bit 23
-    match (inst_set >> 3 & 1 == 1, u, a, s) {
+    match ((inst_set >> 3) & 1 == 1, u, a, s) {
         (false, _, false, false) => instructions::mul::<false>(ctx),
         (false, _, false, true) => instructions::mul::<true>(ctx),
         (false, _, true, false) => instructions::mla::<false>(ctx),

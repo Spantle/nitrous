@@ -56,7 +56,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 
             if shift_imm == 0 {
                 // RRX
                 ctx.dis.push_str_end_arg("RRX", Some(", "));
-                (ctx.arm.cpsr().get_carry() as u32) << 31 | rm >> 1
+                ((ctx.arm.cpsr().get_carry() as u32) << 31) | (rm >> 1)
             } else {
                 // ROR
                 ctx.dis.push_str_end_arg("ROR", Some(", "));

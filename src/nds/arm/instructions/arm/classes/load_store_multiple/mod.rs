@@ -52,7 +52,7 @@ pub fn do_writeback(
     let (arm, inst) = (ctx.arm, ctx.inst);
 
     // this technically should be in the addressing mode
-    let is_writeback = inst_set >> 1 & 1 == 1; // W
+    let is_writeback = (inst_set >> 1) & 1 == 1; // W
     if is_writeback {
         if arm_bool_or_stm == ArmBool::ARM7 && inst.register_list.get_bit(inst.destination as u16) {
             return;

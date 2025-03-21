@@ -172,7 +172,7 @@ pub fn parse_register(ctx: &mut Context<Instruction, impl ContextTrait>) -> Shif
                 ctx.dis.push_str_end_arg("RRX", Some(", "));
                 ctx.dis.push_word_end_arg(shift_imm, Some(" "));
                 carry_out = rm.get_bit(0);
-                (arm.cpsr().get_carry() as u32) << 31 | rm >> 1
+                ((arm.cpsr().get_carry() as u32) << 31) | (rm >> 1)
             } else {
                 ctx.dis.push_str_end_arg("ROR", Some(", "));
                 ctx.dis.push_word_end_arg(shift_imm, Some(" "));

@@ -23,7 +23,7 @@ impl LoadStoreInstruction {
         let first_source_register = ctx.inst.get_byte(16, 19);
         ctx.dis.push_reg_end_arg(first_source_register, Some("["));
 
-        let post_indexing = inst_set >> 4 & 1 == 0; // P
+        let post_indexing = (inst_set >> 4) & 1 == 0; // P
         if post_indexing {
             ctx.dis.push_str_end_arg("", Some("]"));
         }

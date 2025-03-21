@@ -21,7 +21,7 @@ pub fn lookup<Ctx: ContextTrait>(
         ctx.logger,
     );
 
-    let s = inst_set >> 2 & 1 == 1; // S
+    let s = (inst_set >> 2) & 1 == 1; // S
     let is_load = inst_set & 1 == 1; // L
     let has_15 = ctx.inst.register_list.get_bit(15);
 

@@ -22,7 +22,7 @@ pub fn lookup(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) 
     }
     ctx.dis.push_str_end_arg("", Some("}"));
 
-    if inst_set >> 5 & 0b1 == 0 {
+    if (inst_set >> 5) & 0b1 == 0 {
         // STMIA
         instructions::stmia(ctx);
     } else {

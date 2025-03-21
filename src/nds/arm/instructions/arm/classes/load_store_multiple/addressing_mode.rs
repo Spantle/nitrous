@@ -7,9 +7,9 @@ use crate::nds::arm::{
 pub fn parse(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> (u32, u32, u32) {
     let arm = &mut ctx.arm;
 
-    let is_excluded = inst_set >> 4 & 1 == 1; // P
-    let is_upwards = inst_set >> 3 & 1 == 1; // U
-    let is_writeback = inst_set >> 1 & 1 == 1; // W
+    let is_excluded = (inst_set >> 4) & 1 == 1; // P
+    let is_upwards = (inst_set >> 3) & 1 == 1; // U
+    let is_writeback = (inst_set >> 1) & 1 == 1; // W
 
     let destination = ctx.inst.get_byte(16, 19); // Rn
     if is_writeback {

@@ -28,7 +28,7 @@ pub fn stm_2(
     // assert end_address = address - 4
 
     // this technically should be in the addressing mode
-    let is_writeback = inst_set >> 1 & 1 == 1; // W
+    let is_writeback = (inst_set >> 1) & 1 == 1; // W
     if is_writeback {
         arm.set_r(inst.destination, inst.writeback_value);
     }

@@ -23,9 +23,9 @@ pub fn lookup<const IS_IMMEDIATE: bool, Ctx: ContextTrait>(
     let (arm, inst) = (&mut ctx.arm, &ctx.inst);
     ctx.dis.push_reg_arg(inst.destination_register, None);
 
-    let post_indexing = inst_set >> 4 & 1 == 0; // P: technically 0 but we've flipped it since 1 is "offset"/"pre-indexed" addressing
-    let is_add = inst_set >> 3 & 1 == 1; // U
-    let w = inst_set >> 1 & 1 == 1; // W
+    let post_indexing = (inst_set >> 4) & 1 == 0; // P: technically 0 but we've flipped it since 1 is "offset"/"pre-indexed" addressing
+    let is_add = (inst_set >> 3) & 1 == 1; // U
+    let w = (inst_set >> 1) & 1 == 1; // W
     let is_load = inst_set & 1 == 1; // L
     let s = ctx.inst.is_signed; // S
     let h = ctx.inst.is_halfword; // H

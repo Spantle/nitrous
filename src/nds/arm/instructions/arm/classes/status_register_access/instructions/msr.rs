@@ -11,8 +11,8 @@ pub fn msr(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> 
 
     let (inst, arm) = (&mut ctx.inst, &mut ctx.arm);
 
-    let is_immediate = inst_set >> 5 & 1 == 1;
-    let r = inst_set >> 2 & 1 == 1;
+    let is_immediate = (inst_set >> 5) & 1 == 1;
+    let r = (inst_set >> 2) & 1 == 1;
     let field_mask = inst.get_byte(16, 19);
 
     if r {

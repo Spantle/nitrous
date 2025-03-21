@@ -9,7 +9,7 @@ use crate::nds::arm::{
 pub fn mrs(inst_set: u16, ctx: &mut Context<Instruction, impl ContextTrait>) -> u32 {
     ctx.dis.set_inst("MRS");
 
-    let r = inst_set >> 2 & 1 == 1;
+    let r = (inst_set >> 2) & 1 == 1;
     let rd = ctx.inst.get_byte(12, 15);
     ctx.dis.push_reg_arg(rd, None);
 

@@ -23,10 +23,10 @@ pub fn lookup<const IS_REGISTER: bool, Ctx: ContextTrait>(
     let (arm, inst) = (&mut ctx.arm, &ctx.inst);
     ctx.dis.push_reg_arg(inst.destination_register, None);
 
-    let post_indexing = inst_set >> 4 & 1 == 0; // P: technically 0 but we've flipped it since 1 is "offset"/"pre-indexed" addressing
-    let is_add = inst_set >> 3 & 1 == 1; // U
-    let is_unsigned_byte = inst_set >> 2 & 1 == 1; // B
-    let w = inst_set >> 1 & 1 == 1; // W
+    let post_indexing = (inst_set >> 4) & 1 == 0; // P: technically 0 but we've flipped it since 1 is "offset"/"pre-indexed" addressing
+    let is_add = (inst_set >> 3) & 1 == 1; // U
+    let is_unsigned_byte = (inst_set >> 2) & 1 == 1; // B
+    let w = (inst_set >> 1) & 1 == 1; // W
     let is_load = inst_set & 1 == 1; // L
 
     let rn = arm.er(inst.first_source_register);
